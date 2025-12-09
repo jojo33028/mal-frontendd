@@ -917,19 +917,26 @@
       musicToggle.textContent = musicOn ? "🔊" : "🔇";
     }
 
-    function tryStartMusic() {
-      const bgMusic = getBgMusic();
-      if (!bgMusic || musicOn) return;
-      bgMusic.volume = 0.5;
-      const playPromise = bgMusic.play();
-      if (playPromise && playPromise.then) {
-        playPromise.then(() => {
-          musicOn = true;
-          updateMusicToggle();
-        }).catch(() => {});
-      }
-    }
+   function tryStartMusic() {
+  const bgMusic = document.getElementById("bgMusic");
+  if (!bgMusic) return;
 
+  bgMusic.volume = 0.5;
+  const playPromise = bgMusic.play();
+  if (playPromise && playPromise.then) {
+    playPromise.then(() => {
+      musicOn = true;
+      updateMusicToggle();
+    }).catch(() => {});
+  }
+}
+    // Auto-start background music when the page finishes loading
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    tryStartMusic();
+  }, 150);
+});
+    
     if (musicToggle) {
       musicToggle.addEventListener("click", () => {
         const bgMusic = getBgMusic();
