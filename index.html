@@ -44,24 +44,38 @@
       overflow-y: auto;
     }
 
-    .bg-grid {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(to right, rgba(148,163,184,0.08) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(148,163,184,0.08) 1px, transparent 1px);
-      background-size: 80px 80px;
-      opacity: 0.35;
-      z-index: -2;
-    }
+   .bg-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(148,163,184,0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148,163,184,0.08) 1px, transparent 1px);
+  background-size: 80px 80px;
+  opacity: 0.35;
+  z-index: -3; /* moved farther back */
+}
 
-    .bg-orbit {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: -1;
-    }
+/* NEW anime wallpaper layer */
+.bg-anime {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("anime-bg.jpg"); /* use your actual file name */
+  background-size: cover;
+  background-position: center;
+  filter: blur(2px);
+  opacity: 0.28;
+  z-index: -2;
+}
+
+.bg-orbit {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1; /* in front of anime bg, behind app */
+}
+
     .bg-orbit::before,
     .bg-orbit::after {
       content: "";
@@ -750,8 +764,11 @@
   </style>
 </head>
 <body>
+ <body>
   <div class="bg-grid"></div>
+  <div class="bg-anime"></div>  <!-- NEW -->
   <div class="bg-orbit"></div>
+
 
   <div class="app-shell">
     <header class="app-header">
