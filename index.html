@@ -115,40 +115,42 @@
 
    .app-header {
   position: relative;
-  padding: 1.1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(30,64,175,0.7);
-  background: radial-gradient(circle at top left, rgba(56,189,248,0.2), transparent 50%);
 }
+
+      
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(30,64,175,0.7);
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.2), transparent 50%);
+    }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 0.75rem;
     }
-.brand-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: radial-gradient(circle at 30% 0, #f97316, #ea580c 40%, #4b5563 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #f9fafb;
-  font-weight: 700;
-  font-size: 1.2rem;
-  box-shadow: 0 0 0 2px rgba(15,23,42,0.9), 0 10px 35px rgba(15,23,42,0.8);
-}
 
-.brand-icon img {
+    .brand-icon {
+      .brand-icon img {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0, #f97316, #ea580c 40%, #4b5563 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f9fafb;
+      font-weight: 700;
+      font-size: 1.2rem;
+      box-shadow: 0 0 0 2px rgba(15,23,42,0.9), 0 10px 35px rgba(15,23,42,0.8);
+    }
 
     .brand-text-title {
       font-weight: 700;
@@ -824,9 +826,9 @@
               </p>
 
               <div class="badge-row">
-                <div class="badge">Login with MAL </div>
+                <div class="badge">Local only · no login</div>
                 <div class="badge">MAL XML / XML.GZ</div>
-              
+                <div class="badge">Wrapped-style slides</div>
               </div>
 
               <div class="input-grid">
@@ -1689,39 +1691,36 @@ generateBtn.addEventListener("click", async () => {
       fileError.style.display = "none";
       const file = malInput.files && malInput.files[0];
       const username = usernameInput && usernameInput.value ? usernameInput.value.trim() : "";
-       // CASE 1: No file but there *is* a username → use Jikan
-      if (!file && username) {
-        const yearVal = safeInt(yearInput.value || currentYear, currentYear);
-        headerYear.textContent = yearVal;
-
-        showPanel("panel-loading");
-        tryStartMusic();
-
-        try {
-          const wrappedData = await fetchFromJikan(username, yearVal);
-          const slides = buildSlides(wrappedData);
-          renderSlides(slides);
-          setTimeout(() => {
-            showPanel("panel-slides");
-          }, 600);
-        } catch (err) {
-          console.error(err);
-          fileError.textContent =
-            "Failed to fetch data from Jikan. Try again later or upload your MAL XML file instead.";
-          fileError.style.display = "block";
-          showPanel("panel-input");
+      if (!file) {
+        // If no file is selected but a username is provided, fetch via Jikan
+        if (username) {
+          const yearVal = safeInt(yearInput.value || currentYear, currentYear);
+          headerYear.textContent = yearVal;
+          showPanel("panel-loading");
+          // try to begin background music after user interaction
+          tryStartMusic();
+          try {
+            const wrappedData = await fetchFromJikan(username, yearVal);
+            const slides = buildSlides(wrappedData);
+            renderSlides(slides);
+            setTimeout(() => {
+              showPanel("panel-slides");
+            }, 600);
+          } catch (err) {
+            console.error(err);
+            // Show a helpful error if the Jikan request fails. This typically means the
+            // page couldn't reach the API due to network or CORS restrictions, or the
+            // username was not found. Advise the user to run the page via a web
+            // server (not file://) and verify connectivity.
+            fileError.textContent =
+              "Failed to fetch data from Jikan. Serve this file via http:// and ensure api.jikan.moe is reachable, or upload your MAL XML.";
+            fileError.style.display = "block";
+            showPanel("panel-input");
+          }
+          return;
         }
-        return;
-      }
-
-      // CASE 2: No file AND no username → stop and show error (nothing to use)
-      if (!file && !username) {
-        fileError.textContent =
-          "Upload a MAL export file or enter a MAL username first.";
-        fileError.style.display = "block";
-        return;
-      }
-
+        // No file and no username: attempt to fetch via local MAL backend
+        try {
           const yearVal = safeInt(yearInput.value || currentYear, currentYear);
           headerYear.textContent = yearVal;
           showPanel("panel-loading");
