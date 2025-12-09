@@ -113,7 +113,11 @@
       flex-direction: column;
     }
 
-    .app-header {
+   .app-header {
+  position: relative;
+}
+
+      
       padding: 1.1rem 1.5rem;
       display: flex;
       align-items: center;
@@ -129,6 +133,12 @@
     }
 
     .brand-icon {
+      .brand-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
       width: 36px;
       height: 36px;
       border-radius: 999px;
@@ -171,6 +181,14 @@
       font-size: 0.9rem;
     }
     .header-right {
+  position: absolute;
+  right: 1.5rem;
+  top: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
       display: flex;
       align-items: center;
       gap: 0.6rem;
@@ -216,11 +234,13 @@
 
     /* Input Panel */
     .input-layout {
-      height: 100%;
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 1.75rem;
-    }
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
 
     @media (max-width: 800px) {
       .input-layout {
@@ -772,13 +792,16 @@
 
   <div class="app-shell">
     <header class="app-header">
-      <div class="brand">
-        <div class="brand-icon">A</div>
-        <div>
-          <div class="brand-text-title">Anime Wrapped</div>
-          <div class="brand-text-sub">Your Year In Episodes</div>
-        </div>
-      </div>
+    <div class="brand">
+  <div class="brand-icon">
+    <img src="mal-logo.png" alt="MyAnimeList logo" />
+  </div>
+  <div>
+    <div class="brand-text-title">Anime Wrapped</div>
+    <div class="brand-text-sub">Your Year In Episodes</div>
+  </div>
+</div>
+
       <div class="header-right">
         <button class="music-toggle" id="musicToggle" title="Toggle background music">
           🔇
@@ -811,7 +834,7 @@
               <div class="input-grid">
                 <div class="field">
                   <label for="malFile">MAL Anime List Export</label>
-                  <input id="malFile" type="file" accept=".xml,.gz" />
+                  <input id="malFile" type="file" accept=".xml,.gz,.txt" />
                   <div class="field-helper">
                     Export from MyAnimeList: <strong>Profile → Export → Anime List → XML</strong>
                     (the .xml or .xml.gz file both work).
@@ -819,12 +842,7 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
-                <!-- Optional username input for fetching data via Jikan API -->
-                <div class="field">
-                  <label for="malUsername">MAL Username (optional)</label>
-                  <input id="malUsername" class="field-input" type="text" placeholder="Enter MAL username" />
-                  <div class="field-helper">Provide a username to fetch your list without uploading an export.</div>
-                </div>
+               
 
                 <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
@@ -848,24 +866,7 @@
             </div>
           </div>
 
-          <aside class="input-side">
-            <div>
-              <div class="side-title">What you’ll see</div>
-              <ul class="side-list">
-                <li>Total minutes watched, plus hours / days / months / years / seconds.</li>
-                <li>Your most-watched anime by time and your top ratings.</li>
-                <li>Shows you wish you could leave behind this year.</li>
-                <li>A fake but fun “you’re in the top X% of binge-watchers” stat.</li>
-                <li>A simple “club” label based on how hard you watch.</li>
-                <li>Recommendations that avoid anime already in your list.</li>
-              </ul>
-            </div>
-
-            <div class="side-footer">
-              This runs completely in your browser. No account, no upload to a server — just you,
-              your XML, and an unhealthy number of episodes.
-            </div>
-          </aside>
+        
         </div>
       </section>
 
