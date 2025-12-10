@@ -139,15 +139,13 @@
 
 
  .brand-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: none;
+    background: none;
 }
+
 
 .brand-icon img {
     width: 100%;
@@ -169,6 +167,16 @@
       color: #9ca3af;
       letter-spacing: 0.18em;
     }
+       .mal-credit {
+    margin-top: -5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #cfd8ff;
+    opacity: 0.9;
+    letter-spacing: 0.03em;
+    margin-left: 65px;
+}
+ 
 
     .year-pill {
       font-size: 0.8rem;
@@ -797,15 +805,15 @@
   <div class="app-shell">
     <header class="app-header">
     <div class="brand">
-  <div class="brand-icon">
-    <img src="mal-logo.png" alt="MyAnimeList logo" />
+ <div class="brand-icon"></div>
+
   </div>
   <div>
     <div class="brand-text-title">Anime Wrapped</div>
     <div class="brand-text-sub">Your Year In Episodes</div>
   </div>
+ <div class="mal-credit">BROUGHT TO YOU BY MAL’S API</div>
 </div>
-
       <div class="header-right">
         <button class="music-toggle" id="musicToggle" title="Toggle background music">
           🔇
