@@ -1689,6 +1689,8 @@
 
     // ------------- File reading & main flow -------------
 
+      // ------------- File reading & main flow -------------
+
     const malInput = document.getElementById("malFile");
     const yearInput = document.getElementById("yearInput");
     const fileError = document.getElementById("fileError");
@@ -1696,12 +1698,17 @@
     const usernameInput = document.getElementById("malUsername");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
+    // MAL login button – mark this browser as authorized
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
+        // Mark THIS browser as having tried MAL login.
+        // (This is per-device, not global, so strangers don’t get your data.)
+        window.localStorage.setItem("malAuthorized", "true");
         window.open("https://mal-wrapped-1.onrender.com/login", "_blank");
       });
     }
 
+    // Set default year to current (only if elements exist)
     const currentYear = new Date().getFullYear();
     if (yearInput) {
       yearInput.value = currentYear;
@@ -1712,18 +1719,20 @@
 
       const file = malInput.files && malInput.files[0];
       const username =
-        usernameInput && usernameInput.value ? usernameInput.value.trim() : "";
+        usernameInput && usernameInput.value
+          ? usernameInput.value.trim()
+          : "";
 
       const yearVal = safeInt(yearInput.value || currentYear, currentYear);
 
-      // 1) LOCAL FILE BRANCH
+      // 1) LOCAL FILE BRANCH (XML / XML.GZ)
       if (file) {
         showPanel("panel-loading");
         tryStartMusic();
 
         const reader = new FileReader();
 
-        reader.onload = async e => {
+        reader.onload = async (e) => {
           try {
             let xmlText;
             if (file.name.endsWith(".gz")) {
@@ -1734,8 +1743,10 @@
             }
 
             const parsed = parseMalXml(xmlText);
+
+            // Filter to chosen year using start or finish date
             const entries = parsed.entries;
-            const filtered = entries.filter(entry => {
+            const filtered = entries.filter((entry) => {
               const startY = extractYear(entry.startDate);
               const finishY = extractYear(entry.finishDate);
               return String(yearVal) === startY || String(yearVal) === finishY;
@@ -1745,7 +1756,7 @@
             const wrappedData = {
               userName: parsed.userName,
               year: yearVal,
-              entries: activeEntries
+              entries: activeEntries,
             };
 
             const slides = buildSlides(wrappedData);
@@ -1772,7 +1783,7 @@
         return;
       }
 
-      // 2) USERNAME BRANCH (Jikan)
+      // 2) USERNAME BRANCH (Jikan) – only works if username is filled
       if (username) {
         try {
           showPanel("panel-loading");
@@ -1793,25 +1804,35 @@
         return;
       }
 
-      // 3) MAL BACKEND BRANCH
-      try {
-        showPanel("panel-loading");
-        tryStartMusic();
+      // 3) MAL BACKEND BRANCH – ONLY if this browser has explicitly clicked "Sign in with MAL"
+      const malAuthorized = window.localStorage.getItem("malAuthorized") === "true";
+      if (malAuthorized) {
+        try {
+          showPanel("panel-loading");
+          tryStartMusic();
 
-        const wrappedData = await fetchFromMalApi(yearVal);
-        const slides = buildSlides(wrappedData);
-        renderSlides(slides);
+          const wrappedData = await fetchFromMalApi(yearVal);
+          const slides = buildSlides(wrappedData);
+          renderSlides(slides);
 
-        setTimeout(() => {
-          showPanel("panel-slides");
-        }, 600);
-      } catch (err) {
-        console.error(err);
-        fileError.textContent =
-          "Failed to fetch from MAL. Ensure your backend at https://mal-wrapped-1.onrender.com is running and you’ve logged in.";
-        fileError.style.display = "block";
-        showPanel("panel-input");
+          setTimeout(() => {
+            showPanel("panel-slides");
+          }, 600);
+        } catch (err) {
+          console.error(err);
+          fileError.textContent =
+            "Failed to fetch from MAL. Make sure you’ve logged in with MAL on this device.";
+          fileError.style.display = "block";
+          showPanel("panel-input");
+        }
+        return;
       }
+
+      // 4) If we get here: no file, no username, and no MAL login → show error, DO NOT call backend
+      fileError.textContent =
+        "Upload a MAL XML file, enter a MAL username, or click 'Sign in with MAL' first.";
+      fileError.style.display = "block";
+      showPanel("panel-input");
     });
 
     // Slide controls
@@ -1824,6 +1845,7 @@
     document.getElementById("restartBtn").addEventListener("click", () => {
       goToSlide(0);
     });
+
   </script>
 
   <!-- Background + sample OP audio -->
