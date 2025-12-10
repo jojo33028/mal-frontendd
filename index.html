@@ -1794,62 +1794,91 @@ const currentYear = new Date().getFullYear();
 if (yearInput) {
   yearInput.value = currentYear;
 }
-if (headerYear) {
-  headerYear.textContent = currentYear;
-}
+
 
 
 generateBtn.addEventListener("click", async () => {
-      fileError.style.display = "none";
-      const file = malInput.files && malInput.files[0];
-      const username = usernameInput && usernameInput.value ? usernameInput.value.trim() : "";
-      if (!file) {
-        // If no file is selected but a username is provided, fetch via Jikan
-        if (username) {
-          const yearVal = safeInt(yearInput.value || currentYear, currentYear);
-          headerYear.textContent = yearVal;
-          showPanel("panel-loading");
-          // try to begin background music after user interaction
-          tryStartMusic();
-          try {
+    fileError.style.display = "none";
+
+    const file = malInput.files && malInput.files[0];
+    const username = usernameInput && usernameInput.value
+        ? usernameInput.value.trim()
+        : "";
+
+    const yearVal = safeInt(yearInput.value || currentYear, currentYear);
+
+    if (headerYear) {
+        headerYear.textContent = yearVal;
+    }
+
+    // --- If the user uploads a local XML file ---
+    if (file) {
+        try {
+            showPanel("panel-loading");
+            tryStartMusic();
+
+            const wrappedData = await parseLocalFile(file, yearVal);
+            const slides = buildSlides(wrappedData);
+            renderSlides(slides);
+
+            setTimeout(() => showPanel("panel-slides"), 600);
+        } catch (err) {
+            console.error(err);
+            fileError.textContent = "Error processing your file.";
+            fileError.style.display = "block";
+            showPanel("panel-input");
+        }
+        return;
+    }
+
+    // --- If no file but username is entered (Jikan fetch) ---
+    if (username) {
+        try {
+            showPanel("panel-loading");
+            tryStartMusic();
+
             const wrappedData = await fetchFromJikan(username, yearVal);
             const slides = buildSlides(wrappedData);
             renderSlides(slides);
-            setTimeout(() => {
-              showPanel("panel-slides");
-            }, 600);
-          } catch (err) {
+
+            setTimeout(() => showPanel("panel-slides"), 600);
+        } catch (err) {
             console.error(err);
-            // Show a helpful error if the Jikan request fails. This typically means the
-            // page couldn't reach the API due to network or CORS restrictions, or the
-            // username was not found. Advise the user to run the page via a web
-            // server (not file://) and verify connectivity.
             fileError.textContent =
-              "Failed to fetch data from Jikan. Serve this file via http:// and ensure api.jikan.moe is reachable, or upload your MAL XML.";
+                "Failed to fetch from Jikan. Check username or try again later.";
             fileError.style.display = "block";
             showPanel("panel-input");
+        }
+    }
+});
+
           }
           return;
         }
         // No file and no username: attempt to fetch via local MAL backend
         try {
-          const yearVal = safeInt(yearInput.value || currentYear, currentYear);
-          headerYear.textContent = yearVal;
-          showPanel("panel-loading");
-          tryStartMusic();
-          const wrappedData = await fetchFromMalApi(yearVal);
-          const slides = buildSlides(wrappedData);
-          renderSlides(slides);
-          setTimeout(() => {
-            showPanel("panel-slides");
-          }, 600);
-        } catch (err) {
-          console.error(err);
-          fileError.textContent =
-            "Failed to fetch from MAL. Ensure your Python server is running at http://127.0.0.1:5000 and you’ve logged in.";
-          fileError.style.display = "block";
-          showPanel("panel-input");
-        }
+  const yearVal = safeInt(yearInput.value || currentYear, currentYear);
+
+  if (headerYear) {
+    headerYear.textContent = yearVal;
+  }
+
+  showPanel("panel-loading");
+  tryStartMusic();
+  const wrappedData = await fetchFromMalApi(yearVal);
+  const slides = buildSlides(wrappedData);
+  renderSlides(slides);
+  setTimeout(() => {
+    showPanel("panel-slides");
+  }, 600);
+} catch (err) {
+  console.error(err);
+  fileError.textContent =
+    "Failed to fetch from MAL. Ensure your Python server is running at http://127.0.0.1:5000 and you’ve logged in.";
+  fileError.style.display = "block";
+  showPanel("panel-input");
+}
+
         return;
       }
 
