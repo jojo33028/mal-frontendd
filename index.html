@@ -332,6 +332,16 @@
       cursor: pointer;
     }
 
+    /* override for textarea so it isn't a pill */
+    .field-textarea {
+      border-radius: 16px;
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.4;
+      padding-top: 0.6rem;
+      padding-bottom: 0.6rem;
+    }
+
     .field-helper {
       font-size: 0.75rem;
       color: var(--text-soft);
@@ -841,6 +851,22 @@
                   </div>
                 </div>
 
+                <!-- Manual list textarea -->
+                <div class="field">
+                  <label for="manualList">Manual Anime List (optional)</label>
+                  <textarea
+                    id="manualList"
+                    class="field-input field-textarea"
+                    rows="4"
+                    placeholder="One line per anime: Title | episodes watched | score (optional) | type (optional) | start-date (optional) | finish-date (optional)"
+                  ></textarea>
+                  <div class="field-helper">
+                    Paste from Google Docs/Notes or type manually. Example:
+                    <br />
+                    <code>Naruto | 220 | 9 | TV | 2022-01-01 | 2022-12-31</code>
+                  </div>
+                </div>
+
                 <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
                   <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
@@ -848,6 +874,7 @@
                   </button>
                   <div class="field-helper">
                     Uses your backend at <code>mal-wrapped-1.onrender.com</code> to authenticate and fetch your list.
+                    For privacy, you’ll need to click this shortly before generating.
                   </div>
                 </div>
 
@@ -952,6 +979,11 @@
     }
 
     window.addEventListener("load", () => {
+      // kill old auth flag if it existed (privacy hardening)
+      try {
+        window.localStorage.removeItem("malAuthorized");
+      } catch (e) {}
+
       setTimeout(() => {
         tryStartMusic();
       }, 150);
@@ -1170,6 +1202,51 @@
         userName: "Your MAL",
         year: yearVal,
         entries: activeEntries
+      };
+    }
+
+    // ------------- Manual List Parser -------------
+
+    function parseManualList(text, yearVal) {
+      const lines = text
+        .split(/\r?\n/)
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+
+      const entries = [];
+
+      lines.forEach((line, idx) => {
+        // Prefer pipe-separated; fallback to " - "
+        let parts = line.split("|");
+        if (parts.length === 1) {
+          parts = line.split(" - ");
+        }
+        parts = parts.map(p => p.trim());
+
+        const title = parts[0] || `Untitled Anime #${idx + 1}`;
+        const episodes = safeInt(parts[1], 0);
+        const score = safeInt(parts[2] || "", 0);
+        const type = parts[3] || "";
+        const startDate = parts[4] || `${yearVal}-01-01`;
+        const finishDate = parts[5] || `${yearVal}-12-31`;
+
+        entries.push({
+          id: title.toLowerCase().replace(/\s+/g, "-") + "-" + idx,
+          title,
+          type,
+          totalEpisodes: episodes,
+          watchedEpisodes: episodes,
+          startDate,
+          finishDate,
+          score,
+          status: "completed"
+        });
+      });
+
+      return {
+        userName: "Manual List",
+        year: yearVal,
+        entries
       };
     }
 
@@ -1687,177 +1764,237 @@
       updateControlsDisabled();
     }
 
+    // ------------- File reading & main flow -------------
 
-   // ------------- File reading & main flow -------------
+    const malInput = document.getElementById("malFile");
+    const yearInput = document.getElementById("yearInput");
+    const fileError = document.getElementById("fileError");
+    const generateBtn = document.getElementById("generateBtn");
+    const usernameInput = document.getElementById("malUsername");
+    const manualInput = document.getElementById("manualList");
+    const malLoginBtn = document.getElementById("malLoginBtn");
 
-const malInput = document.getElementById("malFile");
-const yearInput = document.getElementById("yearInput");
-const fileError = document.getElementById("fileError");
-const generateBtn = document.getElementById("generateBtn");
-const usernameInput = document.getElementById("malUsername");
-const malLoginBtn = document.getElementById("malLoginBtn");
-
-// MAL login button – mark THIS browser as authorized
-if (malLoginBtn) {
-  malLoginBtn.addEventListener("click", () => {
-    // This flag is per-browser (localStorage), not global.
-    window.localStorage.setItem("malAuthorized", "true");
-    window.open("https://mal-wrapped-1.onrender.com/login", "_blank");
-  });
-}
-
-// Set default year to current
-const currentYear = new Date().getFullYear();
-if (yearInput) {
-  yearInput.value = currentYear;
-}
-
-generateBtn.addEventListener("click", async () => {
-  if (fileError) {
-    fileError.style.display = "none";
-  }
-
-  const file = malInput && malInput.files ? malInput.files[0] : null;
-  const username =
-    usernameInput && usernameInput.value
-      ? usernameInput.value.trim()
-      : "";
-
-  const yearVal = safeInt(
-    yearInput && yearInput.value ? yearInput.value : currentYear,
-    currentYear
-  );
-
-  // 1) LOCAL FILE BRANCH (XML / XML.GZ)
-  if (file) {
-    showPanel("panel-loading");
-    tryStartMusic();
-
-    const reader = new FileReader();
-
-    reader.onload = async (e) => {
-      try {
-        let xmlText;
-        if (file.name.endsWith(".gz")) {
-          const compressed = new Uint8Array(e.target.result);
-          xmlText = pako.ungzip(compressed, { to: "string" });
-        } else {
-          xmlText = e.target.result;
+    // MAL login button – mark THIS browser as freshly authorized (short-lived, one-time)
+    if (malLoginBtn) {
+      malLoginBtn.addEventListener("click", () => {
+        try {
+          const now = Date.now();
+          window.localStorage.setItem("malAuthorizedAt", String(now));
+          window.localStorage.setItem("malAuthorizedPending", "true");
+        } catch (e) {
+          console.warn("Failed to store MAL auth flags", e);
         }
+        window.open("https://mal-wrapped-1.onrender.com/login", "_blank");
+      });
+    }
 
-        const parsed = parseMalXml(xmlText);
+    // Set default year to current
+    const currentYear = new Date().getFullYear();
+    if (yearInput) {
+      yearInput.value = currentYear;
+    }
 
-        // Filter to chosen year using start or finish date
-        const entries = parsed.entries;
-        const filtered = entries.filter((entry) => {
-          const startY = extractYear(entry.startDate);
-          const finishY = extractYear(entry.finishDate);
-          return String(yearVal) === startY || String(yearVal) === finishY;
-        });
-        const activeEntries = filtered.length ? filtered : entries;
+    generateBtn.addEventListener("click", async () => {
+      if (fileError) {
+        fileError.style.display = "none";
+      }
 
-        const wrappedData = {
-          userName: parsed.userName,
-          year: yearVal,
-          entries: activeEntries,
+      const file = malInput && malInput.files ? malInput.files[0] : null;
+      const username =
+        usernameInput && usernameInput.value
+          ? usernameInput.value.trim()
+          : "";
+      const manualText =
+        manualInput && manualInput.value
+          ? manualInput.value.trim()
+          : "";
+
+      const yearVal = safeInt(
+        yearInput && yearInput.value ? yearInput.value : currentYear,
+        currentYear
+      );
+
+      // 1) LOCAL FILE BRANCH (XML / XML.GZ / TXT)
+      if (file) {
+        showPanel("panel-loading");
+        tryStartMusic();
+
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+          try {
+            let xmlText;
+            if (file.name.endsWith(".gz")) {
+              const compressed = new Uint8Array(e.target.result);
+              xmlText = pako.ungzip(compressed, { to: "string" });
+            } else {
+              xmlText = e.target.result;
+            }
+
+            const parsed = parseMalXml(xmlText);
+
+            // Filter to chosen year using start or finish date
+            const entries = parsed.entries;
+            const filtered = entries.filter((entry) => {
+              const startY = extractYear(entry.startDate);
+              const finishY = extractYear(entry.finishDate);
+              return String(yearVal) === startY || String(yearVal) === finishY;
+            });
+            const activeEntries = filtered.length ? filtered : entries;
+
+            const wrappedData = {
+              userName: parsed.userName,
+              year: yearVal,
+              entries: activeEntries,
+            };
+
+            const slides = buildSlides(wrappedData);
+            renderSlides(slides);
+
+            setTimeout(() => {
+              showPanel("panel-slides");
+            }, 600);
+          } catch (err) {
+            console.error(err);
+            if (fileError) {
+              fileError.textContent =
+                "Something went wrong reading that file. Make sure it’s a MAL XML export.";
+              fileError.style.display = "block";
+            }
+            showPanel("panel-input");
+          }
         };
 
-        const slides = buildSlides(wrappedData);
-        renderSlides(slides);
-
-        setTimeout(() => {
-          showPanel("panel-slides");
-        }, 600);
-      } catch (err) {
-        console.error(err);
-        if (fileError) {
-          fileError.textContent =
-            "Something went wrong reading that file. Make sure it’s a MAL XML export.";
-          fileError.style.display = "block";
+        if (file.name.endsWith(".gz")) {
+          reader.readAsArrayBuffer(file);
+        } else {
+          reader.readAsText(file);
         }
-        showPanel("panel-input");
+
+        return;
       }
-    };
 
-    if (file.name.endsWith(".gz")) {
-      reader.readAsArrayBuffer(file);
-    } else {
-      reader.readAsText(file);
-    }
+      // 2) MANUAL BRANCH – user typed or pasted a list
+      if (manualText) {
+        try {
+          showPanel("panel-loading");
+          tryStartMusic();
 
-    return;
-  }
+          const wrappedData = parseManualList(manualText, yearVal);
+          if (!wrappedData.entries.length) {
+            throw new Error("No valid lines found in manual list.");
+          }
+          const slides = buildSlides(wrappedData);
+          renderSlides(slides);
 
-  // 2) USERNAME BRANCH (Jikan) – only if username filled
-  if (username) {
-    try {
-      showPanel("panel-loading");
-      tryStartMusic();
+          setTimeout(() => showPanel("panel-slides"), 600);
+        } catch (err) {
+          console.error(err);
+          if (fileError) {
+            fileError.textContent =
+              "Couldn’t understand that manual list. Use: Title | episodes | score (optional) | type (optional) | start-date | finish-date.";
+            fileError.style.display = "block";
+          }
+          showPanel("panel-input");
+        }
+        return;
+      }
 
-      const wrappedData = await fetchFromJikan(username, yearVal);
-      const slides = buildSlides(wrappedData);
-      renderSlides(slides);
+      // 3) USERNAME BRANCH (Jikan) – only if username filled
+      if (username) {
+        try {
+          showPanel("panel-loading");
+          tryStartMusic();
 
-      setTimeout(() => showPanel("panel-slides"), 600);
-    } catch (err) {
-      console.error(err);
+          const wrappedData = await fetchFromJikan(username, yearVal);
+          const slides = buildSlides(wrappedData);
+          renderSlides(slides);
+
+          setTimeout(() => showPanel("panel-slides"), 600);
+        } catch (err) {
+          console.error(err);
+          if (fileError) {
+            fileError.textContent =
+              "Failed to fetch from Jikan. Check username or try again later.";
+            fileError.style.display = "block";
+          }
+          showPanel("panel-input");
+        }
+        return;
+      }
+
+      // 4) MAL BACKEND BRANCH – ONLY if this browser recently clicked "Sign in with MAL"
+      let malAuthorized = false;
+      try {
+        const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
+        const authAtRaw = window.localStorage.getItem("malAuthorizedAt");
+        const authAt = authAtRaw ? Number(authAtRaw) : 0;
+        const now = Date.now();
+        const MAX_AUTH_AGE_MS = 10 * 60 * 1000; // 10 minutes window
+
+        malAuthorized =
+          !!authPending &&
+          !!authAt &&
+          Number.isFinite(authAt) &&
+          now - authAt <= MAX_AUTH_AGE_MS;
+      } catch (e) {
+        malAuthorized = false;
+      }
+
+      if (malAuthorized) {
+        try {
+          showPanel("panel-loading");
+          tryStartMusic();
+
+          const wrappedData = await fetchFromMalApi(yearVal);
+          const slides = buildSlides(wrappedData);
+          renderSlides(slides);
+
+          // One-time use: clear flags so others can't spam generate your data
+          try {
+            window.localStorage.removeItem("malAuthorizedPending");
+            window.localStorage.removeItem("malAuthorizedAt");
+          } catch (e) {}
+
+          setTimeout(() => {
+            showPanel("panel-slides");
+          }, 600);
+        } catch (err) {
+          console.error(err);
+          try {
+            window.localStorage.removeItem("malAuthorizedPending");
+            window.localStorage.removeItem("malAuthorizedAt");
+          } catch (e) {}
+
+          if (fileError) {
+            fileError.textContent =
+              "Failed to fetch from MAL. Click 'Sign in with MAL' again and make sure the login succeeds.";
+            fileError.style.display = "block";
+          }
+          showPanel("panel-input");
+        }
+        return;
+      }
+
+      // 5) If we get here: no file, no manual list, no username, and no fresh MAL login
       if (fileError) {
         fileError.textContent =
-          "Failed to fetch from Jikan. Check username or try again later.";
+          "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
         fileError.style.display = "block";
       }
       showPanel("panel-input");
-    }
-    return;
-  }
+    });
 
-  // 3) MAL BACKEND BRANCH – ONLY if this browser has explicitly clicked "Sign in with MAL"
-  const malAuthorized = window.localStorage.getItem("malAuthorized") === "true";
-  if (malAuthorized) {
-    try {
-      showPanel("panel-loading");
-      tryStartMusic();
-
-      const wrappedData = await fetchFromMalApi(yearVal);
-      const slides = buildSlides(wrappedData);
-      renderSlides(slides);
-
-      setTimeout(() => {
-        showPanel("panel-slides");
-      }, 600);
-    } catch (err) {
-      console.error(err);
-      if (fileError) {
-        fileError.textContent =
-          "Failed to fetch from MAL. Make sure you’ve logged in with MAL on this device.";
-        fileError.style.display = "block";
-      }
-      showPanel("panel-input");
-    }
-    return;
-  }
-
-  // 4) If we get here: no file, no username, and no MAL login → show error, DO NOT call backend
-  if (fileError) {
-    fileError.textContent =
-      "Upload a MAL XML file, enter a MAL username, or click 'Sign in with MAL' first.";
-    fileError.style.display = "block";
-  }
-  showPanel("panel-input");
-});
-
-// Slide controls
-document.getElementById("prevSlideBtn").addEventListener("click", () => {
-  goToSlide(currentSlideIndex - 1);
-});
-document.getElementById("nextSlideBtn").addEventListener("click", () => {
-  goToSlide(currentSlideIndex + 1);
-});
-document.getElementById("restartBtn").addEventListener("click", () => {
-  goToSlide(0);
-});
-
-
+    // Slide controls
+    document.getElementById("prevSlideBtn").addEventListener("click", () => {
+      goToSlide(currentSlideIndex - 1);
+    });
+    document.getElementById("nextSlideBtn").addEventListener("click", () => {
+      goToSlide(currentSlideIndex + 1);
+    });
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      goToSlide(0);
+    });
   </script>
 
   <!-- Background + sample OP audio -->
