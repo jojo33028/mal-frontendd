@@ -1796,153 +1796,129 @@ if (yearInput) {
 }
 
 
+// Set default year to current (only if elements exist)
+const currentYear = new Date().getFullYear();
+
+if (yearInput) {
+  yearInput.value = currentYear;
+}
 
 generateBtn.addEventListener("click", async () => {
-    fileError.style.display = "none";
+  fileError.style.display = "none";
 
-    const file = malInput.files && malInput.files[0];
-    const username = usernameInput && usernameInput.value
-        ? usernameInput.value.trim()
-        : "";
+  const file = malInput.files && malInput.files[0];
+  const username =
+    usernameInput && usernameInput.value
+      ? usernameInput.value.trim()
+      : "";
 
-    const yearVal = safeInt(yearInput.value || currentYear, currentYear);
-
-    if (headerYear) {
-        headerYear.textContent = yearVal;
-    }
-
-    // --- If the user uploads a local XML file ---
-    if (file) {
-        try {
-            showPanel("panel-loading");
-            tryStartMusic();
-
-            const wrappedData = await parseLocalFile(file, yearVal);
-            const slides = buildSlides(wrappedData);
-            renderSlides(slides);
-
-            setTimeout(() => showPanel("panel-slides"), 600);
-        } catch (err) {
-            console.error(err);
-            fileError.textContent = "Error processing your file.";
-            fileError.style.display = "block";
-            showPanel("panel-input");
-        }
-        return;
-    }
-
-    // --- If no file but username is entered (Jikan fetch) ---
-    if (username) {
-        try {
-            showPanel("panel-loading");
-            tryStartMusic();
-
-            const wrappedData = await fetchFromJikan(username, yearVal);
-            const slides = buildSlides(wrappedData);
-            renderSlides(slides);
-
-            setTimeout(() => showPanel("panel-slides"), 600);
-        } catch (err) {
-            console.error(err);
-            fileError.textContent =
-                "Failed to fetch from Jikan. Check username or try again later.";
-            fileError.style.display = "block";
-            showPanel("panel-input");
-        }
-    }
-});
-
-          }
-          return;
-        }
-        // No file and no username: attempt to fetch via local MAL backend
-        try {
   const yearVal = safeInt(yearInput.value || currentYear, currentYear);
 
+  // Update header year text if that element exists
   if (headerYear) {
     headerYear.textContent = yearVal;
   }
 
-  showPanel("panel-loading");
-  tryStartMusic();
-  const wrappedData = await fetchFromMalApi(yearVal);
-  const slides = buildSlides(wrappedData);
-  renderSlides(slides);
-  setTimeout(() => {
-    showPanel("panel-slides");
-  }, 600);
-} catch (err) {
-  console.error(err);
-  fileError.textContent =
-    "Failed to fetch from MAL. Ensure your Python server is running at http://127.0.0.1:5000 and you’ve logged in.";
-  fileError.style.display = "block";
-  showPanel("panel-input");
-}
+  // 1) LOCAL FILE BRANCH (XML / XML.GZ)
+  if (file) {
+    showPanel("panel-loading");
+    tryStartMusic();
 
-        return;
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        let xmlText;
+        if (file.name.endsWith(".gz")) {
+          const compressed = new Uint8Array(e.target.result);
+          xmlText = pako.ungzip(compressed, { to: "string" });
+        } else {
+          xmlText = e.target.result;
+        }
+
+        const parsed = parseMalXml(xmlText);
+
+        // Filter to chosen year using start or finish date
+        const entries = parsed.entries;
+        const filtered = entries.filter((entry) => {
+          const startY = extractYear(entry.startDate);
+          const finishY = extractYear(entry.finishDate);
+          return String(yearVal) === startY || String(yearVal) === finishY;
+        });
+        const activeEntries = filtered.length ? filtered : entries;
+
+        const wrappedData = {
+          userName: parsed.userName,
+          year: yearVal,
+          entries: activeEntries,
+        };
+
+        const slides = buildSlides(wrappedData);
+        renderSlides(slides);
+
+        setTimeout(() => {
+          showPanel("panel-slides");
+        }, 600);
+      } catch (err) {
+        console.error(err);
+        fileError.textContent =
+          "Something went wrong reading that file. Make sure it’s a MAL XML export.";
+        fileError.style.display = "block";
+        showPanel("panel-input");
       }
+    };
 
-      const yearVal = safeInt(yearInput.value || currentYear, currentYear);
-      headerYear.textContent = yearVal;
+    if (file.name.endsWith(".gz")) {
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.readAsText(file);
+    }
 
+    return;
+  }
+
+  // 2) USERNAME BRANCH (Jikan)
+  if (username) {
+    try {
       showPanel("panel-loading");
-      // try to begin background music after user interaction
       tryStartMusic();
 
-      const reader = new FileReader();
+      const wrappedData = await fetchFromJikan(username, yearVal);
+      const slides = buildSlides(wrappedData);
+      renderSlides(slides);
 
-      reader.onload = async e => {
-        try {
-          let xmlText;
-          if (file.name.endsWith(".gz")) {
-            const compressed = new Uint8Array(e.target.result);
-            xmlText = pako.ungzip(compressed, { to: "string" });
-          } else {
-            xmlText = e.target.result;
-          }
+      setTimeout(() => showPanel("panel-slides"), 600);
+    } catch (err) {
+      console.error(err);
+      fileError.textContent =
+        "Failed to fetch from Jikan. Check username or try again later.";
+      fileError.style.display = "block";
+      showPanel("panel-input");
+    }
+    return;
+  }
 
-          const parsed = parseMalXml(xmlText);
+  // 3) MAL BACKEND BRANCH (no file, no username)
+  try {
+    showPanel("panel-loading");
+    tryStartMusic();
 
-          // Note: MAL export doesn’t always have reliable dates.
-          // We’ll attempt to filter by year, but if nothing matches, we’ll just use the whole list.
-          const entries = parsed.entries;
-          const filtered = entries.filter(e => {
-            const startY = extractYear(e.startDate);
-            const finishY = extractYear(e.finishDate);
-            return startY === String(yearVal) || finishY === String(yearVal);
-          });
-          const activeEntries = filtered.length ? filtered : entries;
+    const wrappedData = await fetchFromMalApi(yearVal);
+    const slides = buildSlides(wrappedData);
+    renderSlides(slides);
 
-          const wrappedData = {
-            userName: parsed.userName,
-            year: yearVal,
-            entries: activeEntries
-          };
+    setTimeout(() => {
+      showPanel("panel-slides");
+    }, 600);
+  } catch (err) {
+    console.error(err);
+    fileError.textContent =
+      "Failed to fetch from MAL. Ensure your backend at https://mal-wrapped-1.onrender.com is running and you’ve logged in.";
+    fileError.style.display = "block";
+    showPanel("panel-input");
+  }
+});
 
-          const slides = buildSlides(wrappedData);
-          renderSlides(slides);
-
-          // A tiny timeout so loading screen doesn’t feel instant/glitchy
-          setTimeout(() => {
-            showPanel("panel-slides");
-          }, 600);
-        } catch (err) {
-          console.error(err);
-          fileError.textContent = "Something went wrong reading that file. Make sure it’s a MAL XML export.";
-          fileError.style.display = "block";
-          showPanel("panel-input");
-        }
-      };
-
-      if (file.name.endsWith(".gz")) {
-        reader.readAsArrayBuffer(file);
-      } else {
-        reader.readAsText(file);
-      }
-    });
-
-    // Controls
-    document.getElementById("prevSlideBtn").addEventListener("click", () => {
       goToSlide(currentSlideIndex - 1);
     });
     document.getElementById("nextSlideBtn").addEventListener("click", () => {
