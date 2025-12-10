@@ -1200,11 +1200,14 @@ window.addEventListener("load", () => {
     // ------------- MAL API Fetch Helper -------------
 // Fetch the authenticated user's list from your backend and
 // filter it to the chosen year (based on start or finish date).
+// ------------- MAL API Fetch Helper -------------
+// Fetch the authenticated user's list from your backend and then
+// filter to the selected year using start OR finish date.
 async function fetchFromMalApi(yearVal) {
-  const res = await fetch('https://mal-wrapped-1.onrender.com/list');
+  const res = await fetch("https://mal-wrapped-1.onrender.com/list");
 
   if (!res.ok) {
-    throw new Error('MAL backend request failed');
+    throw new Error("MAL backend request failed");
   }
 
   const json = await res.json();
@@ -1216,37 +1219,42 @@ async function fetchFromMalApi(yearVal) {
     const status = item.list_status || {};
 
     entries.push({
-      id: String(anime.id || anime.mal_id || ''),
-      title: anime.title || anime.title_english || anime.title_synonyms || 'Untitled Anime',
-      type: anime.media_type || anime.type || '',
+      id: String(anime.id || anime.mal_id || ""),
+      title:
+        anime.title ||
+        anime.title_english ||
+        (Array.isArray(anime.title_synonyms) && anime.title_synonyms[0]) ||
+        "Untitled Anime",
+      type: anime.media_type || anime.type || "",
       totalEpisodes: Number(anime.num_episodes) || Number(anime.episodes) || 0,
       watchedEpisodes:
         Number(status.num_episodes_watched) ||
         Number(status.watched_episodes) ||
         0,
-      startDate: status.start_date || '',
-      finishDate: status.finish_date || '',
+      startDate: status.start_date || "",
+      finishDate: status.finish_date || "",
       score: Number(status.score) || 0,
-      status: status.status || ''
+      status: status.status || ""
     });
   });
 
-  // 🔥 Filter to only this year (using start or finish date)
+  // Filter to **only this year** based on start or finish date
   const filtered = entries.filter(e => {
     const startY = extractYear(e.startDate);
     const finishY = extractYear(e.finishDate);
     return String(yearVal) === startY || String(yearVal) === finishY;
   });
 
-  // If nothing matches that year (bad/empty dates), fall back to full list
+  // If nothing matches (bad / missing dates), fall back to full list
   const activeEntries = filtered.length ? filtered : entries;
 
   return {
-    userName: 'Your MAL',
+    userName: "Your MAL",
     year: yearVal,
     entries: activeEntries
   };
 }
+
 
 
 
