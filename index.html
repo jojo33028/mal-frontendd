@@ -1201,7 +1201,10 @@ window.addEventListener("load", () => {
     // Fetch the authenticated user's list from your local Python backend. This
     // requires that the mal_backend_server.py script is running on
     // http://localhost:5000 and that you have authorized the app via /login.
-   async function fetchFromMalApi(yearVal) {
+  // ------------- MAL API Fetch Helper -------------
+// Fetch the authenticated user's list from your backend and
+// filter it to the chosen year (based on start or finish date).
+async function fetchFromMalApi(yearVal) {
   const res = await fetch('https://mal-wrapped-1.onrender.com/list');
 
   if (!res.ok) {
@@ -1221,7 +1224,10 @@ window.addEventListener("load", () => {
       title: anime.title || anime.title_english || anime.title_synonyms || 'Untitled Anime',
       type: anime.media_type || anime.type || '',
       totalEpisodes: Number(anime.num_episodes) || Number(anime.episodes) || 0,
-      watchedEpisodes: Number(status.num_episodes_watched) || Number(status.watched_episodes) || 0,
+      watchedEpisodes:
+        Number(status.num_episodes_watched) ||
+        Number(status.watched_episodes) ||
+        0,
       startDate: status.start_date || '',
       finishDate: status.finish_date || '',
       score: Number(status.score) || 0,
@@ -1229,7 +1235,7 @@ window.addEventListener("load", () => {
     });
   });
 
-  // 🔥 NEW: filter to only this year (using start or finish date)
+  // 🔥 Filter to only this year (using start or finish date)
   const filtered = entries.filter(e => {
     const startY = extractYear(e.startDate);
     const finishY = extractYear(e.finishDate);
@@ -1245,6 +1251,7 @@ window.addEventListener("load", () => {
     entries: activeEntries
   };
 }
+
 
 
     // ------------- Slide builder -------------
