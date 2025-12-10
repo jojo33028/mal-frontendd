@@ -1201,39 +1201,51 @@ window.addEventListener("load", () => {
     // Fetch the authenticated user's list from your local Python backend. This
     // requires that the mal_backend_server.py script is running on
     // http://localhost:5000 and that you have authorized the app via /login.
-    async function fetchFromMalApi(yearVal) {
-      // Use 127.0.0.1 to match your backend's configured redirect URI.  If you
-      // change the backend host/port, update this accordingly.
-     const res = await fetch('https://mal-wrapped-1.onrender.com/list');
+   async function fetchFromMalApi(yearVal) {
+  const res = await fetch('https://mal-wrapped-1.onrender.com/list');
 
-      if (!res.ok) {
-        throw new Error('MAL backend request failed');
-      }
-      const json = await res.json();
-      const data = json.data || [];
-      const entries = [];
-      data.forEach(item => {
-        // The MAL API returns each item with a "node" (anime) and "list_status".
-        const anime = item.node || item.anime || {};
-        const status = item.list_status || {};
-        entries.push({
-          id: String(anime.id || anime.mal_id || ''),
-          title: anime.title || anime.title_english || anime.title_synonyms || 'Untitled Anime',
-          type: anime.media_type || anime.type || '',
-          totalEpisodes: Number(anime.num_episodes) || Number(anime.episodes) || 0,
-          watchedEpisodes: Number(status.num_episodes_watched) || Number(status.watched_episodes) || 0,
-          startDate: status.start_date || '',
-          finishDate: status.finish_date || '',
-          score: Number(status.score) || 0,
-          status: status.status || ''
-        });
-      });
-      return {
-        userName: 'Your MAL',
-        year: yearVal,
-        entries: entries
-      };
-    }
+  if (!res.ok) {
+    throw new Error('MAL backend request failed');
+  }
+
+  const json = await res.json();
+  const data = json.data || [];
+  const entries = [];
+
+  data.forEach(item => {
+    const anime = item.node || item.anime || {};
+    const status = item.list_status || {};
+
+    entries.push({
+      id: String(anime.id || anime.mal_id || ''),
+      title: anime.title || anime.title_english || anime.title_synonyms || 'Untitled Anime',
+      type: anime.media_type || anime.type || '',
+      totalEpisodes: Number(anime.num_episodes) || Number(anime.episodes) || 0,
+      watchedEpisodes: Number(status.num_episodes_watched) || Number(status.watched_episodes) || 0,
+      startDate: status.start_date || '',
+      finishDate: status.finish_date || '',
+      score: Number(status.score) || 0,
+      status: status.status || ''
+    });
+  });
+
+  // 🔥 NEW: filter to only this year (using start or finish date)
+  const filtered = entries.filter(e => {
+    const startY = extractYear(e.startDate);
+    const finishY = extractYear(e.finishDate);
+    return String(yearVal) === startY || String(yearVal) === finishY;
+  });
+
+  // If nothing matches that year (bad/empty dates), fall back to full list
+  const activeEntries = filtered.length ? filtered : entries;
+
+  return {
+    userName: 'Your MAL',
+    year: yearVal,
+    entries: activeEntries
+  };
+}
+
 
     // ------------- Slide builder -------------
     function buildSlides(data) {
