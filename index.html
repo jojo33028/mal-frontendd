@@ -9,6 +9,19 @@
   <!-- Pako for .gz decompression -->
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   <style>
+    .intro-video-wrapper {
+  max-width: 520px;
+  width: 100%;
+  margin: 20px auto;
+}
+
+.intro-video {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  display: block;
+}
+
     :root {
       --bg1: #050816;
       --bg2: #0f172a;
@@ -854,7 +867,25 @@
     </div>
   </div>
 
-  <!-- your other page stuff here -->
+ <!-- your other page stuff here -->
+
+<div class="intro-video-wrapper">
+  <video
+    class="intro-video"
+    src="anime-collage.mp4"
+    autoplay
+    loop
+    muted
+    playsinline
+  ></video>
+</div>
+
+<div class="bg-grid"></div>
+<div class="bg-anime"></div>
+<div class="bg-orbit"></div>
+
+<div class="app-shell">
+
 
 
 
@@ -867,15 +898,9 @@
     <header class="app-header">
     <div class="brand">
  <div class="brand-icon"></div>
-<div class="brand">
-    <div class="intro-video-wrapper">
-        <video src="anime-collage.mp4"
-               autoplay
-               loop
-               muted
-               playsinline
-               style="width:100%; border-radius:12px;">
-        </video>
+
+
+       
     </div>
 </div>
 
