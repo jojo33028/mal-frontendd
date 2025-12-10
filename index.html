@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><link rel="icon" href="/favicon.ico" type="image/x-icon">
-<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+<head>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
   <meta charset="UTF-8" />
   <title>Anime Wrapped</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <!-- Pako for .gz decompression -->
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+
   <style>
     .intro-video-wrapper {
-  max-width: 520px;
-  width: 100%;
-  margin: 20px auto;
-}
+      max-width: 520px;
+      width: 100%;
+      margin: 20px auto;
+    }
 
-.intro-video {
-  width: 100%;
-  height: auto;
-  border-radius: 18px;
-  display: block;
-}
+    .intro-video {
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      display: block;
+    }
 
     :root {
       --bg1: #050816;
@@ -37,12 +40,13 @@
       --slide-transition: 0.5s ease;
       --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-.intro-panel,
-.intro-username,
-.intro-tagline,
-.mal-credit {
-    display: none !important;
-}
+
+    .intro-panel,
+    .intro-username,
+    .intro-tagline,
+    .mal-credit {
+      display: none !important;
+    }
 
     * {
       box-sizing: border-box;
@@ -63,41 +67,37 @@
       overflow-y: auto;
     }
 
-   .bg-grid {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(148,163,184,0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(148,163,184,0.08) 1px, transparent 1px);
-  background-size: 80px 80px;
-  opacity: 0.35;
-  z-index: -3; /* moved farther back */
-}
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(to right, rgba(148,163,184,0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148,163,184,0.08) 1px, transparent 1px);
+      background-size: 80px 80px;
+      opacity: 0.35;
+      z-index: -3;
+    }
 
-/* NEW anime wallpaper layer */
-.bg-anime {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("anime-bg.jpg"); /* use your actual file name */
-  background-size: cover;
-  background-position: center;
-  filter: blur(2px);
-  opacity: 0.28;
-  z-index: -2;
-}
+    .bg-anime {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("anime-bg.jpg");
+      background-size: cover;
+      background-position: center;
+      filter: blur(2px);
+      opacity: 0.28;
+      z-index: -2;
+    }
 
-.bg-orbit {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1; /* in front of anime bg, behind app */
-}
-
-   .bg-orbit {
-  display: none;
-}
+    .bg-orbit {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      display: none;
+    }
 
     .app-shell {
       width: 100%;
@@ -114,11 +114,8 @@
       flex-direction: column;
     }
 
-   .app-header {
-  position: relative;
-}
-
-      
+    .app-header {
+      position: relative;
       padding: 1.1rem 1.5rem;
       display: flex;
       align-items: center;
@@ -128,32 +125,28 @@
     }
 
     .brand {
-     .brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    position: relative;
-    top: 6px;   /* move logo down */
-    left: 6px;  /* move logo right */
-    z-index: 10;
-}
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+      top: 6px;
+      left: 6px;
+      z-index: 10;
+    }
 
+    .brand-icon {
+      width: 0;
+      height: 0;
+      padding: 0;
+      border: none;
+      background: none;
+    }
 
- .brand-icon {
-    width: 0;
-    height: 0;
-    padding: 0;
-    border: none;
-    background: none;
-}
-
-
-.brand-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
+    .brand-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
     .brand-text-title {
       font-weight: 700;
@@ -162,82 +155,55 @@
       text-transform: uppercase;
       color: #e5e7eb;
     }
+
     .brand-text-sub {
       font-size: 0.7rem;
       text-transform: uppercase;
       color: #9ca3af;
       letter-spacing: 0.18em;
     }
-       .mal-credit {
-    margin-top: -5px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #cfd8ff;
-    opacity: 0.9;
-    letter-spacing: 0.03em;
-    margin-left: 65px;
-}
- 
 
-    .year-pill {
-      font-size: 0.8rem;
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.5);
-      background: radial-gradient(circle at top left, rgba(249,115,22,0.15), rgba(15,23,42,0.9));
-      color: #e5e7eb;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
+    .mal-credit {
+      margin-top: -5px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #cfd8ff;
+      opacity: 0.9;
+      letter-spacing: 0.03em;
+      margin-left: 65px;
     }
-    .year-pill span {
-      font-size: 0.9rem;
-    }
+
     .header-right {
-  position: absolute;
-  right: 1.5rem;
-  top: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
+      position: absolute;
+      right: 1.5rem;
+      top: 0.9rem;
       display: flex;
       align-items: center;
       gap: 0.6rem;
     }
 
-   .music-toggle {
-  position: fixed;
-  top: 40px;      /* 👈 move it down (tweak this number if you want) */
-  right: 28px;
-  z-index: 10000;
-
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(0, 0, 0, 0.55);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  transition: background 0.2s ease, transform 0.15s ease;
-}
-
-
-.music-toggle:hover {
-  background: rgba(0, 0, 0, 0.8);
-  transform: translateY(-1px);
-}
-
-
-    .music-toggle:hover {
-      border-color: rgba(249,115,22,0.9);
+    .music-toggle {
+      position: fixed;
+      top: 40px;
+      right: 28px;
+      z-index: 10000;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
     }
 
+    .music-toggle:hover {
+      background: rgba(0, 0, 0, 0.8);
+      transform: translateY(-1px);
+      border-color: rgba(249,115,22,0.9);
+    }
 
     .app-body {
       flex: 1;
@@ -257,15 +223,13 @@
       display: block;
     }
 
-    /* Input Panel */
     .input-layout {
-  height: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr);
-  max-width: 720px;
-  margin: 0 auto;
-}
-
+      height: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr);
+      max-width: 720px;
+      margin: 0 auto;
+    }
 
     @media (max-width: 800px) {
       .input-layout {
@@ -305,6 +269,7 @@
       font-weight: 800;
       margin-bottom: 0.35rem;
     }
+
     .input-subtitle {
       font-size: 0.9rem;
       color: var(--text-soft);
@@ -402,18 +367,18 @@
       box-shadow: 0 12px 35px rgba(248,113,113,0.4);
       transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s ease;
     }
+
     .primary-btn:hover {
       transform: translateY(-1px);
       filter: brightness(1.05);
       box-shadow: 0 16px 40px rgba(248,113,113,0.55);
     }
+
     .primary-btn:active {
       transform: translateY(0);
       box-shadow: 0 10px 28px rgba(248,113,113,0.4);
     }
 
-    /* Secondary button for MAL login. Uses a cool blue gradient to distinguish
-       it from the primary action. */
     .secondary-btn {
       border: none;
       outline: none;
@@ -432,58 +397,16 @@
       box-shadow: 0 12px 35px rgba(14,165,233,0.4);
       transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s ease;
     }
+
     .secondary-btn:hover {
       transform: translateY(-1px);
       filter: brightness(1.05);
       box-shadow: 0 16px 40px rgba(14,165,233,0.55);
     }
+
     .secondary-btn:active {
       transform: translateY(0);
       box-shadow: 0 10px 28px rgba(14,165,233,0.4);
-    }
-
-    .input-side {
-      border-radius: 20px;
-      padding: 1.4rem 1.3rem;
-      border: 1px solid var(--border-subtle);
-      background: radial-gradient(circle at top, rgba(56,189,248,0.18), rgba(15,23,42,0.95));
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 1.3rem;
-    }
-
-    .side-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #e5e7eb;
-      margin-bottom: 0.4rem;
-    }
-
-    .side-list {
-      font-size: 0.84rem;
-      color: var(--text-soft);
-      list-style: none;
-      display: grid;
-      gap: 0.4rem;
-    }
-
-    .side-list li::before {
-      content: "◆";
-      font-size: 0.7rem;
-      margin-right: 0.4rem;
-      color: rgba(248,250,252,0.8);
-    }
-
-    .side-footer {
-      font-size: 0.78rem;
-      color: var(--text-soft);
-      border-radius: 14px;
-      padding: 0.7rem 0.8rem;
-      background-color: rgba(15,23,42,0.85);
-      border: 1px dashed rgba(148,163,184,0.45);
     }
 
     .error-text {
@@ -492,7 +415,6 @@
       margin-top: 0.4rem;
     }
 
-    /* Loading Panel */
     .loading-inner {
       height: 100%;
       display: flex;
@@ -520,8 +442,7 @@
       height: 6px;
       border-radius: 999px;
       background: rgba(15,23,42,0.9);
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: hidden;
       border: 1px solid rgba(30,64,175,0.6);
     }
 
@@ -543,16 +464,17 @@
       font-size: 1.1rem;
       font-weight: 700;
     }
+
     .loader-sub {
       font-size: 0.84rem;
       color: var(--text-soft);
     }
+
     .loader-hints {
       font-size: 0.78rem;
       color: #9ca3af;
     }
 
-    /* Slides Panel */
     .slides-wrapper {
       height: 100%;
       display: flex;
@@ -561,7 +483,6 @@
     }
 
     .slides-main {
-      /* Fixed height so absolutely-positioned slides are visible */
       height: 320px;
       min-height: 260px;
       position: relative;
@@ -680,6 +601,7 @@
     .stats-label {
       color: #9ca3af;
     }
+
     .stats-value {
       color: #e5e7eb;
       font-weight: 500;
@@ -706,6 +628,7 @@
       font-weight: 700;
       font-size: 1rem;
     }
+
     .anime-meta {
       font-size: 0.8rem;
       color: var(--text-soft);
@@ -718,6 +641,7 @@
       gap: 0.35rem;
       font-size: 0.75rem;
     }
+
     .pill-meta {
       padding: 0.18rem 0.55rem;
       border-radius: 999px;
@@ -737,7 +661,6 @@
       gap: 0.4rem;
       color: #f9fafb;
       cursor: pointer;
-      text-decoration: none;
     }
 
     .op-btn span {
@@ -750,7 +673,6 @@
       margin-top: 0.5rem;
     }
 
-    /* Controls */
     .slides-controls {
       display: flex;
       align-items: center;
@@ -794,53 +716,51 @@
       color: #9ca3af;
     }
 
-    /* Intro Slide special */
     .intro-username {
       font-size: 1.4rem;
       font-weight: 800;
       margin-top: 0.2rem;
     }
 
-   .intro-tagline {
-  margin-top: 0.6rem;
-  font-size: 0.9rem;
-  color: var(--text-soft);
-}
+    .intro-tagline {
+      margin-top: 0.6rem;
+      font-size: 0.9rem;
+      color: var(--text-soft);
+    }
 
-/* ===== Top moving banner ===== */
-.top-banner {
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 9999;
+    /* Top moving banner */
+    .top-banner {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(5px);
+      padding: 8px 0;
+    }
 
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(5px);
-  padding: 8px 0;
-}
+    .banner-text {
+      display: inline-block;
+      padding-left: 40%;
+      animation: scroll-banner 20s linear infinite;
+      font-size: 1.2rem;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+      font-weight: 600;
+    }
 
-.banner-text {
-  display: inline-block;
-  padding-left: 40%;
-  animation: scroll-banner 20s linear infinite;
-  font-size: 1.2rem;
-  letter-spacing: 0.05em;
-  color: #ffffff;
-  font-weight: 600;
-}
-
-@keyframes scroll-banner {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-</style>
+    @keyframes scroll-banner {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -850,48 +770,31 @@
     </div>
   </div>
 
- <!-- your other page stuff here -->
-
-<div class="intro-video-wrapper">
-  <video
-    class="intro-video"
-    src="anime-collage.mp4"
-    autoplay
-    loop
-    muted
-    playsinline
-  ></video>
-</div>
-
-<div class="bg-grid"></div>
-<div class="bg-anime"></div>
-<div class="bg-orbit"></div>
-
-<div class="app-shell">
-
-
-
+  <div class="intro-video-wrapper">
+    <video
+      class="intro-video"
+      src="anime-collage.mp4"
+      autoplay
+      loop
+      muted
+      playsinline
+    ></video>
+  </div>
 
   <div class="bg-grid"></div>
-  <div class="bg-anime"></div>  <!-- NEW -->
+  <div class="bg-anime"></div>
   <div class="bg-orbit"></div>
-
 
   <div class="app-shell">
     <header class="app-header">
-    <div class="brand">
- <div class="brand-icon"></div>
-
-
-       
-    </div>
-</div>
+      <div class="brand">
+        <div class="brand-icon"></div>
+      </div>
 
       <div class="header-right">
         <button class="music-toggle" id="musicToggle" title="Toggle background music">
           🔇
         </button>
-        
       </div>
     </header>
 
@@ -924,19 +827,37 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
-               
+                <!-- Optional username for Jikan -->
+                <div class="field">
+                  <label for="malUsername">MAL Username (optional)</label>
+                  <input
+                    id="malUsername"
+                    class="field-input"
+                    type="text"
+                    placeholder="If no file, enter your MAL username"
+                  />
+                  <div class="field-helper">
+                    We’ll fetch your list via the Jikan API if you don’t upload a file.
+                  </div>
+                </div>
 
                 <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
-                  <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">Sign in with MAL</button>
-                  <div class="field-helper">Use your local backend (mal_backend_server.py) to authenticate and fetch your list.</div>
+                  <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
+                    Sign in with MAL
+                  </button>
+                  <div class="field-helper">
+                    Uses your backend at <code>mal-wrapped-1.onrender.com</code> to authenticate and fetch your list.
+                  </div>
                 </div>
 
                 <div class="pill-row">
                   <div class="field year-input">
                     <label for="yearInput">Wrapped Year</label>
                     <input id="yearInput" class="field-input" type="number" />
-                    <div class="field-helper">If dates are missing, we’ll treat your whole list as this year.</div>
+                    <div class="field-helper">
+                      If dates are missing, we’ll treat your whole list as this year.
+                    </div>
                   </div>
 
                   <button class="primary-btn" id="generateBtn">
@@ -947,8 +868,6 @@
               </div>
             </div>
           </div>
-
-        
         </div>
       </section>
 
@@ -999,9 +918,8 @@
   </div>
 
   <script>
-    // ------------- Utility helpers -------------
-    // --- Audio controls ---
-    // We resolve elements lazily so it still works even though <audio> tags are added later in the DOM.
+    // ------------- Utility helpers + audio -------------
+
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
@@ -1017,26 +935,28 @@
       musicToggle.textContent = musicOn ? "🔊" : "🔇";
     }
 
-   function tryStartMusic() {
-  const bgMusic = document.getElementById("bgMusic");
-  if (!bgMusic) return;
+    function tryStartMusic() {
+      const bgMusic = getBgMusic();
+      if (!bgMusic) return;
 
-  bgMusic.volume = 0.5;
-  const playPromise = bgMusic.play();
-  if (playPromise && playPromise.then) {
-    playPromise.then(() => {
-      musicOn = true;
-      updateMusicToggle();
-    }).catch(() => {});
-  }
-}
-    // Auto-start background music when the page finishes loading
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    tryStartMusic();
-  }, 150);
-});
-    
+      bgMusic.volume = 0.5;
+      const playPromise = bgMusic.play();
+      if (playPromise && playPromise.then) {
+        playPromise
+          .then(() => {
+            musicOn = true;
+            updateMusicToggle();
+          })
+          .catch(() => {});
+      }
+    }
+
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        tryStartMusic();
+      }, 150);
+    });
+
     if (musicToggle) {
       musicToggle.addEventListener("click", () => {
         const bgMusic = getBgMusic();
@@ -1048,15 +968,16 @@ window.addEventListener("load", () => {
           bgMusic.volume = 0.5;
           const playPromise = bgMusic.play();
           if (playPromise && playPromise.then) {
-            playPromise.then(() => {
-              musicOn = true;
-              updateMusicToggle();
-            }).catch(() => {});
+            playPromise
+              .then(() => {
+                musicOn = true;
+                updateMusicToggle();
+              })
+              .catch(() => {});
           }
         }
         updateMusicToggle();
       });
-      // initialize icon
       updateMusicToggle();
     }
 
@@ -1087,7 +1008,6 @@ window.addEventListener("load", () => {
     }
 
     function estimateMinutes(entry) {
-      // Simple heuristic: TV & ONA etc ~23min, Movies ~90min
       const eps = entry.watchedEpisodes || 0;
       if (!eps) return 0;
       const type = (entry.type || "").toLowerCase();
@@ -1105,6 +1025,7 @@ window.addEventListener("load", () => {
     }
 
     // ------------- Parse MAL XML -------------
+
     function parseMalXml(xmlText) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(xmlText, "text/xml");
@@ -1145,34 +1066,38 @@ window.addEventListener("load", () => {
     }
 
     // ------------- Jikan Fetch Helper -------------
-    // Fetch a user's anime list from the Jikan API. This allows users to simply enter a MAL
-    // username instead of uploading an export file. The function paginates through up to
-    // a few pages of results and normalizes the data into the same structure as
-    // parseMalXml(). If filtering by year yields no results, the full list is used.
+
     async function fetchFromJikan(username, yearVal) {
       const entries = [];
       let page = 1;
       const maxPages = 5;
       while (page <= maxPages) {
-        const url = `https://api.jikan.moe/v4/users/${encodeURIComponent(username)}/animelist?status=all&page=${page}&limit=100`;
+        const url = `https://api.jikan.moe/v4/users/${encodeURIComponent(
+          username
+        )}/animelist?status=all&page=${page}&limit=100`;
         const res = await fetch(url);
         if (!res.ok) {
-          throw new Error('Jikan request failed');
+          throw new Error("Jikan request failed");
         }
         const json = await res.json();
         const list = (json && json.data) || [];
         list.forEach(item => {
           const anime = item.anime || {};
           const entry = {
-            id: String(anime.mal_id || ''),
-            title: anime.title || anime.title_english || 'Untitled Anime',
-            type: anime.type || '',
+            id: String(anime.mal_id || ""),
+            title: anime.title || anime.title_english || "Untitled Anime",
+            type: anime.type || "",
             totalEpisodes: Number(anime.episodes) || 0,
-            watchedEpisodes: Number(item.episodes_watched || item.num_episodes_watched || item.episodes || 0),
-            startDate: item.started_at || '',
-            finishDate: item.completed_at || '',
+            watchedEpisodes: Number(
+              item.episodes_watched ||
+              item.num_episodes_watched ||
+              item.episodes ||
+              0
+            ),
+            startDate: item.started_at || "",
+            finishDate: item.completed_at || "",
             score: Number(item.score) || 0,
-            status: item.status || ''
+            status: item.status || ""
           };
           entries.push(entry);
         });
@@ -1183,7 +1108,6 @@ window.addEventListener("load", () => {
           break;
         }
       }
-      // Apply year filter, falling back to full list if no matches
       const filtered = entries.filter(e => {
         const startY = extractYear(e.startDate);
         const finishY = extractYear(e.finishDate);
@@ -1191,75 +1115,66 @@ window.addEventListener("load", () => {
       });
       const active = filtered.length ? filtered : entries;
       return {
-        userName: username || 'Anime Fan',
+        userName: username || "Anime Fan",
         year: yearVal,
         entries: active
       };
     }
 
     // ------------- MAL API Fetch Helper -------------
-// Fetch the authenticated user's list from your backend and
-// filter it to the chosen year (based on start or finish date).
-// ------------- MAL API Fetch Helper -------------
-// Fetch the authenticated user's list from your backend and then
-// filter to the selected year using start OR finish date.
-async function fetchFromMalApi(yearVal) {
-  const res = await fetch("https://mal-wrapped-1.onrender.com/list");
 
-  if (!res.ok) {
-    throw new Error("MAL backend request failed");
-  }
+    async function fetchFromMalApi(yearVal) {
+      const res = await fetch("https://mal-wrapped-1.onrender.com/list");
 
-  const json = await res.json();
-  const data = json.data || [];
-  const entries = [];
+      if (!res.ok) {
+        throw new Error("MAL backend request failed");
+      }
 
-  data.forEach(item => {
-    const anime = item.node || item.anime || {};
-    const status = item.list_status || {};
+      const json = await res.json();
+      const data = json.data || [];
+      const entries = [];
 
-    entries.push({
-      id: String(anime.id || anime.mal_id || ""),
-      title:
-        anime.title ||
-        anime.title_english ||
-        (Array.isArray(anime.title_synonyms) && anime.title_synonyms[0]) ||
-        "Untitled Anime",
-      type: anime.media_type || anime.type || "",
-      totalEpisodes: Number(anime.num_episodes) || Number(anime.episodes) || 0,
-      watchedEpisodes:
-        Number(status.num_episodes_watched) ||
-        Number(status.watched_episodes) ||
-        0,
-      startDate: status.start_date || "",
-      finishDate: status.finish_date || "",
-      score: Number(status.score) || 0,
-      status: status.status || ""
-    });
-  });
+      data.forEach(item => {
+        const anime = item.node || item.anime || {};
+        const status = item.list_status || {};
 
-  // Filter to **only this year** based on start or finish date
-  const filtered = entries.filter(e => {
-    const startY = extractYear(e.startDate);
-    const finishY = extractYear(e.finishDate);
-    return String(yearVal) === startY || String(yearVal) === finishY;
-  });
+        entries.push({
+          id: String(anime.id || anime.mal_id || ""),
+          title:
+            anime.title ||
+            anime.title_english ||
+            (Array.isArray(anime.title_synonyms) && anime.title_synonyms[0]) ||
+            "Untitled Anime",
+          type: anime.media_type || anime.type || "",
+          totalEpisodes: Number(anime.num_episodes) || Number(anime.episodes) || 0,
+          watchedEpisodes:
+            Number(status.num_episodes_watched) ||
+            Number(status.watched_episodes) ||
+            0,
+          startDate: status.start_date || "",
+          finishDate: status.finish_date || "",
+          score: Number(status.score) || 0,
+          status: status.status || ""
+        });
+      });
 
-  // If nothing matches (bad / missing dates), fall back to full list
-  const activeEntries = filtered.length ? filtered : entries;
+      const filtered = entries.filter(e => {
+        const startY = extractYear(e.startDate);
+        const finishY = extractYear(e.finishDate);
+        return String(yearVal) === startY || String(yearVal) === finishY;
+      });
 
-  return {
-    userName: "Your MAL",
-    year: yearVal,
-    entries: activeEntries
-  };
-}
+      const activeEntries = filtered.length ? filtered : entries;
 
-
-
-
+      return {
+        userName: "Your MAL",
+        year: yearVal,
+        entries: activeEntries
+      };
+    }
 
     // ------------- Slide builder -------------
+
     function buildSlides(data) {
       const slides = [];
 
@@ -1271,17 +1186,21 @@ async function fetchFromMalApi(yearVal) {
       const totalMinutes = list.reduce((sum, e) => sum + estimateMinutes(e), 0);
 
       const seconds = totalMinutes * 60;
-      const hours = totalMinutes / 60;
       const days = totalMinutes / (60 * 24);
       const months = totalMinutes / (60 * 24 * 30);
       const years = totalMinutes / (60 * 24 * 365);
 
-      // Filter some subsets
       const nonZeroWatch = list.filter(e => (e.watchedEpisodes || 0) > 0);
       const rated = list.filter(e => e.score && e.score > 0);
-      const sortedByMinutes = [...nonZeroWatch].sort((a, b) => estimateMinutes(b) - estimateMinutes(a));
-      const sortedByScoreDesc = [...rated].sort((a, b) => b.score - a.score || estimateMinutes(b) - estimateMinutes(a));
-      const sortedByScoreAsc = [...rated].sort((a, b) => a.score - b.score || estimateMinutes(b) - estimateMinutes(a));
+      const sortedByMinutes = [...nonZeroWatch].sort(
+        (a, b) => estimateMinutes(b) - estimateMinutes(a)
+      );
+      const sortedByScoreDesc = [...rated].sort(
+        (a, b) => b.score - a.score || estimateMinutes(b) - estimateMinutes(a)
+      );
+      const sortedByScoreAsc = [...rated].sort(
+        (a, b) => a.score - b.score || estimateMinutes(b) - estimateMinutes(a)
+      );
 
       const mostWatched = sortedByMinutes[0] || null;
       function placeholderCover(title) {
@@ -1292,30 +1211,31 @@ async function fetchFromMalApi(yearVal) {
       const topRated = sortedByScoreDesc.slice(0, 3);
       const bottomRated = sortedByScoreAsc.slice(0, 3);
 
-      // Average score for vibe
       const avgScore = rated.length
         ? rated.reduce((sum, e) => sum + e.score, 0) / rated.length
         : null;
 
-      // Fake percentile: based on episodes watched
       let percentileLabel = "top 50%";
       if (totalEpisodes >= 500) percentileLabel = "top 10%";
       else if (totalEpisodes >= 250) percentileLabel = "top 20%";
       else if (totalEpisodes >= 100) percentileLabel = "top 35%";
       else if (totalEpisodes <= 20) percentileLabel = "top 70%";
 
-      // Club detection (very rough, just for fun)
       let clubName = "Casual Viewer Club";
-      let clubDesc = "You watch at your own pace — enough to keep up, not enough to lose sleep... usually.";
+      let clubDesc =
+        "You watch at your own pace — enough to keep up, not enough to lose sleep... usually.";
       if (totalEpisodes >= 300) {
         clubName = "Shonen Grind Club";
-        clubDesc = "You commit. Long runs, stacked arcs, and hundreds of episodes don’t scare you.";
+        clubDesc =
+          "You commit. Long runs, stacked arcs, and hundreds of episodes don’t scare you.";
       } else if (avgScore && avgScore >= 8.5) {
         clubName = "Quality Hunter Club";
-        clubDesc = "You don’t waste time — you laser in on high-rated shows and skip mid anime.";
+        clubDesc =
+          "You don’t waste time — you laser in on high-rated shows and skip mid anime.";
       } else if (avgScore && avgScore <= 6.5) {
         clubName = "Villain Arc Club";
-        clubDesc = "You keep watching mid or bad shows just to see how wild it gets. Respect.";
+        clubDesc =
+          "You keep watching mid or bad shows just to see how wild it gets. Respect.";
       }
 
       const allTitlesLower = new Set(list.map(e => e.title.toLowerCase()));
@@ -1331,15 +1251,15 @@ async function fetchFromMalApi(yearVal) {
         "Steins;Gate",
         "Ping Pong the Animation"
       ];
-      const recommendations = recPool.filter(title => !allTitlesLower.has(title.toLowerCase())).slice(0, 4);
+      const recommendations = recPool
+        .filter(title => !allTitlesLower.has(title.toLowerCase()))
+        .slice(0, 4);
 
-      // Helper: YouTube search URL for OP
       function buildOpSearchUrl(animeTitle) {
         const q = encodeURIComponent(animeTitle + " opening theme");
         return "https://www.youtube.com/results?search_query=" + q;
       }
 
-      // Slide 1: Intro
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
@@ -1354,7 +1274,6 @@ async function fetchFromMalApi(yearVal) {
         opSearch: null
       });
 
-      // Slide 2: Total minutes
       slides.push({
         type: "minutes",
         kicker: "Time spent in other worlds",
@@ -1363,7 +1282,7 @@ async function fetchFromMalApi(yearVal) {
         body: "Here’s what that watch time looks like when you zoom out.",
         stats: [
           { label: "Seconds", value: formatNumber(Math.round(seconds)) },
-          { label: "Hours", value: formatNumber(totalMinutes / 60 | 0) },
+          { label: "Hours", value: formatNumber((totalMinutes / 60) | 0) },
           { label: "Days", value: formatNumber(days.toFixed(1)) },
           { label: "Months (approx)", value: formatNumber(months.toFixed(2)) },
           { label: "Years (if it were one long show)", value: years.toFixed(3) }
@@ -1372,7 +1291,6 @@ async function fetchFromMalApi(yearVal) {
         opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
-      // Slide 3: Most-watched anime
       if (mostWatched) {
         const mwMinutes = estimateMinutes(mostWatched);
         slides.push({
@@ -1392,7 +1310,6 @@ async function fetchFromMalApi(yearVal) {
         });
       }
 
-      // Slide 4: Highest-rated
       if (topRated.length) {
         slides.push({
           type: "highestRated",
@@ -1400,19 +1317,17 @@ async function fetchFromMalApi(yearVal) {
           title: "Anime you rated the highest.",
           highlight: "These are the shows that stuck the landing for you.",
           body: "Whether it was story, characters, or pure vibes, these shows cleared your personal bar.",
-          backgroundImage: placeholderCover(topRated[0].title),
           list: topRated.map(e => ({
             title: e.title,
             score: e.score,
             episodes: e.watchedEpisodes,
             type: e.type
           })),
-          backgroundImage: "",
+          backgroundImage: placeholderCover(topRated[0].title),
           opSearch: buildOpSearchUrl(topRated[0].title)
         });
       }
 
-      // Slide 5: Lowest-rated
       if (bottomRated.length) {
         slides.push({
           type: "lowestRated",
@@ -1420,19 +1335,17 @@ async function fetchFromMalApi(yearVal) {
           title: "Your lowest-rated watches.",
           highlight: "Not every show can be a W. These ones tested your patience.",
           body: "Maybe you finished them out of stubbornness. Maybe you dropped them mid-arc. Either way, they made the list.",
-          backgroundImage: placeholderCover(bottomRated[0].title),
           list: bottomRated.map(e => ({
             title: e.title,
             score: e.score,
             episodes: e.watchedEpisodes,
             type: e.type
           })),
-          backgroundImage: "",
+          backgroundImage: placeholderCover(bottomRated[0].title),
           opSearch: buildOpSearchUrl(bottomRated[0].title)
         });
       }
 
-      // Slide 6: Total anime & fake percentile
       slides.push({
         type: "count",
         kicker: "How deep you went",
@@ -1448,7 +1361,6 @@ async function fetchFromMalApi(yearVal) {
         opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
-      // Slide 7: Club
       slides.push({
         type: "club",
         kicker: "The club you belong to",
@@ -1458,13 +1370,15 @@ async function fetchFromMalApi(yearVal) {
         stats: [
           { label: "Episodes logged", value: formatNumber(totalEpisodes) },
           { label: "Rated titles", value: rated.length },
-          { label: "Average score vibe", value: avgScore ? avgScore.toFixed(2) : "mysterious" }
+          {
+            label: "Average score vibe",
+            value: avgScore ? avgScore.toFixed(2) : "mysterious"
+          }
         ],
         backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
         opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
-      // Slide 8: Recommendations
       slides.push({
         type: "recs",
         kicker: "Fuel for your next year",
@@ -1478,7 +1392,6 @@ async function fetchFromMalApi(yearVal) {
         opSearch: recommendations.length ? buildOpSearchUrl(recommendations[0]) : null
       });
 
-      // Slide 9: Outro
       slides.push({
         type: "outro",
         kicker: "Another year of anime down",
@@ -1497,6 +1410,7 @@ async function fetchFromMalApi(yearVal) {
     }
 
     // ------------- Render slides -------------
+
     let currentSlides = [];
     let currentSlideIndex = 0;
 
@@ -1515,7 +1429,6 @@ async function fetchFromMalApi(yearVal) {
         if (slide.backgroundImage) {
           bgDiv.style.backgroundImage = `url('${slide.backgroundImage}')`;
         } else {
-          // Fallback gradient-ish look
           bgDiv.style.backgroundImage =
             "radial-gradient(circle at top left, rgba(249,115,22,0.3), rgba(15,23,42,1))";
         }
@@ -1640,8 +1553,7 @@ async function fetchFromMalApi(yearVal) {
           slide.list.forEach(item => {
             const meta = document.createElement("div");
             meta.className = "anime-meta";
-            meta.textContent =
-              `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
+            meta.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
             card.appendChild(meta);
           });
 
@@ -1656,15 +1568,20 @@ async function fetchFromMalApi(yearVal) {
 
           card.appendChild(header);
 
-          slide.recs.forEach(title => {
+          slide.recs.forEach(titleStr => {
             const meta = document.createElement("div");
             meta.className = "anime-meta";
-            meta.textContent = title;
+            meta.textContent = titleStr;
             card.appendChild(meta);
           });
 
           rightDiv.appendChild(card);
-        } else if (slide.type === "intro" || slide.type === "outro" || slide.type === "club" || slide.type === "count") {
+        } else if (
+          slide.type === "intro" ||
+          slide.type === "outro" ||
+          slide.type === "club" ||
+          slide.type === "count"
+        ) {
           const card = document.createElement("div");
           card.className = "anime-card";
 
@@ -1699,7 +1616,6 @@ async function fetchFromMalApi(yearVal) {
           rightDiv.appendChild(card);
         }
 
-        // OP button if we have search
         if (slide.opSearch) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
@@ -1714,11 +1630,13 @@ async function fetchFromMalApi(yearVal) {
         const foot = document.createElement("div");
         foot.className = "slide-footer";
         if (slide.type === "minutes") {
-          foot.textContent = "Minutes estimated at ~23 minutes per episode (movies as ~90m each).";
+          foot.textContent =
+            "Minutes estimated at ~23 minutes per episode (movies as ~90m each).";
         } else if (slide.type === "count") {
           foot.textContent = "Percentile is a fun estimate — not an official MAL metric.";
         } else if (slide.type === "recs") {
-          foot.textContent = "We only recommend shows that don’t appear in your list export.";
+          foot.textContent =
+            "We only recommend shows that don’t appear in your list export.";
         } else {
           foot.textContent = "";
         }
@@ -1770,89 +1688,117 @@ async function fetchFromMalApi(yearVal) {
     }
 
     // ------------- File reading & main flow -------------
+
     const malInput = document.getElementById("malFile");
     const yearInput = document.getElementById("yearInput");
     const fileError = document.getElementById("fileError");
     const generateBtn = document.getElementById("generateBtn");
-    const headerYear = document.getElementById("headerYear");
-const usernameInput = document.getElementById("malUsername");
-
+    const usernameInput = document.getElementById("malUsername");
     const malLoginBtn = document.getElementById("malLoginBtn");
+
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
-        // Open the MAL OAuth login route in a new tab. The backend will handle
-        // the authorization flow and store the access token. After logging in,
-        // return to this page and click Generate to fetch your data.
         window.open("https://mal-wrapped-1.onrender.com/login", "_blank");
-
       });
     }
 
-   // Set default year to current (only if elements exist)
-const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
+    if (yearInput) {
+      yearInput.value = currentYear;
+    }
 
-if (yearInput) {
-  yearInput.value = currentYear;
-}
+    generateBtn.addEventListener("click", async () => {
+      fileError.style.display = "none";
 
+      const file = malInput.files && malInput.files[0];
+      const username =
+        usernameInput && usernameInput.value ? usernameInput.value.trim() : "";
 
-// Set default year to current (only if elements exist)
-const currentYear = new Date().getFullYear();
+      const yearVal = safeInt(yearInput.value || currentYear, currentYear);
 
-if (yearInput) {
-  yearInput.value = currentYear;
-}
+      // 1) LOCAL FILE BRANCH
+      if (file) {
+        showPanel("panel-loading");
+        tryStartMusic();
 
-generateBtn.addEventListener("click", async () => {
-  fileError.style.display = "none";
+        const reader = new FileReader();
 
-  const file = malInput.files && malInput.files[0];
-  const username =
-    usernameInput && usernameInput.value
-      ? usernameInput.value.trim()
-      : "";
+        reader.onload = async e => {
+          try {
+            let xmlText;
+            if (file.name.endsWith(".gz")) {
+              const compressed = new Uint8Array(e.target.result);
+              xmlText = pako.ungzip(compressed, { to: "string" });
+            } else {
+              xmlText = e.target.result;
+            }
 
-  const yearVal = safeInt(yearInput.value || currentYear, currentYear);
+            const parsed = parseMalXml(xmlText);
+            const entries = parsed.entries;
+            const filtered = entries.filter(entry => {
+              const startY = extractYear(entry.startDate);
+              const finishY = extractYear(entry.finishDate);
+              return String(yearVal) === startY || String(yearVal) === finishY;
+            });
+            const activeEntries = filtered.length ? filtered : entries;
 
-  // Update header year text if that element exists
-  if (headerYear) {
-    headerYear.textContent = yearVal;
-  }
+            const wrappedData = {
+              userName: parsed.userName,
+              year: yearVal,
+              entries: activeEntries
+            };
 
-  // 1) LOCAL FILE BRANCH (XML / XML.GZ)
-  if (file) {
-    showPanel("panel-loading");
-    tryStartMusic();
+            const slides = buildSlides(wrappedData);
+            renderSlides(slides);
 
-    const reader = new FileReader();
-
-    reader.onload = async (e) => {
-      try {
-        let xmlText;
-        if (file.name.endsWith(".gz")) {
-          const compressed = new Uint8Array(e.target.result);
-          xmlText = pako.ungzip(compressed, { to: "string" });
-        } else {
-          xmlText = e.target.result;
-        }
-
-        const parsed = parseMalXml(xmlText);
-
-        // Filter to chosen year using start or finish date
-        const entries = parsed.entries;
-        const filtered = entries.filter((entry) => {
-          const startY = extractYear(entry.startDate);
-          const finishY = extractYear(entry.finishDate);
-          return String(yearVal) === startY || String(yearVal) === finishY;
-        });
-        const activeEntries = filtered.length ? filtered : entries;
-
-        const wrappedData = {
-          userName: parsed.userName,
-          year: yearVal,
-          entries: activeEntries,
+            setTimeout(() => {
+              showPanel("panel-slides");
+            }, 600);
+          } catch (err) {
+            console.error(err);
+            fileError.textContent =
+              "Something went wrong reading that file. Make sure it’s a MAL XML export.";
+            fileError.style.display = "block";
+            showPanel("panel-input");
+          }
         };
 
+        if (file.name.endsWith(".gz")) {
+          reader.readAsArrayBuffer(file);
+        } else {
+          reader.readAsText(file);
+        }
+
+        return;
+      }
+
+      // 2) USERNAME BRANCH (Jikan)
+      if (username) {
+        try {
+          showPanel("panel-loading");
+          tryStartMusic();
+
+          const wrappedData = await fetchFromJikan(username, yearVal);
+          const slides = buildSlides(wrappedData);
+          renderSlides(slides);
+
+          setTimeout(() => showPanel("panel-slides"), 600);
+        } catch (err) {
+          console.error(err);
+          fileError.textContent =
+            "Failed to fetch from Jikan. Check username or try again later.";
+          fileError.style.display = "block";
+          showPanel("panel-input");
+        }
+        return;
+      }
+
+      // 3) MAL BACKEND BRANCH
+      try {
+        showPanel("panel-loading");
+        tryStartMusic();
+
+        const wrappedData = await fetchFromMalApi(yearVal);
         const slides = buildSlides(wrappedData);
         renderSlides(slides);
 
@@ -1862,63 +1808,14 @@ generateBtn.addEventListener("click", async () => {
       } catch (err) {
         console.error(err);
         fileError.textContent =
-          "Something went wrong reading that file. Make sure it’s a MAL XML export.";
+          "Failed to fetch from MAL. Ensure your backend at https://mal-wrapped-1.onrender.com is running and you’ve logged in.";
         fileError.style.display = "block";
         showPanel("panel-input");
       }
-    };
+    });
 
-    if (file.name.endsWith(".gz")) {
-      reader.readAsArrayBuffer(file);
-    } else {
-      reader.readAsText(file);
-    }
-
-    return;
-  }
-
-  // 2) USERNAME BRANCH (Jikan)
-  if (username) {
-    try {
-      showPanel("panel-loading");
-      tryStartMusic();
-
-      const wrappedData = await fetchFromJikan(username, yearVal);
-      const slides = buildSlides(wrappedData);
-      renderSlides(slides);
-
-      setTimeout(() => showPanel("panel-slides"), 600);
-    } catch (err) {
-      console.error(err);
-      fileError.textContent =
-        "Failed to fetch from Jikan. Check username or try again later.";
-      fileError.style.display = "block";
-      showPanel("panel-input");
-    }
-    return;
-  }
-
-  // 3) MAL BACKEND BRANCH (no file, no username)
-  try {
-    showPanel("panel-loading");
-    tryStartMusic();
-
-    const wrappedData = await fetchFromMalApi(yearVal);
-    const slides = buildSlides(wrappedData);
-    renderSlides(slides);
-
-    setTimeout(() => {
-      showPanel("panel-slides");
-    }, 600);
-  } catch (err) {
-    console.error(err);
-    fileError.textContent =
-      "Failed to fetch from MAL. Ensure your backend at https://mal-wrapped-1.onrender.com is running and you’ve logged in.";
-    fileError.style.display = "block";
-    showPanel("panel-input");
-  }
-});
-
+    // Slide controls
+    document.getElementById("prevSlideBtn").addEventListener("click", () => {
       goToSlide(currentSlideIndex - 1);
     });
     document.getElementById("nextSlideBtn").addEventListener("click", () => {
@@ -1930,12 +1827,10 @@ generateBtn.addEventListener("click", async () => {
   </script>
 
   <!-- Background + sample OP audio -->
-  <!-- Use <source> tags so the browser will pick whichever file is available. -->
-  <!-- Place royalty‑free / non‑copyright tracks named bg‑music.mp3 or bg‑music.wav (and op‑sample.mp3/op‑sample.wav) in this folder. -->
   <audio id="bgMusic" loop>
     <source src="bg-music.mp3" type="audio/mpeg" />
   </audio>
-  
+
   <audio id="opAudio">
     <source src="op-sample.mp3" type="audio/mpeg" />
   </audio>
