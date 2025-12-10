@@ -95,27 +95,9 @@
   z-index: -1; /* in front of anime bg, behind app */
 }
 
-    .bg-orbit::before,
-    .bg-orbit::after {
-      content: "";
-      position: absolute;
-      border-radius: 999px;
-      border: 1px solid rgba(249,115,22,0.3);
-      filter: blur(0.2px);
-    }
-    .bg-orbit::before {
-      width: 55vw;
-      height: 55vw;
-      top: -10vh;
-      right: -5vw;
-    }
-    .bg-orbit::after {
-      width: 65vw;
-      height: 65vw;
-      bottom: -20vh;
-      left: -10vw;
-      border-color: rgba(59,130,246,0.25);
-    }
+   .bg-orbit {
+  display: none;
+}
 
     .app-shell {
       width: 100%;
