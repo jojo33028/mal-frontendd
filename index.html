@@ -1788,10 +1788,16 @@ const usernameInput = document.getElementById("malUsername");
       });
     }
 
-    // Set default year to current
-    const currentYear = new Date().getFullYear();
-    yearInput.value = currentYear;
-    headerYear.textContent = currentYear;
+   // Set default year to current (only if elements exist)
+const currentYear = new Date().getFullYear();
+
+if (yearInput) {
+  yearInput.value = currentYear;
+}
+if (headerYear) {
+  headerYear.textContent = currentYear;
+}
+
 
 generateBtn.addEventListener("click", async () => {
       fileError.style.display = "none";
