@@ -1198,10 +1198,6 @@ window.addEventListener("load", () => {
     }
 
     // ------------- MAL API Fetch Helper -------------
-    // Fetch the authenticated user's list from your local Python backend. This
-    // requires that the mal_backend_server.py script is running on
-    // http://localhost:5000 and that you have authorized the app via /login.
-  // ------------- MAL API Fetch Helper -------------
 // Fetch the authenticated user's list from your backend and
 // filter it to the chosen year (based on start or finish date).
 async function fetchFromMalApi(yearVal) {
@@ -1251,6 +1247,7 @@ async function fetchFromMalApi(yearVal) {
     entries: activeEntries
   };
 }
+
 
 
 
