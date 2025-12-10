@@ -207,9 +207,9 @@
       gap: 0.6rem;
     }
 
-    .music-toggle {
+   .music-toggle {
   position: fixed;
-  top: 18px;
+  top: 40px;      /* 👈 move it down (tweak this number if you want) */
   right: 28px;
   z-index: 10000;
 
@@ -226,6 +226,7 @@
 
   transition: background 0.2s ease, transform 0.15s ease;
 }
+
 
 .music-toggle:hover {
   background: rgba(0, 0, 0, 0.8);
@@ -890,10 +891,7 @@
         <button class="music-toggle" id="musicToggle" title="Toggle background music">
           🔇
         </button>
-        <div class="year-pill">
-          <span>📅</span>
-          <span id="headerYear">Year</span>
-        </div>
+        
       </div>
     </header>
 
