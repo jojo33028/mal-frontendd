@@ -83,11 +83,11 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background-size: contain;
+      background-image: url("anime-bg.jpg");
+      background-size: cover;
       background-position: center;
-      background-repeat: no-repeat;
-      filter: blur(0px);
-      opacity: 0.35;
+      filter: blur(2px);
+      opacity: 0.28;
       z-index: -2;
     }
 
@@ -523,23 +523,25 @@
       pointer-events: auto;
     }
 
+    /* BACKGROUND: make it visible, less blurry, not stretched */
     .slide-bg {
       position: absolute;
       inset: 0;
-      opacity: 0.3;
+      opacity: 0.9;
       background-position: center;
-      background-size: contain;
+      background-size: contain;    /* keep anime poster shape */
       background-repeat: no-repeat;
-      filter: blur(3px);
+      filter: none;                /* no blur so you can see it */
       transform: none;
+      background-color: #020617;   /* behind the poster */
     }
 
     .slide-gradient {
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(135deg, rgba(15,23,42,0.98), rgba(15,23,42,0.9)),
-        radial-gradient(circle at top left, rgba(56,189,248,0.2), transparent 50%);
+        linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.85)),
+        radial-gradient(circle at top left, rgba(56,189,248,0.15), transparent 55%);
       mix-blend-mode: multiply;
     }
 
@@ -769,6 +771,16 @@
         transform: translateX(-100%);
       }
     }
+
+    /* Tiny invisible YouTube player */
+    #opPlayerContainer {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -836,6 +848,7 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
+                <!-- Optional username for Jikan -->
                 <div class="field">
                   <label for="malUsername">MAL Username (optional)</label>
                   <input
@@ -865,7 +878,7 @@
                   </div>
                 </div>
 
-                <!-- MAL login button -->
+                <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
                   <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
                     Sign in with MAL
@@ -942,59 +955,17 @@
     </main>
   </div>
 
-  <!-- Small floating YouTube OP player -->
-  <div id="ytOpPlayer" style="
-    position:fixed;
-    bottom:24px;
-    right:24px;
-    width:360px;
-    max-width:90vw;
-    height:203px;
-    background:#000;
-    border-radius:12px;
-    box-shadow:0 16px 40px rgba(0,0,0,0.7);
-    overflow:hidden;
-    display:none;
-    z-index:9999;
-  ">
-    <div style="
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:4px 8px;
-      font-size:12px;
-      color:#e5e7eb;
-      background:rgba(15,23,42,0.95);
-    ">
-      <span>Now playing opening…</span>
-      <button id="ytOpClose" style="
-        border:none;
-        background:transparent;
-        color:#9ca3af;
-        cursor:pointer;
-        font-size:14px;
-      ">✕</button>
-    </div>
-    <iframe
-      id="ytOpFrame"
-      width="100%"
-      height="100%"
-      src=""
-      title="Anime OP"
-      style="border:none;"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-    ></iframe>
-  </div>
-
   <script>
-    // ------------- Utility helpers + audio + OP mapping -------------
+    // ------------- Utility helpers + audio -------------
 
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
     function getBgMusic() {
       return document.getElementById("bgMusic");
+    }
+    function getOpAudio() {
+      return document.getElementById("opAudio");
     }
 
     function updateMusicToggle() {
@@ -1016,14 +987,6 @@
           })
           .catch(() => {});
       }
-    }
-
-    function stopBgMusic() {
-      const bgMusic = getBgMusic();
-      if (!bgMusic) return;
-      bgMusic.pause();
-      musicOn = false;
-      updateMusicToggle();
     }
 
     window.addEventListener("load", () => {
@@ -1061,57 +1024,22 @@
       updateMusicToggle();
     }
 
-    // Map of anime title -> YouTube video ID for OP
-    const OP_YT_MAP = {
-      // EXAMPLES – replace with the OP you want
-      "parasyte: the maxim": "g7kThF8-lMM",
-      // add more:
-      // "naruto": "VIDEO_ID_HERE",
-      // "bleach": "VIDEO_ID_HERE",
-      // "oregairu 3": "VIDEO_ID_HERE"
-    };
-
-    function normalizeTitle(t) {
-      return (t || "").toLowerCase().replace(/\s+/g, " ").trim();
-    }
-
-    function playEmbeddedOp(videoId) {
-      const player = document.getElementById("ytOpPlayer");
-      const frame = document.getElementById("ytOpFrame");
-      if (!player || !frame || !videoId) return;
-
-      // pause background music when OP starts
-      stopBgMusic();
-
-      frame.src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&rel=0";
-      player.style.display = "block";
-    }
-
-    const ytCloseBtn = document.getElementById("ytOpClose");
-    if (ytCloseBtn) {
-      ytCloseBtn.addEventListener("click", () => {
-        const player = document.getElementById("ytOpPlayer");
-        const frame = document.getElementById("ytOpFrame");
-        if (frame) frame.src = "";
-        if (player) player.style.display = "none";
-      });
+    // Keep as fallback sample if no YT track
+    function playOpSample() {
+      const opAudio = getOpAudio();
+      if (!opAudio) return;
+      try {
+        opAudio.currentTime = 0;
+      } catch (e) {}
+      opAudio.volume = 0.8;
+      const p = opAudio.play();
+      if (p && p.then) p.catch(() => {});
     }
 
     function showPanel(id) {
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
       const panel = document.getElementById(id);
       if (panel) panel.classList.add("active");
-
-      // Show banner only on input panel
-      const banner = document.querySelector(".top-banner");
-      if (banner) {
-        banner.style.display = id === "panel-input" ? "block" : "none";
-      }
-
-      // Once we enter slides, stop the background music
-      if (id === "panel-slides") {
-        stopBgMusic();
-      }
     }
 
     function safeInt(val, fallback = 0) {
@@ -1140,21 +1068,104 @@
       return null;
     }
 
-    function setGlobalBackgroundAnime(imageUrl) {
-      const bgAnimeDiv = document.querySelector(".bg-anime");
-      if (!bgAnimeDiv) return;
-      if (imageUrl) {
-        bgAnimeDiv.style.backgroundImage = `url('${imageUrl}')`;
-        bgAnimeDiv.style.opacity = "0.35";
-      } else {
-        bgAnimeDiv.style.backgroundImage = "";
-        bgAnimeDiv.style.opacity = "0";
+    // ------------- OP TRACKS → YouTube IDs -------------
+
+    // 🔥 You can change these IDs to real OPs.
+    // Key = lowercase anime name (or a piece of it)
+    const OP_TRACKS = {
+      "naruto": "Rw7w2zFdJ6o",
+      "naruto: shippuuden": "x7HKvyZqK3I",
+      "naruto shippuden": "x7HKvyZqK3I",
+      "bleach": "nJtSP7WQ6N8",
+      "one piece": "d9QZ5jBqHds",
+      "attack on titan": "8OkpRr2kUGk",
+      "shingeki no kyojin": "8OkpRr2kUGk",
+      "demon slayer": "pmanD_s7G3U",
+      "kimetsu no yaiba": "pmanD_s7G3U",
+      "jujutsu kaisen": "tYkA4Pq8UxY",
+      "my hero academia": "T83m1wNqZmk",
+      "boku no hero academia": "T83m1wNqZmk",
+      "solo leveling": "8Z9Ismh1Klo",
+      "parasyte": "M7i_6oWcCT8",
+      "kaguya-sama: love is war": "OX9NnZcqIhc",
+      "kaguya-sama": "OX9NnZcqIhc",
+      "vinland saga": "Ff6lDp4v82Y"
+      // add more as you want
+    };
+
+    let currentOpVideoId = null;
+    let opIsPlaying = false;
+
+    function normalizeAnimeTitle(title) {
+      if (!title) return "";
+      return title.toLowerCase().trim();
+    }
+
+    function getOpVideoIdForTitle(title) {
+      if (!title) return null;
+      const norm = normalizeAnimeTitle(title);
+
+      // exact match
+      if (OP_TRACKS[norm]) return OP_TRACKS[norm];
+
+      // fuzzy: if key is contained inside title string
+      for (const key in OP_TRACKS) {
+        if (norm.includes(key)) {
+          return OP_TRACKS[key];
+        }
       }
-      // Hide the intro video once we move into the slides flow
+
+      return null;
+    }
+
+    function stopBgMusic() {
+      const bgMusic = getBgMusic();
+      if (bgMusic) {
+        bgMusic.pause();
+      }
+      musicOn = false;
+      updateMusicToggle();
+    }
+
+    function playOpeningForTitle(title) {
+      // Pause bg music when OP starts
+      stopBgMusic();
+
+      const videoId = getOpVideoIdForTitle(title);
+      const iframe = document.getElementById("opPlayerIframe");
+
+      if (!iframe) return;
+
+      // If we don't have a mapped OP, just play the local sample
+      if (!videoId) {
+        playOpSample();
+        return;
+      }
+
+      // Toggle behavior: if same OP is playing, stop it
+      if (currentOpVideoId === videoId && opIsPlaying) {
+        iframe.src = "";
+        opIsPlaying = false;
+        return;
+      }
+
+      currentOpVideoId = videoId;
+      opIsPlaying = true;
+
+      const src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&rel=0&modestbranding=1`;
+      iframe.src = src;
+    }
+
+    function enterSlidesMode() {
+      showPanel("panel-slides");
+      // stop bg music once slides start
+      stopBgMusic();
+      // hide the moving top banner during slides
+      const banner = document.querySelector(".top-banner");
+      if (banner) banner.style.display = "none";
+      // hide intro video
       const introVideoWrapper = document.querySelector(".intro-video-wrapper");
-      if (introVideoWrapper) {
-        introVideoWrapper.style.display = "none";
-      }
+      if (introVideoWrapper) introVideoWrapper.style.display = "none";
     }
 
     // ------------- Parse MAL XML -------------
@@ -1191,8 +1202,7 @@
           startDate,
           finishDate,
           score,
-          status,
-          coverImage: "" // XML export doesn't have images
+          status
         };
       });
 
@@ -1217,7 +1227,6 @@
         const list = (json && json.data) || [];
         list.forEach(item => {
           const anime = item.anime || {};
-          const images = anime.images && anime.images.jpg ? anime.images.jpg : null;
           const entry = {
             id: String(anime.mal_id || ""),
             title: anime.title || anime.title_english || "Untitled Anime",
@@ -1232,10 +1241,7 @@
             startDate: item.started_at || "",
             finishDate: item.completed_at || "",
             score: Number(item.score) || 0,
-            status: item.status || "",
-            coverImage: images
-              ? (images.large_image_url || images.image_url || "")
-              : ""
+            status: item.status || ""
           };
           entries.push(entry);
         });
@@ -1292,11 +1298,7 @@
           startDate: status.start_date || "",
           finishDate: status.finish_date || "",
           score: Number(status.score) || 0,
-          status: status.status || "",
-          coverImage:
-            (anime.main_picture &&
-              (anime.main_picture.large || anime.main_picture.medium)) ||
-            ""
+          status: status.status || ""
         });
       });
 
@@ -1348,8 +1350,7 @@
           startDate,
           finishDate,
           score,
-          status: "completed",
-          coverImage: ""
+          status: "completed"
         });
       });
 
@@ -1397,12 +1398,6 @@
         return "https://placehold.co/800x1200/020617/ffffff?text=" + t;
       }
 
-      function coverForEntry(entry) {
-        if (!entry) return "";
-        if (entry.coverImage) return entry.coverImage;
-        return placeholderCover(entry.title);
-      }
-
       const topRated = sortedByScoreDesc.slice(0, 3);
       const bottomRated = sortedByScoreAsc.slice(0, 3);
 
@@ -1434,8 +1429,6 @@
       }
 
       const allTitlesLower = new Set(list.map(e => e.title.toLowerCase()));
-
-      // Slightly randomized recs so it isn't always identical
       let recPool = [
         "Monster",
         "Made in Abyss",
@@ -1448,21 +1441,15 @@
         "Steins;Gate",
         "Ping Pong the Animation"
       ];
-      recPool = recPool.sort(() => 0.5 - Math.random());
+      // Shuffle recPool a bit so it's not always identical
+      recPool = recPool
+        .map(t => ({ t, r: Math.random() }))
+        .sort((a, b) => a.r - b.r)
+        .map(o => o.t);
 
       const recommendations = recPool
         .filter(title => !allTitlesLower.has(title.toLowerCase()))
         .slice(0, 4);
-
-      function buildOpSearchUrl(animeTitle) {
-        const q = encodeURIComponent(animeTitle + " opening theme");
-        return "https://www.youtube.com/results?search_query=" + q;
-      }
-
-      function findOpVideoId(animeTitle) {
-        const key = normalizeTitle(animeTitle);
-        return OP_YT_MAP[key] || null;
-      }
 
       slides.push({
         type: "intro",
@@ -1474,9 +1461,8 @@
           username,
           year
         },
-        backgroundImage: "",
-        opSearch: null,
-        opVideoId: null
+        backgroundImage: "",    // intro = clean gradient
+        opAnimeTitle: null
       });
 
       slides.push({
@@ -1492,9 +1478,8 @@
           { label: "Months (approx)", value: formatNumber(months.toFixed(2)) },
           { label: "Years (if it were one long show)", value: years.toFixed(3) }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null,
-        opVideoId: mostWatched ? findOpVideoId(mostWatched.title) : null
+        backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
+        opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
       if (mostWatched) {
@@ -1511,9 +1496,8 @@
             { label: "Your score", value: mostWatched.score || "—" }
           ],
           extraAnime: mostWatched,
-          backgroundImage: coverForEntry(mostWatched),
-          opSearch: buildOpSearchUrl(mostWatched.title),
-          opVideoId: findOpVideoId(mostWatched.title)
+          backgroundImage: placeholderCover(mostWatched.title),
+          opAnimeTitle: mostWatched.title
         });
       }
 
@@ -1530,9 +1514,8 @@
             episodes: e.watchedEpisodes,
             type: e.type
           })),
-          backgroundImage: coverForEntry(topRated[0]),
-          opSearch: buildOpSearchUrl(topRated[0].title),
-          opVideoId: findOpVideoId(topRated[0].title)
+          backgroundImage: placeholderCover(topRated[0].title),
+          opAnimeTitle: topRated[0].title
         });
       }
 
@@ -1549,9 +1532,8 @@
             episodes: e.watchedEpisodes,
             type: e.type
           })),
-          backgroundImage: coverForEntry(bottomRated[0]),
-          opSearch: buildOpSearchUrl(bottomRated[0].title),
-          opVideoId: findOpVideoId(bottomRated[0].title)
+          backgroundImage: placeholderCover(bottomRated[0].title),
+          opAnimeTitle: bottomRated[0].title
         });
       }
 
@@ -1566,9 +1548,8 @@
           { label: "Total episodes watched", value: formatNumber(totalEpisodes) },
           { label: "Average score", value: avgScore ? avgScore.toFixed(2) : "—" }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null,
-        opVideoId: mostWatched ? findOpVideoId(mostWatched.title) : null
+        backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
+        opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
       slides.push({
@@ -1585,9 +1566,8 @@
             value: avgScore ? avgScore.toFixed(2) : "mysterious"
           }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null,
-        opVideoId: mostWatched ? findOpVideoId(mostWatched.title) : null
+        backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
+        opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
       slides.push({
@@ -1600,8 +1580,7 @@
         body: "This isn’t a perfect algorithm — just a starting point of strong series to consider if you haven’t seen them yet.",
         recs: recommendations.length ? recommendations : recPool.slice(0, 4),
         backgroundImage: placeholderCover((recommendations[0] || recPool[0]) || ""),
-        opSearch: recommendations.length ? buildOpSearchUrl(recommendations[0]) : null,
-        opVideoId: recommendations.length ? findOpVideoId(recommendations[0]) : null
+        opAnimeTitle: recommendations.length ? recommendations[0] : recPool[0]
       });
 
       slides.push({
@@ -1614,9 +1593,8 @@
           username,
           year
         },
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null,
-        opVideoId: mostWatched ? findOpVideoId(mostWatched.title) : null
+        backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
+        opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
       return slides;
@@ -1626,19 +1604,6 @@
 
     let currentSlides = [];
     let currentSlideIndex = 0;
-
-    function onSlideChanged() {
-      const slideEls = Array.from(document.querySelectorAll(".slide"));
-      const activeEl = slideEls.find(el => el.classList.contains("active"));
-      if (!activeEl || !currentSlides.length) return;
-
-      const index = slideEls.indexOf(activeEl);
-      const slideData = currentSlides[index];
-
-      if (slideData && slideData.backgroundImage) {
-        setGlobalBackgroundAnime(slideData.backgroundImage);
-      }
-    }
 
     function renderSlides(slides) {
       currentSlides = slides || [];
@@ -1842,20 +1807,15 @@
           rightDiv.appendChild(card);
         }
 
-        if (slide.opSearch) {
+        // OP button (YouTube-based) if we have an anime title for this slide
+        if (slide.opAnimeTitle) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
           opBtn.className = "op-btn";
-          opBtn.innerHTML = "<span>▶</span><span>Play an opening from this vibe</span>";
-
+          opBtn.innerHTML = "<span>▶</span><span>Play opening from this vibe</span>";
           opBtn.addEventListener("click", () => {
-            if (slide.opVideoId) {
-              playEmbeddedOp(slide.opVideoId);
-            } else {
-              window.open(slide.opSearch, "_blank", "noopener,noreferrer");
-            }
+            playOpeningForTitle(slide.opAnimeTitle);
           });
-
           rightDiv.appendChild(opBtn);
         }
 
@@ -1886,7 +1846,6 @@
 
       updateSlideIndicator();
       updateControlsDisabled();
-      onSlideChanged();
     }
 
     function updateSlideIndicator() {
@@ -1918,7 +1877,6 @@
       currentSlideIndex = clamped;
       updateSlideIndicator();
       updateControlsDisabled();
-      onSlideChanged();
     }
 
     // ------------- File reading & main flow -------------
@@ -1931,6 +1889,7 @@
     const manualInput = document.getElementById("manualList");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
+    // MAL login button – mark THIS browser as freshly authorized (short-lived, one-time)
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
         try {
@@ -1944,6 +1903,7 @@
       });
     }
 
+    // Set default year to current
     const currentYear = new Date().getFullYear();
     if (yearInput) {
       yearInput.value = currentYear;
@@ -1969,7 +1929,7 @@
         currentYear
       );
 
-      // 1) LOCAL FILE BRANCH
+      // 1) LOCAL FILE BRANCH (XML / XML.GZ / TXT)
       if (file) {
         showPanel("panel-loading");
         tryStartMusic();
@@ -2006,7 +1966,7 @@
             renderSlides(slides);
 
             setTimeout(() => {
-              showPanel("panel-slides");
+              enterSlidesMode();
             }, 600);
           } catch (err) {
             console.error(err);
@@ -2028,7 +1988,7 @@
         return;
       }
 
-      // 2) MANUAL BRANCH
+      // 2) MANUAL BRANCH – user typed or pasted a list
       if (manualText) {
         try {
           showPanel("panel-loading");
@@ -2041,7 +2001,7 @@
           const slides = buildSlides(wrappedData);
           renderSlides(slides);
 
-          setTimeout(() => showPanel("panel-slides"), 600);
+          setTimeout(() => enterSlidesMode(), 600);
         } catch (err) {
           console.error(err);
           if (fileError) {
@@ -2054,7 +2014,7 @@
         return;
       }
 
-      // 3) USERNAME BRANCH (Jikan)
+      // 3) USERNAME BRANCH (Jikan) – only if username filled
       if (username) {
         try {
           showPanel("panel-loading");
@@ -2064,7 +2024,7 @@
           const slides = buildSlides(wrappedData);
           renderSlides(slides);
 
-          setTimeout(() => showPanel("panel-slides"), 600);
+          setTimeout(() => enterSlidesMode(), 600);
         } catch (err) {
           console.error(err);
           if (fileError) {
@@ -2077,14 +2037,14 @@
         return;
       }
 
-      // 4) MAL BACKEND BRANCH
+      // 4) MAL BACKEND BRANCH – ONLY if this browser recently clicked "Sign in with MAL"
       let malAuthorized = false;
       try {
         const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
         const authAtRaw = window.localStorage.getItem("malAuthorizedAt");
         const authAt = authAtRaw ? Number(authAtRaw) : 0;
         const now = Date.now();
-        const MAX_AUTH_AGE_MS = 10 * 60 * 1000;
+        const MAX_AUTH_AGE_MS = 10 * 60 * 1000; // 10 minutes window
 
         malAuthorized =
           !!authPending &&
@@ -2110,7 +2070,7 @@
           } catch (e) {}
 
           setTimeout(() => {
-            showPanel("panel-slides");
+            enterSlidesMode();
           }, 600);
         } catch (err) {
           console.error(err);
@@ -2129,7 +2089,7 @@
         return;
       }
 
-      // 5) Nothing provided
+      // 5) If we get here: no file, no manual list, no username, and no fresh MAL login
       if (fileError) {
         fileError.textContent =
           "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
@@ -2150,10 +2110,27 @@
     });
   </script>
 
-  <!-- Background music -->
+  <!-- Background + sample OP audio -->
   <audio id="bgMusic" loop>
     <source src="bg-music.mp3" type="audio/mpeg" />
   </audio>
 
+  <audio id="opAudio">
+    <source src="op-sample.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Tiny hidden YouTube player -->
+  <div id="opPlayerContainer">
+    <iframe
+      id="opPlayerIframe"
+      width="200"
+      height="113"
+      src=""
+      title="Anime opening"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  </div>
 </body>
 </html>
