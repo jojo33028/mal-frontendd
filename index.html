@@ -1108,7 +1108,7 @@ function playOpeningForTitle(title) {
 
   iframe.src = src;
 
-  // --- Safety fallback: if YT fails, use local op-sample.mp3 ---
+  // --- Safety fallback: if YT fails, use local op-sample.wav ---
   const fallbackTimer = setTimeout(() => {
     if (!opIsPlaying) return; // already toggled off
     playOpSample();           // play local sample so it's never silent
@@ -2083,7 +2083,7 @@ function playOpeningForTitle(title) {
 
   <!-- Local fallback OP sample -->
   <audio id="opAudio">
-    <source src="op-sample.mp3" type="audio/mpeg" />
+    <source src="op-sample.wav" type="audio/wav" />
   </audio>
 
   <!-- Tiny hidden YouTube player for OPs -->
