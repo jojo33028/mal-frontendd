@@ -5,6 +5,7 @@
   <title>Anime Wrapped</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- Favicon -->
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
@@ -63,7 +64,7 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background-image: url("anime-bg.jpg");
+      background-image: url("anime-bg.jpg"); /* OG collage */
       background-size: cover;
       background-position: center;
       filter: blur(2px);
@@ -79,17 +80,14 @@
       display: none;
     }
 
-    .intro-video-wrapper {
-      max-width: 520px;
-      width: 100%;
-      margin: 60px auto 20px;
-    }
-
-    .intro-video {
-      width: 100%;
-      height: auto;
-      border-radius: 18px;
-      display: block;
+    /* Tiny invisible YouTube player */
+    #opPlayerContainer {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
     }
 
     .app-shell {
@@ -127,27 +125,12 @@
       z-index: 10;
     }
 
-    .brand-icon {
-      width: 0;
-      height: 0;
-      padding: 0;
-      border: none;
-      background: none;
-    }
-
     .brand-text-title {
       font-weight: 700;
       letter-spacing: 0.04em;
       font-size: 0.96rem;
       text-transform: uppercase;
       color: #e5e7eb;
-    }
-
-    .brand-text-sub {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      color: #9ca3af;
-      letter-spacing: 0.18em;
     }
 
     .header-right {
@@ -174,7 +157,6 @@
       justify-content: center;
       cursor: pointer;
       transition: background 0.2s ease, transform 0.15s ease;
-      font-size: 20px;
     }
 
     .music-toggle:hover {
@@ -196,10 +178,7 @@
       padding: 1.75rem 1.8rem 1.9rem;
       display: none;
     }
-
-    .panel.active {
-      display: block;
-    }
+    .panel.active { display: block; }
 
     .input-layout {
       height: 100%;
@@ -207,13 +186,6 @@
       grid-template-columns: minmax(0, 1.2fr);
       max-width: 720px;
       margin: 0 auto;
-    }
-
-    @media (max-width: 800px) {
-      .input-layout {
-        grid-template-columns: minmax(0, 1fr);
-        grid-auto-rows: auto;
-      }
     }
 
     .input-main-card {
@@ -227,19 +199,7 @@
       overflow-y: auto;
     }
 
-    .input-main-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 0 100%, rgba(59,130,246,0.2), transparent 50%);
-      opacity: 0.8;
-      pointer-events: none;
-    }
-
-    .input-main-inner {
-      position: relative;
-      z-index: 1;
-    }
+    .input-main-inner { position: relative; z-index: 1; }
 
     .input-title {
       font-size: 1.75rem;
@@ -273,10 +233,7 @@
       color: #e5e7eb;
     }
 
-    .input-grid {
-      display: grid;
-      gap: 1rem;
-    }
+    .input-grid { display: grid; gap: 1rem; }
 
     .field {
       display: flex;
@@ -331,9 +288,7 @@
       flex-wrap: wrap;
     }
 
-    .year-input {
-      max-width: 120px;
-    }
+    .year-input { max-width: 120px; }
 
     .primary-btn,
     .secondary-btn {
@@ -345,47 +300,22 @@
       font-size: 0.9rem;
       font-weight: 600;
       letter-spacing: 0.04em;
-      text-transform: uppercase;
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
+      text-transform: uppercase;
     }
 
     .primary-btn {
       background: linear-gradient(135deg, #f97316, #fb923c);
       color: #0b1120;
       box-shadow: 0 12px 35px rgba(248,113,113,0.4);
-      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s ease;
-    }
-
-    .primary-btn:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-      box-shadow: 0 16px 40px rgba(248,113,113,0.55);
-    }
-
-    .primary-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 10px 28px rgba(248,113,113,0.4);
     }
 
     .secondary-btn {
       background: linear-gradient(135deg, #38bdf8, #0ea5e9);
       color: #0b1120;
       box-shadow: 0 12px 35px rgba(14,165,233,0.4);
-      justify-content: center;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s ease;
-    }
-
-    .secondary-btn:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-      box-shadow: 0 16px 40px rgba(14,165,233,0.55);
-    }
-
-    .secondary-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 10px 28px rgba(14,165,233,0.4);
     }
 
     .error-text {
@@ -394,7 +324,6 @@
       margin-top: 0.4rem;
     }
 
-    /* Loading card */
     .loading-inner {
       height: 100%;
       display: flex;
@@ -415,6 +344,10 @@
       box-shadow: 0 16px 45px rgba(15,23,42,0.8);
       text-align: left;
     }
+
+    .loader-title { font-size: 1.1rem; font-weight: 700; }
+    .loader-sub { font-size: 0.84rem; color: var(--text-soft); }
+    .loader-hints { font-size: 0.78rem; color: #9ca3af; }
 
     .loader-bar {
       position: relative;
@@ -440,22 +373,6 @@
       100% { transform: scaleX(1); opacity: 0.6; }
     }
 
-    .loader-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-
-    .loader-sub {
-      font-size: 0.84rem;
-      color: var(--text-soft);
-    }
-
-    .loader-hints {
-      font-size: 0.78rem;
-      color: #9ca3af;
-    }
-
-    /* Slides */
     .slides-wrapper {
       height: 100%;
       display: flex;
@@ -474,12 +391,6 @@
       background: radial-gradient(circle at top left, rgba(15,23,42,0.98), #020617);
     }
 
-    @media (max-height: 720px) {
-      .slides-main {
-        height: 280px;
-      }
-    }
-
     .slide {
       position: absolute;
       inset: 0;
@@ -488,7 +399,6 @@
       transition: opacity var(--slide-transition), transform var(--slide-transition);
       display: flex;
     }
-
     .slide.active {
       opacity: 1;
       transform: translateX(0);
@@ -500,9 +410,9 @@
       inset: 0;
       opacity: 0.9;
       background-position: center;
-      background-size: contain;
+      background-size: cover;
       background-repeat: no-repeat;
-      background-color: #020617;
+      /* if no specific image, OG collage + gradient behind still shows */
     }
 
     .slide-gradient {
@@ -522,14 +432,6 @@
       display: grid;
       grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
       gap: 1.3rem;
-    }
-
-    @media (max-width: 840px) {
-      .slide-content {
-        grid-template-columns: minmax(0, 1fr);
-        grid-auto-rows: auto;
-        padding: 1.3rem 1.2rem;
-      }
     }
 
     .slide-left {
@@ -578,14 +480,8 @@
       gap: 0.6rem;
     }
 
-    .stats-label {
-      color: #9ca3af;
-    }
-
-    .stats-value {
-      color: #e5e7eb;
-      font-weight: 500;
-    }
+    .stats-label { color: #9ca3af; }
+    .stats-value { color: #e5e7eb; font-weight: 500; }
 
     .slide-right {
       display: flex;
@@ -604,15 +500,8 @@
       gap: 0.3rem;
     }
 
-    .anime-title {
-      font-weight: 700;
-      font-size: 1rem;
-    }
-
-    .anime-meta {
-      font-size: 0.8rem;
-      color: var(--text-soft);
-    }
+    .anime-title { font-weight: 700; font-size: 1rem; }
+    .anime-meta { font-size: 0.8rem; color: var(--text-soft); }
 
     .pill-meta-row {
       margin-top: 0.4rem;
@@ -641,10 +530,6 @@
       gap: 0.4rem;
       color: #f9fafb;
       cursor: pointer;
-    }
-
-    .op-btn span {
-      font-size: 1rem;
     }
 
     .slide-footer {
@@ -680,11 +565,7 @@
       gap: 0.35rem;
       cursor: pointer;
     }
-
-    .control-btn[disabled] {
-      opacity: 0.4;
-      cursor: default;
-    }
+    .control-btn[disabled] { opacity: 0.4; cursor: default; }
 
     .restart-btn {
       border-color: rgba(249,115,22,0.8);
@@ -696,16 +577,17 @@
       color: #9ca3af;
     }
 
-    .intro-username {
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin-top: 0.2rem;
+    /* Intro video */
+    .intro-video-wrapper {
+      max-width: 520px;
+      width: 100%;
+      margin: 20px auto;
     }
-
-    .intro-tagline {
-      margin-top: 0.6rem;
-      font-size: 0.9rem;
-      color: var(--text-soft);
+    .intro-video {
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      display: block;
     }
 
     /* Top moving banner */
@@ -733,22 +615,8 @@
     }
 
     @keyframes scroll-banner {
-      0% {
-        transform: translateX(100%);
-      }
-      100% {
-        transform: translateX(-100%);
-      }
-    }
-
-    /* Tiny invisible YouTube player container */
-    #opPlayerContainer {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      opacity: 0;
-      pointer-events: none;
+      0%   { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
     }
   </style>
 </head>
@@ -778,11 +646,7 @@
   <div class="app-shell">
     <header class="app-header">
       <div class="brand">
-        <div class="brand-icon"></div>
-        <div>
-          <div class="brand-text-title">Anime Wrapped</div>
-          <div class="brand-text-sub">powered by your MAL data</div>
-        </div>
+        <div class="brand-text-title">Anime Wrapped</div>
       </div>
 
       <div class="header-right">
@@ -821,7 +685,6 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
-                <!-- Optional username for Jikan -->
                 <div class="field">
                   <label for="malUsername">MAL Username (optional)</label>
                   <input
@@ -835,7 +698,6 @@
                   </div>
                 </div>
 
-                <!-- Manual list textarea -->
                 <div class="field">
                   <label for="manualList">Manual Anime List (optional)</label>
                   <textarea
@@ -845,20 +707,18 @@
                     placeholder="One line per anime: Title | episodes watched | score (optional) | type (optional) | start-date (optional) | finish-date (optional)"
                   ></textarea>
                   <div class="field-helper">
-                    Paste from Google Docs/Notes or type manually. Example:
+                    Example:
                     <br />
                     <code>Naruto | 220 | 9 | TV | 2022-01-01 | 2022-12-31</code>
                   </div>
                 </div>
 
-                <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
                   <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
                     Sign in with MAL
                   </button>
                   <div class="field-helper">
                     Uses your backend at <code>mal-wrapped-1.onrender.com</code> to authenticate and fetch your list.
-                    For privacy, you’ll need to click this shortly before generating.
                   </div>
                 </div>
 
@@ -928,148 +788,109 @@
     </main>
   </div>
 
-  <!-- Background music (you provide bg-music.mp3 in same folder) -->
-  <audio id="bgMusic" loop>
-    <source src="bg-music.mp3" type="audio/mpeg" />
-  </audio>
-
-  <!-- Local fallback OP sample (used if YouTube somehow fails) -->
-  <audio id="opAudio">
-    <source src="op-sample.mp3" type="audio/mpeg" />
-  </audio>
-
-  <!-- Tiny hidden YouTube player for OPs -->
-  <div id="opPlayerContainer">
-    <iframe
-      id="opPlayerIframe"
-      width="200"
-      height="113"
-      src=""
-      title="Anime opening"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-    ></iframe>
-  </div>
-
   <script>
-    // ------------- Music helpers -------------
+    // ---------- SIMPLE HELPERS + AUDIO ----------
 
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
-    let bgMusicMissing = false;
 
-    function getBgMusic() {
-      return document.getElementById("bgMusic");
-    }
-    function getOpAudio() {
-      return document.getElementById("opAudio");
-    }
+    function getBgMusic() { return document.getElementById("bgMusic"); }
+    function getOpAudio() { return document.getElementById("opAudio"); }
 
     function updateMusicToggle() {
       if (!musicToggle) return;
-
-      if (bgMusicMissing) {
-        musicToggle.textContent = "🚫";
-        musicToggle.title = "Background music unavailable (file missing or failed to load)";
-        return;
-      }
-
       musicToggle.textContent = musicOn ? "🔊" : "🔇";
-      musicToggle.title = musicOn ? "Mute background music" : "Play background music";
     }
 
     function tryStartMusic() {
       const bgMusic = getBgMusic();
-      if (!bgMusic || bgMusicMissing) return;
-
+      if (!bgMusic) return;
       bgMusic.volume = 0.5;
       const playPromise = bgMusic.play();
       if (playPromise && playPromise.then) {
         playPromise
-          .then(() => {
-            musicOn = true;
-            updateMusicToggle();
-          })
-          .catch(() => {
-            // Most common reason = browser autoplay block
-            musicOn = false;
-            updateMusicToggle();
-          });
+          .then(() => { musicOn = true; updateMusicToggle(); })
+          .catch(() => {});
       }
     }
 
     window.addEventListener("load", () => {
-      // old auth flag (legacy privacy hardening)
+      // clear old auth flag for privacy
       try {
         window.localStorage.removeItem("malAuthorized");
       } catch (e) {}
-
-      // Attach audio error handlers
-      const bgMusic = getBgMusic();
-      if (bgMusic) {
-        bgMusic.addEventListener("error", () => {
-          console.warn("Background music failed to load (bg-music.mp3 missing or invalid).");
-          bgMusicMissing = true;
-          musicOn = false;
-          updateMusicToggle();
-        });
-      }
-
-      const opAudio = getOpAudio();
-      if (opAudio) {
-        opAudio.addEventListener("error", () => {
-          console.warn("Fallback OP audio failed to load (op-sample.mp3 missing or invalid).");
-        });
-      }
-
-      setTimeout(() => {
-        tryStartMusic();
-      }, 150);
-
-      updateMusicToggle();
+      setTimeout(tryStartMusic, 150);
     });
 
     if (musicToggle) {
       musicToggle.addEventListener("click", () => {
         const bgMusic = getBgMusic();
-        if (!bgMusic || bgMusicMissing) {
-          return;
-        }
+        if (!bgMusic) return;
         if (musicOn) {
           bgMusic.pause();
           musicOn = false;
         } else {
           bgMusic.volume = 0.5;
-          const playPromise = bgMusic.play();
-          if (playPromise && playPromise.then) {
-            playPromise
-              .then(() => {
-                musicOn = true;
-                updateMusicToggle();
-              })
-              .catch(() => {
-                musicOn = false;
-              });
+          const p = bgMusic.play();
+          if (p && p.then) {
+            p.then(() => { musicOn = true; updateMusicToggle(); })
+             .catch(() => {});
           }
         }
         updateMusicToggle();
       });
+      updateMusicToggle();
     }
 
-    // Local fallback OP sample if YT fails (not used often but kept)
     function playOpSample() {
-      const opAudio = getOpAudio();
-      if (!opAudio) return;
-      try {
-        opAudio.currentTime = 0;
-      } catch (e) {}
-      opAudio.volume = 0.8;
-      const p = opAudio.play();
+      const op = getOpAudio();
+      if (!op) return;
+      try { op.currentTime = 0; } catch(e) {}
+      op.volume = 0.8;
+      const p = op.play();
       if (p && p.then) p.catch(() => {});
     }
 
-    // ------------- Panel helpers -------------
+    function stopBgMusic() {
+      const bg = getBgMusic();
+      if (bg) bg.pause();
+      musicOn = false;
+      updateMusicToggle();
+    }
+
+    // ---------- HIDDEN YOUTUBE OP PLAYER ----------
+
+    let currentOpQuery = null;
+    let opIsPlaying = false;
+
+    function playOpeningForTitle(title) {
+      if (!title) return;
+
+      // stop bg music when OP starts
+      stopBgMusic();
+
+      const iframe = document.getElementById("opPlayerIframe");
+      if (!iframe) return;
+
+      const query = encodeURIComponent(title + " opening");
+      const src =
+        "https://www.youtube-nocookie.com/embed?listType=search&list=" +
+        query +
+        "&autoplay=1&controls=0&rel=0&modestbranding=1";
+
+      // toggle off if same one is already playing
+      if (currentOpQuery === query && opIsPlaying) {
+        iframe.src = "";
+        opIsPlaying = false;
+        return;
+      }
+
+      currentOpQuery = query;
+      opIsPlaying = true;
+      iframe.src = src;
+    }
+
+    // ---------- GENERIC UTILS ----------
 
     function showPanel(id) {
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
@@ -1083,16 +904,14 @@
     }
 
     function formatNumber(num) {
-      return Number(num).toLocaleString("en-US");
+      return num.toLocaleString("en-US");
     }
 
     function estimateMinutes(entry) {
       const eps = entry.watchedEpisodes || 0;
       if (!eps) return 0;
       const type = (entry.type || "").toLowerCase();
-      if (type === "movie") {
-        return eps * 90;
-      }
+      if (type === "movie") return eps * 90;
       return eps * 23;
     }
 
@@ -1103,74 +922,20 @@
       return null;
     }
 
-    // ------------- Stop BG music + tiny YouTube OP player -------------
-
-    function stopBgMusic() {
-      const bgMusic = getBgMusic();
-      if (bgMusic) {
-        bgMusic.pause();
-      }
-      musicOn = false;
-      updateMusicToggle();
-    }
-
-    let currentOpQuery = null;
-    let opIsPlaying = false;
-
-    function playOpeningForTitle(title) {
-      if (!title) return;
-
-      stopBgMusic();
-
-      const iframe = document.getElementById("opPlayerIframe");
-      if (!iframe) return;
-
-      // Build a YouTube search embed for "<title> opening"
-      const query = encodeURIComponent(title + " opening");
-      const src =
-        "https://www.youtube.com/embed" +
-        "?autoplay=1" +
-        "&controls=0" +
-        "&rel=0" +
-        "&modestbranding=1" +
-        "&playsinline=1" +
-        "&listType=search" +
-        "&list=" +
-        query;
-
-      // Clicking again on the same slide toggles OFF the OP
-      if (currentOpQuery === query && opIsPlaying) {
-        iframe.src = "";
-        opIsPlaying = false;
-        return;
-      }
-
-      currentOpQuery = query;
-      opIsPlaying = true;
-
-      try {
-        iframe.src = src;
-      } catch (e) {
-        console.warn("Failed to set YouTube iframe src, using local sample OP instead.", e);
-        playOpSample();
-      }
-    }
+    // ---------- ENTER SLIDES MODE (hide banner + intro) ----------
 
     function enterSlidesMode() {
       showPanel("panel-slides");
-      // stop bg music once slides start (vibes focus on OPs / visuals)
       stopBgMusic();
 
-      // hide the moving top banner during slides
       const banner = document.querySelector(".top-banner");
       if (banner) banner.style.display = "none";
 
-      // hide intro video
-      const introVideoWrapper = document.querySelector(".intro-video-wrapper");
-      if (introVideoWrapper) introVideoWrapper.style.display = "none";
+      const introWrapper = document.querySelector(".intro-video-wrapper");
+      if (introWrapper) introWrapper.style.display = "none";
     }
 
-    // ------------- Parse MAL XML -------------
+    // ---------- PARSE MAL XML ----------
 
     function parseMalXml(xmlText) {
       const parser = new DOMParser();
@@ -1180,54 +945,45 @@
       const userName = userNameNode ? userNameNode.textContent.trim() : "Anime Fan";
 
       const animeNodes = Array.from(doc.getElementsByTagName("anime"));
-      const entries = animeNodes.map((node, idx) => {
-        const get = tag => {
+      const entries = animeNodes.map((node) => {
+        const get = (tag) => {
           const el = node.getElementsByTagName(tag)[0];
           return el && el.textContent ? el.textContent.trim() : "";
         };
-        const title = get("series_title") || `Untitled Anime #${idx + 1}`;
-        const id = get("series_animedb_id");
-        const type = get("series_type");
-        const totalEpisodes = safeInt(get("series_episodes"), 0);
-        const watchedEpisodes = safeInt(get("my_watched_episodes"), 0);
-        const startDate = get("my_start_date");
-        const finishDate = get("my_finish_date");
-        const score = safeInt(get("my_score"), 0);
-        const status = get("my_status");
+        const title = get("series_title") || "Untitled Anime";
 
         return {
-          id,
+          id: get("series_animedb_id"),
           title,
-          type,
-          totalEpisodes,
-          watchedEpisodes,
-          startDate,
-          finishDate,
-          score,
-          status
+          type: get("series_type"),
+          totalEpisodes: safeInt(get("series_episodes"), 0),
+          watchedEpisodes: safeInt(get("my_watched_episodes"), 0),
+          startDate: get("my_start_date"),
+          finishDate: get("my_finish_date"),
+          score: safeInt(get("my_score"), 0),
+          status: get("my_status")
         };
       });
 
       return { userName, entries };
     }
 
-    // ------------- Jikan Fetch Helper -------------
+    // ---------- JIKAN FETCH HELPER ----------
 
     async function fetchFromJikan(username, yearVal) {
       const entries = [];
       let page = 1;
       const maxPages = 5;
+
       while (page <= maxPages) {
         const url = `https://api.jikan.moe/v4/users/${encodeURIComponent(
           username
         )}/animelist?status=all&page=${page}&limit=100`;
         const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error("Jikan request failed");
-        }
+        if (!res.ok) throw new Error("Jikan request failed");
         const json = await res.json();
         const list = (json && json.data) || [];
-        list.forEach(item => {
+        list.forEach((item) => {
           const anime = item.anime || {};
           const entry = {
             id: String(anime.mal_id || ""),
@@ -1247,6 +1003,7 @@
           };
           entries.push(entry);
         });
+
         const pagination = json && json.pagination;
         if (pagination && pagination.has_next_page) {
           page++;
@@ -1254,33 +1011,28 @@
           break;
         }
       }
-      const filtered = entries.filter(e => {
+
+      const filtered = entries.filter((e) => {
         const startY = extractYear(e.startDate);
         const finishY = extractYear(e.finishDate);
         return String(yearVal) === startY || String(yearVal) === finishY;
       });
       const active = filtered.length ? filtered : entries;
-      return {
-        userName: username || "Anime Fan",
-        year: yearVal,
-        entries: active
-      };
+
+      return { userName: username || "Anime Fan", year: yearVal, entries: active };
     }
 
-    // ------------- MAL API Fetch Helper -------------
+    // ---------- MAL BACKEND FETCH HELPER ----------
 
     async function fetchFromMalApi(yearVal) {
       const res = await fetch("https://mal-wrapped-1.onrender.com/list");
-
-      if (!res.ok) {
-        throw new Error("MAL backend request failed");
-      }
+      if (!res.ok) throw new Error("MAL backend request failed");
 
       const json = await res.json();
       const data = json.data || [];
       const entries = [];
 
-      data.forEach(item => {
+      data.forEach((item) => {
         const anime = item.node || item.anime || {};
         const status = item.list_status || {};
 
@@ -1304,37 +1056,29 @@
         });
       });
 
-      const filtered = entries.filter(e => {
+      const filtered = entries.filter((e) => {
         const startY = extractYear(e.startDate);
         const finishY = extractYear(e.finishDate);
         return String(yearVal) === startY || String(yearVal) === finishY;
       });
 
       const activeEntries = filtered.length ? filtered : entries;
-
-      return {
-        userName: "Your MAL",
-        year: yearVal,
-        entries: activeEntries
-      };
+      return { userName: "Your MAL", year: yearVal, entries: activeEntries };
     }
 
-    // ------------- Manual List Parser -------------
+    // ---------- MANUAL LIST PARSER ----------
 
     function parseManualList(text, yearVal) {
       const lines = text
         .split(/\r?\n/)
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
 
       const entries = [];
-
       lines.forEach((line, idx) => {
         let parts = line.split("|");
-        if (parts.length === 1) {
-          parts = line.split(" - ");
-        }
-        parts = parts.map(p => p.trim());
+        if (parts.length === 1) parts = line.split(" - ");
+        parts = parts.map((p) => p.trim());
 
         const title = parts[0] || `Untitled Anime #${idx + 1}`;
         const episodes = safeInt(parts[1], 0);
@@ -1356,21 +1100,19 @@
         });
       });
 
-      return {
-        userName: "Manual List",
-        year: yearVal,
-        entries
-      };
+      return { userName: "Manual List", year: yearVal, entries };
     }
 
-    // ------------- Slide builder -------------
+    // ---------- SLIDE BUILDER ----------
 
+    // For now we don't fetch specific cover URLs,
+    // so leaving backgroundImage empty lets OG collage + gradient show.
     function buildSlides(data) {
       const slides = [];
 
       const username = data.userName;
       const year = data.year;
-      const list = data.entries || [];
+      const list = data.entries;
       const totalAnime = list.length;
       const totalEpisodes = list.reduce((sum, e) => sum + (e.watchedEpisodes || 0), 0);
       const totalMinutes = list.reduce((sum, e) => sum + estimateMinutes(e), 0);
@@ -1380,8 +1122,8 @@
       const months = totalMinutes / (60 * 24 * 30);
       const years = totalMinutes / (60 * 24 * 365);
 
-      const nonZeroWatch = list.filter(e => (e.watchedEpisodes || 0) > 0);
-      const rated = list.filter(e => e.score && e.score > 0);
+      const nonZeroWatch = list.filter((e) => (e.watchedEpisodes || 0) > 0);
+      const rated = list.filter((e) => e.score && e.score > 0);
       const sortedByMinutes = [...nonZeroWatch].sort(
         (a, b) => estimateMinutes(b) - estimateMinutes(a)
       );
@@ -1393,13 +1135,6 @@
       );
 
       const mostWatched = sortedByMinutes[0] || null;
-
-      function placeholderCover(title) {
-        if (!title) return "";
-        const t = encodeURIComponent(title + " anime");
-        return "https://placehold.co/800x1200/020617/ffffff?text=" + t;
-      }
-
       const topRated = sortedByScoreDesc.slice(0, 3);
       const bottomRated = sortedByScoreAsc.slice(0, 3);
 
@@ -1430,7 +1165,7 @@
           "You keep watching mid or bad shows just to see how wild it gets. Respect.";
       }
 
-      const allTitlesLower = new Set(list.map(e => (e.title || "").toLowerCase()));
+      const allTitlesLower = new Set(list.map((e) => e.title.toLowerCase()));
       let recPool = [
         "Monster",
         "Made in Abyss",
@@ -1444,38 +1179,26 @@
         "Ping Pong the Animation"
       ];
       recPool = recPool
-        .map(t => ({ t, r: Math.random() }))
+        .map((t) => ({ t, r: Math.random() }))
         .sort((a, b) => a.r - b.r)
-        .map(o => o.t);
+        .map((o) => o.t);
 
       const recommendations = recPool
-        .filter(title => !allTitlesLower.has(title.toLowerCase()))
+        .filter((title) => !allTitlesLower.has(title.toLowerCase()))
         .slice(0, 4);
 
-      const firstRecTitle = (recommendations[0] || recPool[0]) || "";
-
-      // Helper pickers for backgrounds (so it’s not all one anime)
-      const bgMost = mostWatched ? placeholderCover(mostWatched.title) : "";
-      const bgTop = topRated[0] ? placeholderCover(topRated[0].title) : bgMost;
-      const bgBottom = bottomRated[0] ? placeholderCover(bottomRated[0].title) : bgMost;
-      const bgRec = firstRecTitle ? placeholderCover(firstRecTitle) : bgMost;
-
-      // Intro
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
         title: "This is your Anime Wrapped.",
         highlight: null,
-        body: `We scanned your MyAnimeList export, tallied every episode, and did the math you were a little scared to see.`,
-        extra: {
-          username,
-          year
-        },
-        backgroundImage: bgMost || bgRec,
-        opAnimeTitle: mostWatched ? mostWatched.title : firstRecTitle || null
+        body:
+          "We scanned your MyAnimeList export, tallied every episode, and did the math you were a little scared to see.",
+        extra: { username, year },
+        backgroundImage: "",
+        opAnimeTitle: null
       });
 
-      // Minutes
       slides.push({
         type: "minutes",
         kicker: "Time spent in other worlds",
@@ -1489,11 +1212,10 @@
           { label: "Months (approx)", value: formatNumber(months.toFixed(2)) },
           { label: "Years (if it were one long show)", value: years.toFixed(3) }
         ],
-        backgroundImage: bgMost,
+        backgroundImage: "",
         opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
-      // Most watched series
       if (mostWatched) {
         const mwMinutes = estimateMinutes(mostWatched);
         slides.push({
@@ -1501,19 +1223,19 @@
           kicker: "The anime that owned your year",
           title: mostWatched.title,
           highlight: `You spent about ${formatNumber(mwMinutes)} minutes with this show.`,
-          body: "If your life had opening credits this year, this is probably the anime they’d pull footage from.",
+          body:
+            "If your life had opening credits this year, this is probably the anime they’d pull footage from.",
           stats: [
             { label: "Episodes watched", value: mostWatched.watchedEpisodes },
             { label: "Type", value: mostWatched.type || "Unknown" },
             { label: "Your score", value: mostWatched.score || "—" }
           ],
           extraAnime: mostWatched,
-          backgroundImage: placeholderCover(mostWatched.title),
+          backgroundImage: "",
           opAnimeTitle: mostWatched.title
         });
       }
 
-      // Highest rated
       if (topRated.length) {
         slides.push({
           type: "highestRated",
@@ -1527,12 +1249,11 @@
             episodes: e.watchedEpisodes,
             type: e.type
           })),
-          backgroundImage: bgTop,
+          backgroundImage: "",
           opAnimeTitle: topRated[0].title
         });
       }
 
-      // Lowest rated
       if (bottomRated.length) {
         slides.push({
           type: "lowestRated",
@@ -1546,12 +1267,11 @@
             episodes: e.watchedEpisodes,
             type: e.type
           })),
-          backgroundImage: bgBottom,
+          backgroundImage: "",
           opAnimeTitle: bottomRated[0].title
         });
       }
 
-      // Count + percentile
       slides.push({
         type: "count",
         kicker: "How deep you went",
@@ -1563,11 +1283,10 @@
           { label: "Total episodes watched", value: formatNumber(totalEpisodes) },
           { label: "Average score", value: avgScore ? avgScore.toFixed(2) : "—" }
         ],
-        backgroundImage: bgTop || bgMost,
-        opAnimeTitle: (topRated[1] && topRated[1].title) || (mostWatched && mostWatched.title) || null
+        backgroundImage: "",
+        opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
-      // Club
       slides.push({
         type: "club",
         kicker: "The club you belong to",
@@ -1582,11 +1301,10 @@
             value: avgScore ? avgScore.toFixed(2) : "mysterious"
           }
         ],
-        backgroundImage: bgRec || bgTop || bgMost,
-        opAnimeTitle: firstRecTitle || (topRated[2] && topRated[2].title) || null
+        backgroundImage: "",
+        opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
-      // Recommendations
       slides.push({
         type: "recs",
         kicker: "Fuel for your next year",
@@ -1596,29 +1314,25 @@
           : "You’ve logged a lot already — here are some evergreen suggestions anyway.",
         body: "This isn’t a perfect algorithm — just a starting point of strong series to consider if you haven’t seen them yet.",
         recs: recommendations.length ? recommendations : recPool.slice(0, 4),
-        backgroundImage: bgRec,
-        opAnimeTitle: firstRecTitle || null
+        backgroundImage: "",
+        opAnimeTitle: (recommendations[0] || recPool[0]) || null
       });
 
-      // Outro
       slides.push({
         type: "outro",
         kicker: "Another year of anime down",
         title: "See you in next year’s recap.",
         highlight: "Here’s to better arcs, cleaner endings, and fewer mid shows in your queue.",
         body: "Screenshot the slides you like, send them to friends, or just use this as proof that your watch list is absolutely stacked.",
-        extra: {
-          username,
-          year
-        },
-        backgroundImage: bgMost || bgRec,
-        opAnimeTitle: mostWatched ? mostWatched.title : firstRecTitle || null
+        extra: { username, year },
+        backgroundImage: "",
+        opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
       return slides;
     }
 
-    // ------------- Render slides -------------
+    // ---------- RENDER SLIDES ----------
 
     let currentSlides = [];
     let currentSlideIndex = 0;
@@ -1627,7 +1341,6 @@
       currentSlides = slides || [];
       currentSlideIndex = 0;
       const container = document.getElementById("slidesMain");
-      if (!container) return;
       container.innerHTML = "";
 
       slides.forEach((slide, index) => {
@@ -1638,9 +1351,6 @@
         bgDiv.className = "slide-bg";
         if (slide.backgroundImage) {
           bgDiv.style.backgroundImage = `url('${slide.backgroundImage}')`;
-        } else {
-          bgDiv.style.backgroundImage =
-            "radial-gradient(circle at top left, rgba(249,115,22,0.3), rgba(15,23,42,1))";
         }
 
         const gradDiv = document.createElement("div");
@@ -1826,7 +1536,7 @@
           rightDiv.appendChild(card);
         }
 
-        // OP button (YouTube-based) if we have an anime title for this slide
+        // OP button if we have a title
         if (slide.opAnimeTitle) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
@@ -1876,8 +1586,6 @@
     function updateControlsDisabled() {
       const prevBtn = document.getElementById("prevSlideBtn");
       const nextBtn = document.getElementById("nextSlideBtn");
-      if (!prevBtn || !nextBtn) return;
-
       if (!currentSlides.length) {
         prevBtn.disabled = true;
         nextBtn.disabled = true;
@@ -1900,7 +1608,7 @@
       updateControlsDisabled();
     }
 
-    // ------------- File reading & main flow -------------
+    // ---------- FILE / INPUT HANDLING ----------
 
     const malInput = document.getElementById("malFile");
     const yearInput = document.getElementById("yearInput");
@@ -1910,7 +1618,7 @@
     const manualInput = document.getElementById("manualList");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
-    // MAL login button – mark THIS browser as freshly authorized (short-lived, one-time)
+    // MAL login button – mark this browser as freshly authorized (short-lived)
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
         try {
@@ -1924,6 +1632,7 @@
       });
     }
 
+    // Set default year to current
     const currentYear = new Date().getFullYear();
     if (yearInput) {
       yearInput.value = currentYear;
@@ -1950,7 +1659,7 @@
           currentYear
         );
 
-        // 1) LOCAL FILE BRANCH (XML / XML.GZ / TXT)
+        // 1) LOCAL FILE BRANCH
         if (file) {
           showPanel("panel-loading");
           tryStartMusic();
@@ -2009,7 +1718,7 @@
           return;
         }
 
-        // 2) MANUAL BRANCH – user typed or pasted a list
+        // 2) MANUAL BRANCH
         if (manualText) {
           try {
             showPanel("panel-loading");
@@ -2035,7 +1744,7 @@
           return;
         }
 
-        // 3) USERNAME BRANCH (Jikan) – only if username filled
+        // 3) USERNAME BRANCH (Jikan)
         if (username) {
           try {
             showPanel("panel-loading");
@@ -2110,7 +1819,7 @@
           return;
         }
 
-        // 5) If we get here: no file, no manual list, no username, and no fresh MAL login
+        // 5) If we get here: nothing chosen
         if (fileError) {
           fileError.textContent =
             "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
@@ -2121,25 +1830,38 @@
     }
 
     // Slide controls
-    const prevSlideBtn = document.getElementById("prevSlideBtn");
-    const nextSlideBtn = document.getElementById("nextSlideBtn");
-    const restartBtn = document.getElementById("restartBtn");
-
-    if (prevSlideBtn) {
-      prevSlideBtn.addEventListener("click", () => {
-        goToSlide(currentSlideIndex - 1);
-      });
-    }
-    if (nextSlideBtn) {
-      nextSlideBtn.addEventListener("click", () => {
-        goToSlide(currentSlideIndex + 1);
-      });
-    }
-    if (restartBtn) {
-      restartBtn.addEventListener("click", () => {
-        goToSlide(0);
-      });
-    }
+    document.getElementById("prevSlideBtn").addEventListener("click", () => {
+      goToSlide(currentSlideIndex - 1);
+    });
+    document.getElementById("nextSlideBtn").addEventListener("click", () => {
+      goToSlide(currentSlideIndex + 1);
+    });
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      goToSlide(0);
+    });
   </script>
+
+  <!-- Background + sample OP audio -->
+  <audio id="bgMusic" loop>
+    <source src="bg-music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <audio id="opAudio">
+    <source src="op-sample.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Tiny hidden YouTube player -->
+  <div id="opPlayerContainer">
+    <iframe
+      id="opPlayerIframe"
+      width="200"
+      height="113"
+      src=""
+      title="Anime opening"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  </div>
 </body>
 </html>
