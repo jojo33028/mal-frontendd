@@ -84,10 +84,10 @@
       inset: 0;
       pointer-events: none;
       background-image: url("anime-bg.jpg");
-      background-size: contain;       /* show full poster */
+      background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
-      filter: blur(0.5px);            /* almost sharp so you can see it */
+      filter: blur(0.5px);
       opacity: 0.32;
       z-index: -2;
     }
@@ -944,9 +944,18 @@
     </main>
   </div>
 
-  <script>
-    // ------------- Utility helpers + audio -------------
+  <!-- Tiny hidden YouTube iframe for OP playback -->
+  <iframe
+    id="opPlayerIframe"
+    style="position:fixed; width:1px; height:1px; opacity:0; pointer-events:none; border:0;"
+    allow="autoplay; encrypted-media"
+  ></iframe>
 
+  <script>
+    // ------------ YT API KEY (PUT YOUR KEY HERE) ------------
+    const YT_API_KEY = "PASTE_YOUR_YOUTUBE_API_KEY_HERE";
+
+    // ------------- Utility helpers + audio -------------
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
@@ -976,6 +985,26 @@
           })
           .catch(() => {});
       }
+    }
+
+    function stopBgMusic() {
+      const bgMusic = getBgMusic();
+      if (!bgMusic) return;
+      try {
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+      } catch (e) {}
+      musicOn = false;
+      updateMusicToggle();
+    }
+
+    function stopOpSample() {
+      const opAudio = getOpAudio();
+      if (!opAudio) return;
+      try {
+        opAudio.pause();
+        opAudio.currentTime = 0;
+      } catch (e) {}
     }
 
     window.addEventListener("load", () => {
@@ -1016,6 +1045,7 @@
     function playOpSample() {
       const opAudio = getOpAudio();
       if (!opAudio) return;
+      stopBgMusic();
       try {
         opAudio.currentTime = 0;
       } catch (e) {}
@@ -1051,10 +1081,7 @@
 
       // stop bg music when we enter slides
       if (id === "panel-slides") {
-        const bgMusic = getBgMusic();
-        if (bgMusic) bgMusic.pause();
-        musicOn = false;
-        updateMusicToggle();
+        stopBgMusic();
       }
     }
 
@@ -1095,7 +1122,6 @@
     }
 
     // ------------- Parse MAL XML -------------
-
     function parseMalXml(xmlText) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(xmlText, "text/xml");
@@ -1137,7 +1163,6 @@
     }
 
     // ------------- Jikan Fetch Helper -------------
-
     async function fetchFromJikan(username, yearVal) {
       const entries = [];
       let page = 1;
@@ -1198,7 +1223,6 @@
     }
 
     // ------------- MAL API Fetch Helper -------------
-
     async function fetchFromMalApi(yearVal) {
       const res = await fetch("https://mal-wrapped-1.onrender.com/list");
 
@@ -1254,7 +1278,6 @@
     }
 
     // ------------- Manual List Parser -------------
-
     function parseManualList(text, yearVal) {
       const lines = text
         .split(/\r?\n/)
@@ -1300,7 +1323,6 @@
     }
 
     // ------------- Slide builder -------------
-
     function buildSlides(data) {
       const slides = [];
 
@@ -1404,11 +1426,7 @@
       const shuffled = shuffleArray(unseenCandidates.length ? unseenCandidates : recPool);
       const recommendations = shuffled.slice(0, 4);
 
-      function buildOpSearchUrl(animeTitle) {
-        const q = encodeURIComponent(animeTitle + " opening theme");
-        return "https://www.youtube.com/results?search_query=" + q;
-      }
-
+      // We now store an "opTitle" string for each slide that should have an OP button.
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
@@ -1420,7 +1438,7 @@
           year
         },
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: null
+        opTitle: mostWatched ? mostWatched.title : null
       });
 
       slides.push({
@@ -1437,7 +1455,7 @@
           { label: "Years (if it were one long show)", value: years.toFixed(3) }
         ],
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
+        opTitle: mostWatched ? mostWatched.title : null
       });
 
       if (mostWatched) {
@@ -1455,7 +1473,7 @@
           ],
           extraAnime: mostWatched,
           backgroundImage: coverForEntry(mostWatched),
-          opSearch: buildOpSearchUrl(mostWatched.title)
+          opTitle: mostWatched.title
         });
       }
 
@@ -1473,7 +1491,7 @@
             type: e.type
           })),
           backgroundImage: coverForEntry(topRated[0]),
-          opSearch: buildOpSearchUrl(topRated[0].title)
+          opTitle: topRated[0].title
         });
       }
 
@@ -1491,7 +1509,7 @@
             type: e.type
           })),
           backgroundImage: coverForEntry(bottomRated[0]),
-          opSearch: buildOpSearchUrl(bottomRated[0].title)
+          opTitle: bottomRated[0].title
         });
       }
 
@@ -1507,7 +1525,7 @@
           { label: "Average score", value: avgScore ? avgScore.toFixed(2) : "—" }
         ],
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
+        opTitle: mostWatched ? mostWatched.title : null
       });
 
       slides.push({
@@ -1525,7 +1543,7 @@
           }
         ],
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
+        opTitle: mostWatched ? mostWatched.title : null
       });
 
       slides.push({
@@ -1540,7 +1558,7 @@
         backgroundImage: recommendations[0]
           ? placeholderCover(recommendations[0])
           : placeholderCover(recPool[0]),
-        opSearch: recommendations.length ? buildOpSearchUrl(recommendations[0]) : null
+        opTitle: recommendations[0] || null
       });
 
       slides.push({
@@ -1554,14 +1572,13 @@
           year
         },
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
+        opTitle: mostWatched ? mostWatched.title : null
       });
 
       return slides;
     }
 
     // ------------- Render slides -------------
-
     let currentSlides = [];
     let currentSlideIndex = 0;
 
@@ -1783,16 +1800,14 @@
           rightDiv.appendChild(card);
         }
 
-        if (slide.opSearch) {
+        // --- OP BUTTON: now uses YouTube hidden player ---
+        if (slide.opTitle) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
           opBtn.className = "op-btn";
-          opBtn.innerHTML = "<span>▶</span><span>Open an opening on YouTube</span>";
+          opBtn.innerHTML = "<span>▶</span><span>Play opening from this vibe</span>";
           opBtn.addEventListener("click", () => {
-            // open YT search in new tab; safer for copyright
-            if (slide.opSearch) {
-              window.open(slide.opSearch, "_blank", "noopener");
-            }
+            playOpeningForTitle(slide.opTitle);
           });
           rightDiv.appendChild(opBtn);
         }
@@ -1859,8 +1874,85 @@
       onSlideChanged();
     }
 
-    // ------------- File reading & main flow -------------
+    // ------------- YouTube OP logic -------------
+    let currentOpTitle = null;
+    let opIsPlaying = false;
 
+    async function fetchFirstOpVideoId(title) {
+      if (!title || !YT_API_KEY) {
+        console.warn("No title or YT API key for OP search");
+        return null;
+      }
+
+      const query = encodeURIComponent(title + " opening");
+      const url =
+        "https://www.googleapis.com/youtube/v3/search" +
+        "?part=snippet&type=video&maxResults=1&q=" +
+        query +
+        `&key=${YT_API_KEY}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.warn("YouTube API error:", res.status, res.statusText);
+          return null;
+        }
+
+        const data = await res.json();
+        const items = (data && data.items) || [];
+        if (!items.length || !items[0].id || !items[0].id.videoId) {
+          console.warn("No video results for", title);
+          return null;
+        }
+
+        return items[0].id.videoId;
+      } catch (err) {
+        console.error("YouTube API fetch failed:", err);
+        return null;
+      }
+    }
+
+    async function playOpeningForTitle(title) {
+      if (!title) return;
+
+      // Stop any bg music + sample first
+      stopBgMusic();
+      stopOpSample();
+
+      const iframe = document.getElementById("opPlayerIframe");
+      if (!iframe) {
+        // if somehow iframe is missing, fallback to local sample
+        playOpSample();
+        return;
+      }
+
+      // If user clicks same title while it’s already playing, toggle it off
+      if (opIsPlaying && currentOpTitle === title) {
+        iframe.src = "about:blank";
+        opIsPlaying = false;
+        currentOpTitle = null;
+        return;
+      }
+
+      currentOpTitle = title;
+      opIsPlaying = true;
+
+      const videoId = await fetchFirstOpVideoId(title);
+      if (!videoId) {
+        // fallback: no video found or API failed
+        playOpSample();
+        return;
+      }
+
+      const src =
+        "https://www.youtube.com/embed/" +
+        videoId +
+        "?autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1";
+
+      iframe.src = src;
+    }
+
+    // ------------- File reading & main flow -------------
     const malInput = document.getElementById("malFile");
     const yearInput = document.getElementById("yearInput");
     const fileError = document.getElementById("fileError");
