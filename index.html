@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <style>
+#opPlayerContainer {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+</style>
+
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
@@ -1119,42 +1130,45 @@
     }
 
     function stopBgMusic() {
-      const bgMusic = getBgMusic();
-      if (bgMusic) {
-        bgMusic.pause();
-      }
-      musicOn = false;
-      updateMusicToggle();
-    }
+  const bgMusic = getBgMusic();
+  if (bgMusic) {
+    bgMusic.pause();
+  }
+  musicOn = false;
+  updateMusicToggle();
+}
 
-    function playOpeningForTitle(title) {
-      // Pause bg music when OP starts
-      stopBgMusic();
+// 🔥 NEW: YouTube search-based OP player
+let currentOpQuery = null;
+let opIsPlaying = false;
 
-      const videoId = getOpVideoIdForTitle(title);
-      const iframe = document.getElementById("opPlayerIframe");
+// Use a tiny, hidden YouTube iframe to play an "anime title + opening" search
+function playOpeningForTitle(title) {
+  // Pause bg music when OP starts
+  stopBgMusic();
 
-      if (!iframe) return;
+  const iframe = document.getElementById("opPlayerIframe");
+  if (!iframe || !title) return;
 
-      // If we don't have a mapped OP, just play the local sample
-      if (!videoId) {
-        playOpSample();
-        return;
-      }
+  // Build a YouTube search embed query, e.g. "Solo Leveling opening"
+  const query = encodeURIComponent(title + " opening");
 
-      // Toggle behavior: if same OP is playing, stop it
-      if (currentOpVideoId === videoId && opIsPlaying) {
-        iframe.src = "";
-        opIsPlaying = false;
-        return;
-      }
+  const src =
+    "https://www.youtube-nocookie.com/embed?listType=search&list=" +
+    query +
+    "&autoplay=1&controls=0&rel=0&modestbranding=1";
 
-      currentOpVideoId = videoId;
-      opIsPlaying = true;
+  // Toggle: if this OP is already playing, clicking again stops it
+  if (currentOpQuery === query && opIsPlaying) {
+    iframe.src = "";
+    opIsPlaying = false;
+    return;
+  }
 
-      const src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&rel=0&modestbranding=1`;
-      iframe.src = src;
-    }
+  currentOpQuery = query;
+  opIsPlaying = true;
+  iframe.src = src;
+}
 
     function enterSlidesMode() {
       showPanel("panel-slides");
@@ -2132,5 +2146,42 @@
       allowfullscreen
     ></iframe>
   </div>
+</script>
+
+<!-- Background music -->
+<audio id="bgMusic" loop>
+  <source src="bg-music.mp3" type="audio/mpeg" />
+</audio>
+
+<!-- Local fallback OP sample -->
+<audio id="opAudio">
+  <source src="op-sample.mp3" type="audio/mpeg" />
+</audio>
+
+<!-- 🔥 Hidden YouTube player for OPs -->
+<div id="opPlayerContainer">
+  <iframe
+    id="opPlayerIframe"
+    width="200"
+    height="113"
+    src=""
+    title="Anime opening"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen
+  ></iframe>
+</div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+  
 </body>
 </html>
