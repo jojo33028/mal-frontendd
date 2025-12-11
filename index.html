@@ -12,29 +12,6 @@
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 
   <style>
-    /* Tiny invisible YouTube player container */
-    #opPlayerContainer {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .intro-video-wrapper {
-      max-width: 520px;
-      width: 100%;
-      margin: 20px auto;
-    }
-
-    .intro-video {
-      width: 100%;
-      height: auto;
-      border-radius: 18px;
-      display: block;
-    }
-
     :root {
       --bg1: #050816;
       --bg2: #0f172a;
@@ -49,13 +26,6 @@
       --shadow-xl: 0 24px 60px rgba(0,0,0,0.7);
       --slide-transition: 0.5s ease;
       --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .intro-panel,
-    .intro-username,
-    .intro-tagline,
-    .mal-credit {
-      display: none !important;
     }
 
     * {
@@ -75,6 +45,13 @@
       padding: 1.5rem;
       overflow-x: hidden;
       overflow-y: auto;
+    }
+
+    .intro-panel,
+    .intro-username,
+    .intro-tagline,
+    .mal-credit {
+      display: none !important;
     }
 
     .bg-grid {
@@ -107,6 +84,19 @@
       pointer-events: none;
       z-index: -1;
       display: none;
+    }
+
+    .intro-video-wrapper {
+      max-width: 520px;
+      width: 100%;
+      margin: 20px auto;
+    }
+
+    .intro-video {
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      display: block;
     }
 
     .app-shell {
@@ -152,12 +142,6 @@
       background: none;
     }
 
-    .brand-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
     .brand-text-title {
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -171,16 +155,6 @@
       text-transform: uppercase;
       color: #9ca3af;
       letter-spacing: 0.18em;
-    }
-
-    .mal-credit {
-      margin-top: -5px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #cfd8ff;
-      opacity: 0.9;
-      letter-spacing: 0.03em;
-      margin-left: 65px;
     }
 
     .header-right {
@@ -384,12 +358,18 @@
       background: linear-gradient(135deg, #f97316, #fb923c);
       color: #0b1120;
       box-shadow: 0 12px 35px rgba(248,113,113,0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s ease;
     }
 
     .primary-btn:hover {
       transform: translateY(-1px);
       filter: brightness(1.05);
       box-shadow: 0 16px 40px rgba(248,113,113,0.55);
+    }
+
+    .primary-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 28px rgba(248,113,113,0.4);
     }
 
     .secondary-btn {
@@ -408,12 +388,18 @@
       background: linear-gradient(135deg, #38bdf8, #0ea5e9);
       color: #0b1120;
       box-shadow: 0 12px 35px rgba(14,165,233,0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s ease;
     }
 
     .secondary-btn:hover {
       transform: translateY(-1px);
       filter: brightness(1.05);
       box-shadow: 0 16px 40px rgba(14,165,233,0.55);
+    }
+
+    .secondary-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 28px rgba(14,165,233,0.4);
     }
 
     .error-text {
@@ -521,7 +507,6 @@
       pointer-events: auto;
     }
 
-    /* BACKGROUND: visible per slide */
     .slide-bg {
       position: absolute;
       inset: 0;
@@ -529,6 +514,7 @@
       background-position: center;
       background-size: contain;
       background-repeat: no-repeat;
+      filter: none;
       background-color: #020617;
     }
 
@@ -723,19 +709,6 @@
       color: #9ca3af;
     }
 
-    .intro-username {
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin-top: 0.2rem;
-    }
-
-    .intro-tagline {
-      margin-top: 0.6rem;
-      font-size: 0.9rem;
-      color: var(--text-soft);
-    }
-
-    /* Top moving banner */
     .top-banner {
       width: 100%;
       overflow: hidden;
@@ -760,8 +733,18 @@
     }
 
     @keyframes scroll-banner {
-      0%   { transform: translateX(100%); }
+      0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
+    }
+
+    /* Tiny off-screen YouTube player */
+    #opPlayerContainer {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 320px;
+      height: 180px;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -830,7 +813,6 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
-                <!-- Optional username for Jikan -->
                 <div class="field">
                   <label for="malUsername">MAL Username (optional)</label>
                   <input
@@ -844,7 +826,6 @@
                   </div>
                 </div>
 
-                <!-- Manual list textarea -->
                 <div class="field">
                   <label for="manualList">Manual Anime List (optional)</label>
                   <textarea
@@ -854,13 +835,12 @@
                     placeholder="One line per anime: Title | episodes watched | score (optional) | type (optional) | start-date (optional) | finish-date (optional)"
                   ></textarea>
                   <div class="field-helper">
-                    Paste from Google Docs/Notes or type manually. Example:
+                    Example:
                     <br />
                     <code>Naruto | 220 | 9 | TV | 2022-01-01 | 2022-12-31</code>
                   </div>
                 </div>
 
-                <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
                   <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
                     Sign in with MAL
@@ -937,8 +917,32 @@
     </main>
   </div>
 
+  <!-- AUDIO + HIDDEN YT PLAYER -->
+  <audio id="bgMusic" loop>
+    <source src="bg-music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Generic local OP sample as fallback (you do NOT need every OP ever) -->
+  <audio id="opAudio">
+    <source src="op-sample.wav" type="audio/wav" />
+  </audio>
+
+  <div id="opPlayerContainer">
+    <iframe
+      id="opPlayerIframe"
+      width="320"
+      height="180"
+      src=""
+      title="Anime opening"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+
   <script>
-    // ------------- Utility helpers + audio -------------
+    // --------- BASIC HELPERS + MUSIC ----------
+
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
@@ -966,18 +970,14 @@
             musicOn = true;
             updateMusicToggle();
           })
-          .catch((err) => {
-            console.warn("BG music blocked or missing:", err);
-          });
+          .catch(() => {});
       }
     }
 
     window.addEventListener("load", () => {
-      // kill old auth flags if they existed (privacy hardening)
       try {
         window.localStorage.removeItem("malAuthorized");
       } catch (e) {}
-
       setTimeout(() => {
         tryStartMusic();
       }, 150);
@@ -999,9 +999,7 @@
                 musicOn = true;
                 updateMusicToggle();
               })
-              .catch((err) => {
-                console.warn("BG music play failed:", err);
-              });
+              .catch(() => {});
           }
         }
         updateMusicToggle();
@@ -1009,18 +1007,20 @@
       updateMusicToggle();
     }
 
-    // Local fallback OP sample if YT fails
+    function stopBgMusic() {
+      const bgMusic = getBgMusic();
+      if (bgMusic) bgMusic.pause();
+      musicOn = false;
+      updateMusicToggle();
+    }
+
     function playOpSample() {
       const opAudio = getOpAudio();
       if (!opAudio) return;
-      try {
-        opAudio.currentTime = 0;
-      } catch (e) {}
+      try { opAudio.currentTime = 0; } catch (e) {}
       opAudio.volume = 0.8;
       const p = opAudio.play();
-      if (p && p.then) p.catch((err) => {
-        console.warn("Local OP sample failed:", err);
-      });
+      if (p && p.then) p.catch(() => {});
     }
 
     function showPanel(id) {
@@ -1035,16 +1035,14 @@
     }
 
     function formatNumber(num) {
-      return Number(num).toLocaleString("en-US");
+      return num.toLocaleString("en-US");
     }
 
     function estimateMinutes(entry) {
       const eps = entry.watchedEpisodes || 0;
       if (!eps) return 0;
       const type = (entry.type || "").toLowerCase();
-      if (type === "movie") {
-        return eps * 90;
-      }
+      if (type === "movie") return eps * 90;
       return eps * 23;
     }
 
@@ -1055,85 +1053,79 @@
       return null;
     }
 
-    // ------------- Stop BG music + tiny YouTube OP player -------------
-    function stopBgMusic() {
-      const bgMusic = getBgMusic();
-      if (bgMusic) {
-        bgMusic.pause();
+    // --------- YT OP PLAYER (search by title) + fallback ----------
+
+    let currentOpTitle = null;
+    let opIsPlaying = false;
+
+    function playOpeningForTitle(title) {
+      if (!title) return;
+
+      stopBgMusic();
+
+      const opAudio = getOpAudio();
+      const iframe = document.getElementById("opPlayerIframe");
+
+      // Toggle off on second click for the same slide
+      if (opIsPlaying && currentOpTitle === title) {
+        if (opAudio) opAudio.pause();
+        if (iframe) iframe.src = "about:blank";
+        opIsPlaying = false;
+        currentOpTitle = null;
+        return;
       }
-      musicOn = false;
-      updateMusicToggle();
+
+      currentOpTitle = title;
+      opIsPlaying = true;
+
+      // Always play local sample so the button never feels dead
+      playOpSample();
+
+      if (!iframe) return;
+
+      const query = encodeURIComponent(title + " opening");
+
+      const src =
+        "https://www.youtube.com/embed" +
+        "?autoplay=1" +
+        "&controls=0" +
+        "&rel=0" +
+        "&modestbranding=1" +
+        "&playsinline=1" +
+        "&listType=search" +
+        "&list=" +
+        query;
+
+      console.log("Loading OP from YouTube for:", title, src);
+
+      let fallbackTimer = setTimeout(() => {
+        // If YT totally fails, we already have the local sample playing
+        console.warn("YouTube OP may have failed; using local sample only.");
+      }, 5000);
+
+      iframe.onload = () => {
+        clearTimeout(fallbackTimer);
+      };
+
+      try {
+        iframe.src = src;
+      } catch (e) {
+        console.warn("Failed to set YT OP src, local sample only.", e);
+        clearTimeout(fallbackTimer);
+      }
     }
-
-// Tiny hidden YouTube OP player + safe fallback
-let currentOpQuery = null;
-let opIsPlaying = false;
-
-function playOpeningForTitle(title) {
-  if (!title) return;
-
-  // Stop background music first
-  stopBgMusic();
-
-  const iframe = document.getElementById("opPlayerIframe");
-  if (!iframe) {
-    // If somehow the iframe isn't there, just play the local sample
-    playOpSample();
-    return;
-  }
-
-  // Toggle off if you click the same title while it's already playing
-  if (opIsPlaying && currentOpQuery === title) {
-    iframe.src = "about:blank";
-    opIsPlaying = false;
-    return;
-  }
-
-  currentOpQuery = title;
-  opIsPlaying = true;
-
-  const query = encodeURIComponent(title + " opening");
-
-  // Correct YouTube search-embed URL
-  const src =
-    "https://www.youtube.com/embed" +
-    "?autoplay=1" +
-    "&controls=0" +
-    "&rel=0" +
-    "&modestbranding=1" +
-    "&playsinline=1" +
-    "&listType=search" +
-    "&list=" +
-    query;
-
-  iframe.src = src;
-
-  // --- Safety fallback: if YT fails, use local op-sample.wav ---
-  const fallbackTimer = setTimeout(() => {
-    if (!opIsPlaying) return; // already toggled off
-    playOpSample();           // play local sample so it's never silent
-  }, 4000);
-
-  iframe.onload = () => {
-    // If the iframe actually loads something, cancel the fallback
-    clearTimeout(fallbackTimer);
-  };
-}
-
 
     function enterSlidesMode() {
       showPanel("panel-slides");
-      // stop bg music once slides start
       stopBgMusic();
-      // hide the moving top banner during slides
       const banner = document.querySelector(".top-banner");
       if (banner) banner.style.display = "none";
-      // hide intro video
       const introVideoWrapper = document.querySelector(".intro-video-wrapper");
       if (introVideoWrapper) introVideoWrapper.style.display = "none";
     }
 
-    // ------------- Parse MAL XML -------------
+    // ---------- PARSERS & FETCHERS ----------
+
     function parseMalXml(xmlText) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(xmlText, "text/xml");
@@ -1173,7 +1165,6 @@ function playOpeningForTitle(title) {
       return { userName, entries };
     }
 
-    // ------------- Jikan Fetch Helper -------------
     async function fetchFromJikan(username, yearVal) {
       const entries = [];
       let page = 1;
@@ -1183,9 +1174,7 @@ function playOpeningForTitle(title) {
           username
         )}/animelist?status=all&page=${page}&limit=100`;
         const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error("Jikan request failed");
-        }
+        if (!res.ok) throw new Error("Jikan request failed");
         const json = await res.json();
         const list = (json && json.data) || [];
         list.forEach(item => {
@@ -1209,11 +1198,8 @@ function playOpeningForTitle(title) {
           entries.push(entry);
         });
         const pagination = json && json.pagination;
-        if (pagination && pagination.has_next_page) {
-          page++;
-        } else {
-          break;
-        }
+        if (pagination && pagination.has_next_page) page++;
+        else break;
       }
       const filtered = entries.filter(e => {
         const startY = extractYear(e.startDate);
@@ -1228,13 +1214,9 @@ function playOpeningForTitle(title) {
       };
     }
 
-    // ------------- MAL API Fetch Helper -------------
     async function fetchFromMalApi(yearVal) {
       const res = await fetch("https://mal-wrapped-1.onrender.com/list");
-
-      if (!res.ok) {
-        throw new Error("MAL backend request failed");
-      }
+      if (!res.ok) throw new Error("MAL backend request failed");
 
       const json = await res.json();
       const data = json.data || [];
@@ -1279,7 +1261,6 @@ function playOpeningForTitle(title) {
       };
     }
 
-    // ------------- Manual List Parser -------------
     function parseManualList(text, yearVal) {
       const lines = text
         .split(/\r?\n/)
@@ -1290,9 +1271,7 @@ function playOpeningForTitle(title) {
 
       lines.forEach((line, idx) => {
         let parts = line.split("|");
-        if (parts.length === 1) {
-          parts = line.split(" - ");
-        }
+        if (parts.length === 1) parts = line.split(" - ");
         parts = parts.map(p => p.trim());
 
         const title = parts[0] || `Untitled Anime #${idx + 1}`;
@@ -1322,7 +1301,8 @@ function playOpeningForTitle(title) {
       };
     }
 
-    // ------------- Slide builder -------------
+    // ---------- SLIDE BUILDER & RENDER ----------
+
     function buildSlides(data) {
       const slides = [];
 
@@ -1410,22 +1390,17 @@ function playOpeningForTitle(title) {
         .filter(title => !allTitlesLower.has(title.toLowerCase()))
         .slice(0, 4);
 
-      // Intro
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
         title: "This is your Anime Wrapped.",
         highlight: null,
         body: `We scanned your MyAnimeList export, tallied every episode, and did the math you were a little scared to see.`,
-        extra: {
-          username,
-          year
-        },
-        backgroundImage: "",    // intro = clean gradient
+        extra: { username, year },
+        backgroundImage: "",
         opAnimeTitle: null
       });
 
-      // Minutes slide
       slides.push({
         type: "minutes",
         kicker: "Time spent in other worlds",
@@ -1443,7 +1418,6 @@ function playOpeningForTitle(title) {
         opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
-      // Most-watched
       if (mostWatched) {
         const mwMinutes = estimateMinutes(mostWatched);
         slides.push({
@@ -1463,7 +1437,6 @@ function playOpeningForTitle(title) {
         });
       }
 
-      // Highest rated
       if (topRated.length) {
         slides.push({
           type: "highestRated",
@@ -1482,7 +1455,6 @@ function playOpeningForTitle(title) {
         });
       }
 
-      // Lowest rated
       if (bottomRated.length) {
         slides.push({
           type: "lowestRated",
@@ -1501,7 +1473,6 @@ function playOpeningForTitle(title) {
         });
       }
 
-      // Count / stats
       slides.push({
         type: "count",
         kicker: "How deep you went",
@@ -1517,7 +1488,6 @@ function playOpeningForTitle(title) {
         opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
-      // Club/vibe
       slides.push({
         type: "club",
         kicker: "The club you belong to",
@@ -1527,16 +1497,12 @@ function playOpeningForTitle(title) {
         stats: [
           { label: "Episodes logged", value: formatNumber(totalEpisodes) },
           { label: "Rated titles", value: rated.length },
-          {
-            label: "Average score vibe",
-            value: avgScore ? avgScore.toFixed(2) : "mysterious"
-          }
+          { label: "Average score vibe", value: avgScore ? avgScore.toFixed(2) : "mysterious" }
         ],
         backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
         opAnimeTitle: mostWatched ? mostWatched.title : null
       });
 
-      // Recs
       slides.push({
         type: "recs",
         kicker: "Fuel for your next year",
@@ -1550,17 +1516,13 @@ function playOpeningForTitle(title) {
         opAnimeTitle: recommendations.length ? recommendations[0] : recPool[0]
       });
 
-      // Outro
       slides.push({
         type: "outro",
         kicker: "Another year of anime down",
         title: "See you in next year’s recap.",
         highlight: "Here’s to better arcs, cleaner endings, and fewer mid shows in your queue.",
         body: "Screenshot the slides you like, send them to friends, or just use this as proof that your watch list is absolutely stacked.",
-        extra: {
-          username,
-          year
-        },
+        extra: { username, year },
         backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
         opAnimeTitle: mostWatched ? mostWatched.title : null
       });
@@ -1568,7 +1530,6 @@ function playOpeningForTitle(title) {
       return slides;
     }
 
-    // ------------- Render slides -------------
     let currentSlides = [];
     let currentSlideIndex = 0;
 
@@ -1774,7 +1735,6 @@ function playOpeningForTitle(title) {
           rightDiv.appendChild(card);
         }
 
-        // OP button (YouTube-based) if we have an anime title for this slide
         if (slide.opAnimeTitle) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
@@ -1846,7 +1806,8 @@ function playOpeningForTitle(title) {
       updateControlsDisabled();
     }
 
-    // ------------- File reading & main flow -------------
+    // ---------- MAIN FLOW (file / username / manual) ----------
+
     const malInput = document.getElementById("malFile");
     const yearInput = document.getElementById("yearInput");
     const fileError = document.getElementById("fileError");
@@ -1855,7 +1816,6 @@ function playOpeningForTitle(title) {
     const manualInput = document.getElementById("manualList");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
-    // MAL login button – mark THIS browser as freshly authorized (short-lived, one-time)
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
         try {
@@ -1869,16 +1829,11 @@ function playOpeningForTitle(title) {
       });
     }
 
-    // Set default year to current
     const currentYear = new Date().getFullYear();
-    if (yearInput) {
-      yearInput.value = currentYear;
-    }
+    if (yearInput) yearInput.value = currentYear;
 
     generateBtn.addEventListener("click", async () => {
-      if (fileError) {
-        fileError.style.display = "none";
-      }
+      if (fileError) fileError.style.display = "none";
 
       const file = malInput && malInput.files ? malInput.files[0] : null;
       const username =
@@ -1895,7 +1850,7 @@ function playOpeningForTitle(title) {
         currentYear
       );
 
-      // 1) LOCAL FILE BRANCH (XML / XML.GZ / TXT)
+      // 1) LOCAL FILE
       if (file) {
         showPanel("panel-loading");
         tryStartMusic();
@@ -1945,16 +1900,13 @@ function playOpeningForTitle(title) {
           }
         };
 
-        if (file.name.endsWith(".gz")) {
-          reader.readAsArrayBuffer(file);
-        } else {
-          reader.readAsText(file);
-        }
+        if (file.name.endsWith(".gz")) reader.readAsArrayBuffer(file);
+        else reader.readAsText(file);
 
         return;
       }
 
-      // 2) MANUAL BRANCH – user typed or pasted a list
+      // 2) MANUAL LIST
       if (manualText) {
         try {
           showPanel("panel-loading");
@@ -1980,7 +1932,7 @@ function playOpeningForTitle(title) {
         return;
       }
 
-      // 3) USERNAME BRANCH (Jikan) – only if username filled
+      // 3) Jikan USERNAME
       if (username) {
         try {
           showPanel("panel-loading");
@@ -2003,14 +1955,14 @@ function playOpeningForTitle(title) {
         return;
       }
 
-      // 4) MAL BACKEND BRANCH – ONLY if this browser recently clicked "Sign in with MAL"
+      // 4) MAL BACKEND (if recently authorized)
       let malAuthorized = false;
       try {
         const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
         const authAtRaw = window.localStorage.getItem("malAuthorizedAt");
         const authAt = authAtRaw ? Number(authAtRaw) : 0;
         const now = Date.now();
-        const MAX_AUTH_AGE_MS = 10 * 60 * 1000; // 10 minutes window
+        const MAX_AUTH_AGE_MS = 10 * 60 * 1000;
 
         malAuthorized =
           !!authPending &&
@@ -2055,7 +2007,6 @@ function playOpeningForTitle(title) {
         return;
       }
 
-      // 5) If we get here: no file, no manual list, no username, and no fresh MAL login
       if (fileError) {
         fileError.textContent =
           "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
@@ -2064,7 +2015,6 @@ function playOpeningForTitle(title) {
       showPanel("panel-input");
     });
 
-    // Slide controls
     document.getElementById("prevSlideBtn").addEventListener("click", () => {
       goToSlide(currentSlideIndex - 1);
     });
@@ -2075,29 +2025,5 @@ function playOpeningForTitle(title) {
       goToSlide(0);
     });
   </script>
-
-  <!-- Background music -->
-  <audio id="bgMusic" loop>
-    <source src="bg-music.mp3" type="audio/mpeg" />
-  </audio>
-
-  <!-- Local fallback OP sample -->
-  <audio id="opAudio">
-    <source src="op-sample.wav" type="audio/wav" />
-  </audio>
-
-  <!-- Tiny hidden YouTube player for OPs -->
-  <div id="opPlayerContainer">
-    <iframe
-      id="opPlayerIframe"
-      width="200"
-      height="113"
-      src=""
-      title="Anime opening"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-    ></iframe>
-  </div>
 </body>
 </html>
