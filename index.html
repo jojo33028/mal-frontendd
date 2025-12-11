@@ -83,11 +83,11 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background-size: contain;
+      background-image: url("anime-bg.jpg");
+      background-size: cover;
       background-position: center;
-      background-repeat: no-repeat;
-      filter: blur(0px);
-      opacity: 0.35;
+      filter: blur(2px);
+      opacity: 0.28;
       z-index: -2;
     }
 
@@ -332,6 +332,7 @@
       cursor: pointer;
     }
 
+    /* override for textarea so it isn't a pill */
     .field-textarea {
       border-radius: 16px;
       min-height: 90px;
@@ -526,12 +527,12 @@
     .slide-bg {
       position: absolute;
       inset: 0;
-      opacity: 0.3;
+      opacity: 0.35;
       background-position: center;
-      background-size: contain;
+      background-size: cover;
       background-repeat: no-repeat;
-      filter: blur(3px);
-      transform: none;
+      filter: blur(8px);
+      transform: scale(1.05);
     }
 
     .slide-gradient {
@@ -579,6 +580,12 @@
       font-size: 1.6rem;
       font-weight: 800;
       line-height: 1.2;
+    }
+
+    .slide-title a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
 
     .slide-highlight {
@@ -641,6 +648,12 @@
     .anime-meta {
       font-size: 0.8rem;
       color: var(--text-soft);
+    }
+
+    .anime-meta a {
+      color: #bfdbfe;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
 
     .pill-meta-row {
@@ -836,6 +849,7 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
+                <!-- Optional username for Jikan -->
                 <div class="field">
                   <label for="malUsername">MAL Username (optional)</label>
                   <input
@@ -865,7 +879,7 @@
                   </div>
                 </div>
 
-                <!-- MAL login button -->
+                <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
                   <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
                     Sign in with MAL
@@ -942,59 +956,17 @@
     </main>
   </div>
 
-  <!-- Small floating YouTube OP player -->
-  <div id="ytOpPlayer" style="
-    position:fixed;
-    bottom:24px;
-    right:24px;
-    width:360px;
-    max-width:90vw;
-    height:203px;
-    background:#000;
-    border-radius:12px;
-    box-shadow:0 16px 40px rgba(0,0,0,0.7);
-    overflow:hidden;
-    display:none;
-    z-index:9999;
-  ">
-    <div style="
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:4px 8px;
-      font-size:12px;
-      color:#e5e7eb;
-      background:rgba(15,23,42,0.95);
-    ">
-      <span>Now playing opening…</span>
-      <button id="ytOpClose" style="
-        border:none;
-        background:transparent;
-        color:#9ca3af;
-        cursor:pointer;
-        font-size:14px;
-      ">✕</button>
-    </div>
-    <iframe
-      id="ytOpFrame"
-      width="100%"
-      height="100%"
-      src=""
-      title="Anime OP"
-      style="border:none;"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-    ></iframe>
-  </div>
-
   <script>
-    // ------------- Utility helpers + audio + OP mapping -------------
+    // ------------- Utility helpers + audio -------------
 
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
     function getBgMusic() {
       return document.getElementById("bgMusic");
+    }
+    function getOpAudio() {
+      return document.getElementById("opAudio");
     }
 
     function updateMusicToggle() {
@@ -1016,14 +988,6 @@
           })
           .catch(() => {});
       }
-    }
-
-    function stopBgMusic() {
-      const bgMusic = getBgMusic();
-      if (!bgMusic) return;
-      bgMusic.pause();
-      musicOn = false;
-      updateMusicToggle();
     }
 
     window.addEventListener("load", () => {
@@ -1061,57 +1025,35 @@
       updateMusicToggle();
     }
 
-    // Map of anime title -> YouTube video ID for OP
-    const OP_YT_MAP = {
-      // EXAMPLES – replace with the OP you want
-      "parasyte: the maxim": "g7kThF8-lMM",
-      // add more:
-      // "naruto": "VIDEO_ID_HERE",
-      // "bleach": "VIDEO_ID_HERE",
-      // "oregairu 3": "VIDEO_ID_HERE"
-    };
-
-    function normalizeTitle(t) {
-      return (t || "").toLowerCase().replace(/\s+/g, " ").trim();
+    function playOpSample() {
+      const opAudio = getOpAudio();
+      if (!opAudio) return;
+      try {
+        opAudio.currentTime = 0;
+      } catch (e) {}
+      opAudio.volume = 0.8;
+      const p = opAudio.play();
+      if (p && p.then) p.catch(() => {});
     }
 
-    function playEmbeddedOp(videoId) {
-      const player = document.getElementById("ytOpPlayer");
-      const frame = document.getElementById("ytOpFrame");
-      if (!player || !frame || !videoId) return;
+    // NEW: set the global blurred background + hide intro video
+    function setGlobalBackgroundAnime(imageUrl) {
+      const bgAnimeDiv = document.querySelector(".bg-anime");
+      if (bgAnimeDiv && imageUrl) {
+        bgAnimeDiv.style.backgroundImage = `url('${imageUrl}')`;
+        bgAnimeDiv.style.opacity = "0.4";
+      }
 
-      // pause background music when OP starts
-      stopBgMusic();
-
-      frame.src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&rel=0";
-      player.style.display = "block";
-    }
-
-    const ytCloseBtn = document.getElementById("ytOpClose");
-    if (ytCloseBtn) {
-      ytCloseBtn.addEventListener("click", () => {
-        const player = document.getElementById("ytOpPlayer");
-        const frame = document.getElementById("ytOpFrame");
-        if (frame) frame.src = "";
-        if (player) player.style.display = "none";
-      });
+      const introVideoWrapper = document.querySelector(".intro-video-wrapper");
+      if (introVideoWrapper) {
+        introVideoWrapper.style.display = "none";
+      }
     }
 
     function showPanel(id) {
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
       const panel = document.getElementById(id);
       if (panel) panel.classList.add("active");
-
-      // Show banner only on input panel
-      const banner = document.querySelector(".top-banner");
-      if (banner) {
-        banner.style.display = id === "panel-input" ? "block" : "none";
-      }
-
-      // Once we enter slides, stop the background music
-      if (id === "panel-slides") {
-        stopBgMusic();
-      }
     }
 
     function safeInt(val, fallback = 0) {
@@ -1138,23 +1080,6 @@
       const year = dateStr.split("-")[0];
       if (year && year !== "0000") return year;
       return null;
-    }
-
-    function setGlobalBackgroundAnime(imageUrl) {
-      const bgAnimeDiv = document.querySelector(".bg-anime");
-      if (!bgAnimeDiv) return;
-      if (imageUrl) {
-        bgAnimeDiv.style.backgroundImage = `url('${imageUrl}')`;
-        bgAnimeDiv.style.opacity = "0.35";
-      } else {
-        bgAnimeDiv.style.backgroundImage = "";
-        bgAnimeDiv.style.opacity = "0";
-      }
-      // Hide the intro video once we move into the slides flow
-      const introVideoWrapper = document.querySelector(".intro-video-wrapper");
-      if (introVideoWrapper) {
-        introVideoWrapper.style.display = "none";
-      }
     }
 
     // ------------- Parse MAL XML -------------
@@ -1192,7 +1117,7 @@
           finishDate,
           score,
           status,
-          coverImage: "" // XML export doesn't have images
+          coverImage: "" // XML export doesn't include images
         };
       });
 
@@ -1217,7 +1142,6 @@
         const list = (json && json.data) || [];
         list.forEach(item => {
           const anime = item.anime || {};
-          const images = anime.images && anime.images.jpg ? anime.images.jpg : null;
           const entry = {
             id: String(anime.mal_id || ""),
             title: anime.title || anime.title_english || "Untitled Anime",
@@ -1233,9 +1157,12 @@
             finishDate: item.completed_at || "",
             score: Number(item.score) || 0,
             status: item.status || "",
-            coverImage: images
-              ? (images.large_image_url || images.image_url || "")
-              : ""
+            // NEW: cover image from Jikan v4
+            coverImage:
+              (anime.images &&
+                anime.images.jpg &&
+                (anime.images.jpg.large_image_url || anime.images.jpg.image_url)) ||
+              ""
           };
           entries.push(entry);
         });
@@ -1293,6 +1220,7 @@
           finishDate: status.finish_date || "",
           score: Number(status.score) || 0,
           status: status.status || "",
+          // NEW: cover image from official MAL API
           coverImage:
             (anime.main_picture &&
               (anime.main_picture.large || anime.main_picture.medium)) ||
@@ -1326,6 +1254,7 @@
       const entries = [];
 
       lines.forEach((line, idx) => {
+        // Prefer pipe-separated; fallback to " - "
         let parts = line.split("|");
         if (parts.length === 1) {
           parts = line.split(" - ");
@@ -1390,13 +1319,12 @@
       );
 
       const mostWatched = sortedByMinutes[0] || null;
-
       function placeholderCover(title) {
         if (!title) return "";
         const t = encodeURIComponent(title + " anime");
         return "https://placehold.co/800x1200/020617/ffffff?text=" + t;
       }
-
+      // NEW: prefer real cover image if present
       function coverForEntry(entry) {
         if (!entry) return "";
         if (entry.coverImage) return entry.coverImage;
@@ -1434,9 +1362,7 @@
       }
 
       const allTitlesLower = new Set(list.map(e => e.title.toLowerCase()));
-
-      // Slightly randomized recs so it isn't always identical
-      let recPool = [
+      const recPool = [
         "Monster",
         "Made in Abyss",
         "Mob Psycho 100",
@@ -1448,8 +1374,6 @@
         "Steins;Gate",
         "Ping Pong the Animation"
       ];
-      recPool = recPool.sort(() => 0.5 - Math.random());
-
       const recommendations = recPool
         .filter(title => !allTitlesLower.has(title.toLowerCase()))
         .slice(0, 4);
@@ -1457,11 +1381,6 @@
       function buildOpSearchUrl(animeTitle) {
         const q = encodeURIComponent(animeTitle + " opening theme");
         return "https://www.youtube.com/results?search_query=" + q;
-      }
-
-      function findOpVideoId(animeTitle) {
-        const key = normalizeTitle(animeTitle);
-        return OP_YT_MAP[key] || null;
       }
 
       slides.push({
@@ -1475,8 +1394,7 @@
           year
         },
         backgroundImage: "",
-        opSearch: null,
-        opVideoId: null
+        opSearch: null
       });
 
       slides.push({
@@ -1493,8 +1411,7 @@
           { label: "Years (if it were one long show)", value: years.toFixed(3) }
         ],
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null,
-        opVideoId: mostWatched ? findOpVideoId(mostWatched.title) : null
+        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
       if (mostWatched) {
@@ -1512,8 +1429,7 @@
           ],
           extraAnime: mostWatched,
           backgroundImage: coverForEntry(mostWatched),
-          opSearch: buildOpSearchUrl(mostWatched.title),
-          opVideoId: findOpVideoId(mostWatched.title)
+          opSearch: buildOpSearchUrl(mostWatched.title)
         });
       }
 
@@ -1528,11 +1444,11 @@
             title: e.title,
             score: e.score,
             episodes: e.watchedEpisodes,
-            type: e.type
+            type: e.type,
+            coverImage: e.coverImage || ""
           })),
           backgroundImage: coverForEntry(topRated[0]),
-          opSearch: buildOpSearchUrl(topRated[0].title),
-          opVideoId: findOpVideoId(topRated[0].title)
+          opSearch: buildOpSearchUrl(topRated[0].title)
         });
       }
 
@@ -1547,11 +1463,11 @@
             title: e.title,
             score: e.score,
             episodes: e.watchedEpisodes,
-            type: e.type
+            type: e.type,
+            coverImage: e.coverImage || ""
           })),
           backgroundImage: coverForEntry(bottomRated[0]),
-          opSearch: buildOpSearchUrl(bottomRated[0].title),
-          opVideoId: findOpVideoId(bottomRated[0].title)
+          opSearch: buildOpSearchUrl(bottomRated[0].title)
         });
       }
 
@@ -1567,8 +1483,7 @@
           { label: "Average score", value: avgScore ? avgScore.toFixed(2) : "—" }
         ],
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null,
-        opVideoId: mostWatched ? findOpVideoId(mostWatched.title) : null
+        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
       slides.push({
@@ -1586,8 +1501,7 @@
           }
         ],
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null,
-        opVideoId: mostWatched ? findOpVideoId(mostWatched.title) : null
+        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
       slides.push({
@@ -1600,8 +1514,7 @@
         body: "This isn’t a perfect algorithm — just a starting point of strong series to consider if you haven’t seen them yet.",
         recs: recommendations.length ? recommendations : recPool.slice(0, 4),
         backgroundImage: placeholderCover((recommendations[0] || recPool[0]) || ""),
-        opSearch: recommendations.length ? buildOpSearchUrl(recommendations[0]) : null,
-        opVideoId: recommendations.length ? findOpVideoId(recommendations[0]) : null
+        opSearch: recommendations.length ? buildOpSearchUrl(recommendations[0]) : null
       });
 
       slides.push({
@@ -1615,8 +1528,7 @@
           year
         },
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null,
-        opVideoId: mostWatched ? findOpVideoId(mostWatched.title) : null
+        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
       return slides;
@@ -1626,19 +1538,6 @@
 
     let currentSlides = [];
     let currentSlideIndex = 0;
-
-    function onSlideChanged() {
-      const slideEls = Array.from(document.querySelectorAll(".slide"));
-      const activeEl = slideEls.find(el => el.classList.contains("active"));
-      if (!activeEl || !currentSlides.length) return;
-
-      const index = slideEls.indexOf(activeEl);
-      const slideData = currentSlides[index];
-
-      if (slideData && slideData.backgroundImage) {
-        setGlobalBackgroundAnime(slideData.backgroundImage);
-      }
-    }
 
     function renderSlides(slides) {
       currentSlides = slides || [];
@@ -1674,7 +1573,18 @@
 
         const title = document.createElement("div");
         title.className = "slide-title";
-        title.textContent = slide.title || "";
+
+        // NEW: make the most-watched anime title clickable -> YouTube OP search
+        if (slide.type === "mostWatched" && slide.opSearch) {
+          const link = document.createElement("a");
+          link.href = slide.opSearch;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = slide.title || "";
+          title.appendChild(link);
+        } else {
+          title.textContent = slide.title || "";
+        }
 
         leftDiv.appendChild(kicker);
         leftDiv.appendChild(title);
@@ -1734,7 +1644,18 @@
 
           const t = document.createElement("div");
           t.className = "anime-title";
-          t.textContent = slide.extraAnime.title;
+          // Make card title clickable too
+          if (slide.opSearch) {
+            const link = document.createElement("a");
+            link.href = slide.opSearch;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = slide.extraAnime.title;
+            t.appendChild(link);
+          } else {
+            t.textContent = slide.extraAnime.title;
+          }
+
           const meta = document.createElement("div");
           meta.className = "anime-meta";
           meta.textContent =
@@ -1779,7 +1700,21 @@
           slide.list.forEach(item => {
             const meta = document.createElement("div");
             meta.className = "anime-meta";
-            meta.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
+
+            const titleLink = document.createElement("a");
+            titleLink.href =
+              "https://www.youtube.com/results?search_query=" +
+              encodeURIComponent(item.title + " opening theme");
+            titleLink.target = "_blank";
+            titleLink.rel = "noopener noreferrer";
+            titleLink.textContent = item.title;
+
+            meta.appendChild(titleLink);
+            const rest = document.createTextNode(
+              ` · Score: ${item.score} · ${item.episodes} eps`
+            );
+            meta.appendChild(rest);
+
             card.appendChild(meta);
           });
 
@@ -1797,7 +1732,16 @@
           slide.recs.forEach(titleStr => {
             const meta = document.createElement("div");
             meta.className = "anime-meta";
-            meta.textContent = titleStr;
+
+            const link = document.createElement("a");
+            link.href =
+              "https://www.youtube.com/results?search_query=" +
+              encodeURIComponent(titleStr + " opening theme");
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = titleStr;
+
+            meta.appendChild(link);
             card.appendChild(meta);
           });
 
@@ -1847,15 +1791,9 @@
           opBtn.type = "button";
           opBtn.className = "op-btn";
           opBtn.innerHTML = "<span>▶</span><span>Play an opening from this vibe</span>";
-
           opBtn.addEventListener("click", () => {
-            if (slide.opVideoId) {
-              playEmbeddedOp(slide.opVideoId);
-            } else {
-              window.open(slide.opSearch, "_blank", "noopener,noreferrer");
-            }
+            playOpSample();
           });
-
           rightDiv.appendChild(opBtn);
         }
 
@@ -1886,7 +1824,7 @@
 
       updateSlideIndicator();
       updateControlsDisabled();
-      onSlideChanged();
+      onSlideChanged(); // NEW: run once on initial render
     }
 
     function updateSlideIndicator() {
@@ -1907,6 +1845,20 @@
       nextBtn.disabled = currentSlideIndex === currentSlides.length - 1;
     }
 
+    // NEW: respond when slide changes (for background swap)
+    function onSlideChanged() {
+      const slideEls = Array.from(document.querySelectorAll(".slide"));
+      if (!slideEls.length || !currentSlides.length) return;
+
+      const activeIndex = slideEls.findIndex(el => el.classList.contains("active"));
+      if (activeIndex === -1) return;
+
+      const slideData = currentSlides[activeIndex];
+      if (slideData && slideData.type === "mostWatched" && slideData.backgroundImage) {
+        setGlobalBackgroundAnime(slideData.backgroundImage);
+      }
+    }
+
     function goToSlide(newIndex) {
       if (!currentSlides.length) return;
       const slides = Array.from(document.querySelectorAll(".slide"));
@@ -1918,7 +1870,7 @@
       currentSlideIndex = clamped;
       updateSlideIndicator();
       updateControlsDisabled();
-      onSlideChanged();
+      onSlideChanged(); // NEW
     }
 
     // ------------- File reading & main flow -------------
@@ -1931,6 +1883,7 @@
     const manualInput = document.getElementById("manualList");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
+    // MAL login button – mark THIS browser as freshly authorized (short-lived, one-time)
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
         try {
@@ -1944,6 +1897,7 @@
       });
     }
 
+    // Set default year to current
     const currentYear = new Date().getFullYear();
     if (yearInput) {
       yearInput.value = currentYear;
@@ -1969,7 +1923,7 @@
         currentYear
       );
 
-      // 1) LOCAL FILE BRANCH
+      // 1) LOCAL FILE BRANCH (XML / XML.GZ / TXT)
       if (file) {
         showPanel("panel-loading");
         tryStartMusic();
@@ -1988,6 +1942,7 @@
 
             const parsed = parseMalXml(xmlText);
 
+            // Filter to chosen year using start or finish date
             const entries = parsed.entries;
             const filtered = entries.filter((entry) => {
               const startY = extractYear(entry.startDate);
@@ -2028,7 +1983,7 @@
         return;
       }
 
-      // 2) MANUAL BRANCH
+      // 2) MANUAL BRANCH – user typed or pasted a list
       if (manualText) {
         try {
           showPanel("panel-loading");
@@ -2054,7 +2009,7 @@
         return;
       }
 
-      // 3) USERNAME BRANCH (Jikan)
+      // 3) USERNAME BRANCH (Jikan) – only if username filled
       if (username) {
         try {
           showPanel("panel-loading");
@@ -2077,14 +2032,14 @@
         return;
       }
 
-      // 4) MAL BACKEND BRANCH
+      // 4) MAL BACKEND BRANCH – ONLY if this browser recently clicked "Sign in with MAL"
       let malAuthorized = false;
       try {
         const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
         const authAtRaw = window.localStorage.getItem("malAuthorizedAt");
         const authAt = authAtRaw ? Number(authAtRaw) : 0;
         const now = Date.now();
-        const MAX_AUTH_AGE_MS = 10 * 60 * 1000;
+        const MAX_AUTH_AGE_MS = 10 * 60 * 1000; // 10 minutes window
 
         malAuthorized =
           !!authPending &&
@@ -2104,6 +2059,7 @@
           const slides = buildSlides(wrappedData);
           renderSlides(slides);
 
+          // One-time use: clear flags so others can't spam generate your data
           try {
             window.localStorage.removeItem("malAuthorizedPending");
             window.localStorage.removeItem("malAuthorizedAt");
@@ -2129,7 +2085,7 @@
         return;
       }
 
-      // 5) Nothing provided
+      // 5) If we get here: no file, no manual list, no username, and no fresh MAL login
       if (fileError) {
         fileError.textContent =
           "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
@@ -2150,9 +2106,13 @@
     });
   </script>
 
-  <!-- Background music -->
+  <!-- Background + sample OP audio -->
   <audio id="bgMusic" loop>
     <source src="bg-music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <audio id="opAudio">
+    <source src="op-sample.mp3" type="audio/mpeg" />
   </audio>
 
 </body>
