@@ -1079,41 +1079,6 @@
       return null;
     }
 
-    // ------------- OP TRACKS → YouTube IDs -------------
-
-    // 🔥 You can change these IDs to real OPs.
-    // Key = lowercase anime name (or a piece of it)
-    const OP_TRACKS = {
-      "naruto": "Rw7w2zFdJ6o",
-      "naruto: shippuuden": "x7HKvyZqK3I",
-      "naruto shippuden": "x7HKvyZqK3I",
-      "bleach": "nJtSP7WQ6N8",
-      "one piece": "d9QZ5jBqHds",
-      "attack on titan": "8OkpRr2kUGk",
-      "shingeki no kyojin": "8OkpRr2kUGk",
-      "demon slayer": "pmanD_s7G3U",
-      "kimetsu no yaiba": "pmanD_s7G3U",
-      "jujutsu kaisen": "tYkA4Pq8UxY",
-      "my hero academia": "T83m1wNqZmk",
-      "boku no hero academia": "T83m1wNqZmk",
-      "solo leveling": "8Z9Ismh1Klo",
-      "parasyte": "M7i_6oWcCT8",
-      "kaguya-sama: love is war": "OX9NnZcqIhc",
-      "kaguya-sama": "OX9NnZcqIhc",
-      "vinland saga": "Ff6lDp4v82Y"
-      // add more as you want
-    };
-
-    let currentOpVideoId = null;
-    let opIsPlaying = false;
-
-    function normalizeAnimeTitle(title) {
-      if (!title) return "";
-      return title.toLowerCase().trim();
-    }
-
-    function getOpVideoIdForTitle(title) {
-      if (!title) return null;
       const norm = normalizeAnimeTitle(title);
 
       // exact match
@@ -1129,46 +1094,56 @@
       return null;
     }
 
+      // ------------- Stop BG music + tiny YouTube OP player -------------
+
     function stopBgMusic() {
-  const bgMusic = getBgMusic();
-  if (bgMusic) {
-    bgMusic.pause();
-  }
-  musicOn = false;
-  updateMusicToggle();
-}
+      const bgMusic = getBgMusic();
+      if (bgMusic) {
+        bgMusic.pause();
+      }
+      musicOn = false;
+      updateMusicToggle();
+    }
 
-// 🔥 NEW: YouTube search-based OP player
-let currentOpQuery = null;
-let opIsPlaying = false;
+    // Use a tiny, hidden YouTube iframe with a search for "<title> opening"
+    let currentOpQuery = null;
+    let opIsPlaying = false;
 
-// Use a tiny, hidden YouTube iframe to play an "anime title + opening" search
-function playOpeningForTitle(title) {
-  // Pause bg music when OP starts
-  stopBgMusic();
+    function playOpeningForTitle(title) {
+      if (!title) return;
 
-  const iframe = document.getElementById("opPlayerIframe");
-  if (!iframe || !title) return;
+      // Pause the main background music
+      stopBgMusic();
 
-  // Build a YouTube search embed query, e.g. "Solo Leveling opening"
-  const query = encodeURIComponent(title + " opening");
+      const iframe = document.getElementById("opPlayerIframe");
+      if (!iframe) return;
 
-  const src =
-    "https://www.youtube-nocookie.com/embed?listType=search&list=" +
-    query +
-    "&autoplay=1&controls=0&rel=0&modestbranding=1";
+      // Build a YouTube search embed query, e.g. "Solo Leveling opening"
+      const query = encodeURIComponent(title + " opening");
 
-  // Toggle: if this OP is already playing, clicking again stops it
-  if (currentOpQuery === query && opIsPlaying) {
-    iframe.src = "";
-    opIsPlaying = false;
-    return;
-  }
+      const src =
+        "https://www.youtube.com/embed" +
+        "?autoplay=1" +
+        "&controls=0" +
+        "&rel=0" +
+        "&modestbranding=1" +
+        "&playsinline=1" +
+        "&listType=search" +
+        "&list=" +
+        query;
 
-  currentOpQuery = query;
-  opIsPlaying = true;
-  iframe.src = src;
-}
+      // Toggle behavior: clicking again stops the OP
+      if (currentOpQuery === query && opIsPlaying) {
+        iframe.src = "";
+        opIsPlaying = false;
+        return;
+      }
+
+      currentOpQuery = query;
+      opIsPlaying = true;
+      iframe.src = src;
+    }
+
 
     function enterSlidesMode() {
       showPanel("panel-slides");
@@ -2148,40 +2123,28 @@ function playOpeningForTitle(title) {
   </div>
 </script>
 
-<!-- Background music -->
-<audio id="bgMusic" loop>
-  <source src="bg-music.mp3" type="audio/mpeg" />
-</audio>
+  <!-- Background music -->
+  <audio id="bgMusic" loop>
+    <source src="bg-music.mp3" type="audio/mpeg" />
+  </audio>
 
-<!-- Local fallback OP sample -->
-<audio id="opAudio">
-  <source src="op-sample.mp3" type="audio/mpeg" />
-</audio>
+  <!-- Local fallback OP sample -->
+  <audio id="opAudio">
+    <source src="op-sample.mp3" type="audio/mpeg" />
+  </audio>
 
-<!-- 🔥 Hidden YouTube player for OPs -->
-<div id="opPlayerContainer">
-  <iframe
-    id="opPlayerIframe"
-    width="200"
-    height="113"
-    src=""
-    title="Anime opening"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen
-  ></iframe>
-</div>
-
-</body>
-</html>
-
-
-
-
-
-
-
-
-  
+  <!-- Tiny hidden YouTube player for OPs -->
+  <div id="opPlayerContainer">
+    <iframe
+      id="opPlayerIframe"
+      width="200"
+      height="113"
+      src=""
+      title="Anime opening"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  </div>
 </body>
 </html>
