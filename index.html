@@ -79,6 +79,7 @@
       z-index: -3;
     }
 
+    /* GLOBAL BACKGROUND IMAGE – higher quality */
     .bg-anime {
       position: fixed;
       inset: 0;
@@ -86,9 +87,10 @@
       background-image: url("anime-bg.jpg");
       background-size: cover;
       background-position: center;
-      filter: blur(2px);
-      opacity: 0.28;
+      filter: blur(1.5px);
+      opacity: 0.5;
       z-index: -2;
+      transition: opacity 0.4s ease, background-image 0.4s ease;
     }
 
     .bg-orbit {
@@ -332,7 +334,6 @@
       cursor: pointer;
     }
 
-    /* override for textarea so it isn't a pill */
     .field-textarea {
       border-radius: 16px;
       min-height: 90px;
@@ -524,23 +525,24 @@
       pointer-events: auto;
     }
 
+    /* SLIDE BACKGROUND IMAGE – clearer */
     .slide-bg {
       position: absolute;
       inset: 0;
-      opacity: 0.35;
+      opacity: 0.5;
       background-position: center;
       background-size: cover;
       background-repeat: no-repeat;
-      filter: blur(8px);
-      transform: scale(1.05);
+      filter: blur(4px);
+      transform: scale(1.03);
     }
 
     .slide-gradient {
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(135deg, rgba(15,23,42,0.98), rgba(15,23,42,0.9)),
-        radial-gradient(circle at top left, rgba(56,189,248,0.2), transparent 50%);
+        linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9)),
+        radial-gradient(circle at top left, rgba(56,189,248,0.22), transparent 55%);
       mix-blend-mode: multiply;
     }
 
@@ -580,12 +582,6 @@
       font-size: 1.6rem;
       font-weight: 800;
       line-height: 1.2;
-    }
-
-    .slide-title a {
-      color: inherit;
-      text-decoration: underline;
-      text-underline-offset: 3px;
     }
 
     .slide-highlight {
@@ -648,12 +644,6 @@
     .anime-meta {
       font-size: 0.8rem;
       color: var(--text-soft);
-    }
-
-    .anime-meta a {
-      color: #bfdbfe;
-      text-decoration: underline;
-      text-underline-offset: 3px;
     }
 
     .pill-meta-row {
@@ -750,7 +740,6 @@
       color: var(--text-soft);
     }
 
-    /* Top moving banner */
     .top-banner {
       width: 100%;
       overflow: hidden;
@@ -849,7 +838,6 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
-                <!-- Optional username for Jikan -->
                 <div class="field">
                   <label for="malUsername">MAL Username (optional)</label>
                   <input
@@ -863,7 +851,6 @@
                   </div>
                 </div>
 
-                <!-- Manual list textarea -->
                 <div class="field">
                   <label for="manualList">Manual Anime List (optional)</label>
                   <textarea
@@ -879,7 +866,6 @@
                   </div>
                 </div>
 
-                <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
                   <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
                     Sign in with MAL
@@ -933,7 +919,6 @@
       <section class="panel" id="panel-slides">
         <div class="slides-wrapper">
           <div class="slides-main" id="slidesMain">
-            <!-- Slides injected here -->
           </div>
           <div class="slides-controls">
             <div class="controls-left">
@@ -957,16 +942,13 @@
   </div>
 
   <script>
-    // ------------- Utility helpers + audio -------------
+    // ---------- Utility helpers + audio ----------
 
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
     function getBgMusic() {
       return document.getElementById("bgMusic");
-    }
-    function getOpAudio() {
-      return document.getElementById("opAudio");
     }
 
     function updateMusicToggle() {
@@ -991,7 +973,6 @@
     }
 
     window.addEventListener("load", () => {
-      // kill old auth flag if it existed (privacy hardening)
       try {
         window.localStorage.removeItem("malAuthorized");
       } catch (e) {}
@@ -1023,31 +1004,6 @@
         updateMusicToggle();
       });
       updateMusicToggle();
-    }
-
-    function playOpSample() {
-      const opAudio = getOpAudio();
-      if (!opAudio) return;
-      try {
-        opAudio.currentTime = 0;
-      } catch (e) {}
-      opAudio.volume = 0.8;
-      const p = opAudio.play();
-      if (p && p.then) p.catch(() => {});
-    }
-
-    // NEW: set the global blurred background + hide intro video
-    function setGlobalBackgroundAnime(imageUrl) {
-      const bgAnimeDiv = document.querySelector(".bg-anime");
-      if (bgAnimeDiv && imageUrl) {
-        bgAnimeDiv.style.backgroundImage = `url('${imageUrl}')`;
-        bgAnimeDiv.style.opacity = "0.4";
-      }
-
-      const introVideoWrapper = document.querySelector(".intro-video-wrapper");
-      if (introVideoWrapper) {
-        introVideoWrapper.style.display = "none";
-      }
     }
 
     function showPanel(id) {
@@ -1082,6 +1038,20 @@
       return null;
     }
 
+    // ---------- Global anime background helpers ----------
+
+    function setGlobalBackgroundAnime(imageUrl) {
+      const bgAnimeDiv = document.querySelector(".bg-anime");
+      if (bgAnimeDiv && imageUrl) {
+        bgAnimeDiv.style.backgroundImage = `url('${imageUrl}')`;
+        bgAnimeDiv.style.opacity = "0.5";
+      }
+      const introVideoWrapper = document.querySelector(".intro-video-wrapper");
+      if (introVideoWrapper) {
+        introVideoWrapper.style.display = "none";
+      }
+    }
+
     // ------------- Parse MAL XML -------------
 
     function parseMalXml(xmlText) {
@@ -1092,13 +1062,13 @@
       const userName = userNameNode ? userNameNode.textContent.trim() : "Anime Fan";
 
       const animeNodes = Array.from(doc.getElementsByTagName("anime"));
-      const entries = animeNodes.map(node => {
+      const entries = animeNodes.map((node, idx) => {
         const get = tag => {
           const el = node.getElementsByTagName(tag)[0];
           return el && el.textContent ? el.textContent.trim() : "";
         };
         const title = get("series_title") || "Untitled Anime";
-        const id = get("series_animedb_id");
+        const id = get("series_animedb_id") || String(idx);
         const type = get("series_type");
         const totalEpisodes = safeInt(get("series_episodes"), 0);
         const watchedEpisodes = safeInt(get("my_watched_episodes"), 0);
@@ -1142,6 +1112,10 @@
         const list = (json && json.data) || [];
         list.forEach(item => {
           const anime = item.anime || {};
+          const images = anime.images && anime.images.jpg ? anime.images.jpg : null;
+          const coverImage =
+            (images && (images.large_image_url || images.image_url)) || "";
+
           const entry = {
             id: String(anime.mal_id || ""),
             title: anime.title || anime.title_english || "Untitled Anime",
@@ -1157,12 +1131,7 @@
             finishDate: item.completed_at || "",
             score: Number(item.score) || 0,
             status: item.status || "",
-            // NEW: cover image from Jikan v4
-            coverImage:
-              (anime.images &&
-                anime.images.jpg &&
-                (anime.images.jpg.large_image_url || anime.images.jpg.image_url)) ||
-              ""
+            coverImage
           };
           entries.push(entry);
         });
@@ -1203,6 +1172,11 @@
         const anime = item.node || item.anime || {};
         const status = item.list_status || {};
 
+        const coverImage =
+          (anime.main_picture &&
+            (anime.main_picture.large || anime.main_picture.medium)) ||
+          "";
+
         entries.push({
           id: String(anime.id || anime.mal_id || ""),
           title:
@@ -1220,11 +1194,7 @@
           finishDate: status.finish_date || "",
           score: Number(status.score) || 0,
           status: status.status || "",
-          // NEW: cover image from official MAL API
-          coverImage:
-            (anime.main_picture &&
-              (anime.main_picture.large || anime.main_picture.medium)) ||
-            ""
+          coverImage
         });
       });
 
@@ -1254,7 +1224,6 @@
       const entries = [];
 
       lines.forEach((line, idx) => {
-        // Prefer pipe-separated; fallback to " - "
         let parts = line.split("|");
         if (parts.length === 1) {
           parts = line.split(" - ");
@@ -1304,7 +1273,7 @@
       const seconds = totalMinutes * 60;
       const days = totalMinutes / (60 * 24);
       const months = totalMinutes / (60 * 24 * 30);
-      const years = totalMinutes / (60 * 24 * 365);
+      const yearsFloat = totalMinutes / (60 * 24 * 365);
 
       const nonZeroWatch = list.filter(e => (e.watchedEpisodes || 0) > 0);
       const rated = list.filter(e => e.score && e.score > 0);
@@ -1319,12 +1288,13 @@
       );
 
       const mostWatched = sortedByMinutes[0] || null;
+
       function placeholderCover(title) {
         if (!title) return "";
         const t = encodeURIComponent(title + " anime");
         return "https://placehold.co/800x1200/020617/ffffff?text=" + t;
       }
-      // NEW: prefer real cover image if present
+
       function coverForEntry(entry) {
         if (!entry) return "";
         if (entry.coverImage) return entry.coverImage;
@@ -1383,6 +1353,10 @@
         return "https://www.youtube.com/results?search_query=" + q;
       }
 
+      // choose some base anime for intro/background
+      const baseIntroAnime = mostWatched || topRated[0] || list[0] || null;
+      const baseIntroImage = baseIntroAnime ? coverForEntry(baseIntroAnime) : "";
+
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
@@ -1393,8 +1367,8 @@
           username,
           year
         },
-        backgroundImage: "",
-        opSearch: null
+        backgroundImage: baseIntroImage,
+        opSearch: baseIntroAnime ? buildOpSearchUrl(baseIntroAnime.title) : null
       });
 
       slides.push({
@@ -1408,10 +1382,10 @@
           { label: "Hours", value: formatNumber((totalMinutes / 60) | 0) },
           { label: "Days", value: formatNumber(days.toFixed(1)) },
           { label: "Months (approx)", value: formatNumber(months.toFixed(2)) },
-          { label: "Years (if it were one long show)", value: years.toFixed(3) }
+          { label: "Years (if it were one long show)", value: yearsFloat.toFixed(3) }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
+        backgroundImage: baseIntroImage,
+        opSearch: baseIntroAnime ? buildOpSearchUrl(baseIntroAnime.title) : null
       });
 
       if (mostWatched) {
@@ -1444,8 +1418,7 @@
             title: e.title,
             score: e.score,
             episodes: e.watchedEpisodes,
-            type: e.type,
-            coverImage: e.coverImage || ""
+            type: e.type
           })),
           backgroundImage: coverForEntry(topRated[0]),
           opSearch: buildOpSearchUrl(topRated[0].title)
@@ -1463,8 +1436,7 @@
             title: e.title,
             score: e.score,
             episodes: e.watchedEpisodes,
-            type: e.type,
-            coverImage: e.coverImage || ""
+            type: e.type
           })),
           backgroundImage: coverForEntry(bottomRated[0]),
           opSearch: buildOpSearchUrl(bottomRated[0].title)
@@ -1482,8 +1454,8 @@
           { label: "Total episodes watched", value: formatNumber(totalEpisodes) },
           { label: "Average score", value: avgScore ? avgScore.toFixed(2) : "—" }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
+        backgroundImage: baseIntroImage,
+        opSearch: baseIntroAnime ? buildOpSearchUrl(baseIntroAnime.title) : null
       });
 
       slides.push({
@@ -1500,10 +1472,11 @@
             value: avgScore ? avgScore.toFixed(2) : "mysterious"
           }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
+        backgroundImage: baseIntroImage,
+        opSearch: baseIntroAnime ? buildOpSearchUrl(baseIntroAnime.title) : null
       });
 
+      const recAnchor = recommendations[0] || recPool[0] || "";
       slides.push({
         type: "recs",
         kicker: "Fuel for your next year",
@@ -1513,8 +1486,8 @@
           : "You’ve logged a lot already — here are some evergreen suggestions anyway.",
         body: "This isn’t a perfect algorithm — just a starting point of strong series to consider if you haven’t seen them yet.",
         recs: recommendations.length ? recommendations : recPool.slice(0, 4),
-        backgroundImage: placeholderCover((recommendations[0] || recPool[0]) || ""),
-        opSearch: recommendations.length ? buildOpSearchUrl(recommendations[0]) : null
+        backgroundImage: placeholderCover(recAnchor),
+        opSearch: recAnchor ? buildOpSearchUrl(recAnchor) : null
       });
 
       slides.push({
@@ -1527,8 +1500,8 @@
           username,
           year
         },
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
+        backgroundImage: baseIntroImage,
+        opSearch: baseIntroAnime ? buildOpSearchUrl(baseIntroAnime.title) : null
       });
 
       return slides;
@@ -1538,6 +1511,20 @@
 
     let currentSlides = [];
     let currentSlideIndex = 0;
+
+    function onSlideChanged() {
+      const slideEls = Array.from(document.querySelectorAll(".slide"));
+      const activeEl = slideEls.find(el => el.classList.contains("active"));
+      if (!activeEl || !currentSlides.length) return;
+
+      const index = slideEls.indexOf(activeEl);
+      const slideData = currentSlides[index];
+
+      // UPDATE GLOBAL BG FOR EVERY SLIDE
+      if (slideData && slideData.backgroundImage) {
+        setGlobalBackgroundAnime(slideData.backgroundImage);
+      }
+    }
 
     function renderSlides(slides) {
       currentSlides = slides || [];
@@ -1573,18 +1560,7 @@
 
         const title = document.createElement("div");
         title.className = "slide-title";
-
-        // NEW: make the most-watched anime title clickable -> YouTube OP search
-        if (slide.type === "mostWatched" && slide.opSearch) {
-          const link = document.createElement("a");
-          link.href = slide.opSearch;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          link.textContent = slide.title || "";
-          title.appendChild(link);
-        } else {
-          title.textContent = slide.title || "";
-        }
+        title.textContent = slide.title || "";
 
         leftDiv.appendChild(kicker);
         leftDiv.appendChild(title);
@@ -1644,17 +1620,7 @@
 
           const t = document.createElement("div");
           t.className = "anime-title";
-          // Make card title clickable too
-          if (slide.opSearch) {
-            const link = document.createElement("a");
-            link.href = slide.opSearch;
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = slide.extraAnime.title;
-            t.appendChild(link);
-          } else {
-            t.textContent = slide.extraAnime.title;
-          }
+          t.textContent = slide.extraAnime.title;
 
           const meta = document.createElement("div");
           meta.className = "anime-meta";
@@ -1700,21 +1666,7 @@
           slide.list.forEach(item => {
             const meta = document.createElement("div");
             meta.className = "anime-meta";
-
-            const titleLink = document.createElement("a");
-            titleLink.href =
-              "https://www.youtube.com/results?search_query=" +
-              encodeURIComponent(item.title + " opening theme");
-            titleLink.target = "_blank";
-            titleLink.rel = "noopener noreferrer";
-            titleLink.textContent = item.title;
-
-            meta.appendChild(titleLink);
-            const rest = document.createTextNode(
-              ` · Score: ${item.score} · ${item.episodes} eps`
-            );
-            meta.appendChild(rest);
-
+            meta.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
             card.appendChild(meta);
           });
 
@@ -1732,16 +1684,7 @@
           slide.recs.forEach(titleStr => {
             const meta = document.createElement("div");
             meta.className = "anime-meta";
-
-            const link = document.createElement("a");
-            link.href =
-              "https://www.youtube.com/results?search_query=" +
-              encodeURIComponent(titleStr + " opening theme");
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = titleStr;
-
-            meta.appendChild(link);
+            meta.textContent = titleStr;
             card.appendChild(meta);
           });
 
@@ -1790,9 +1733,12 @@
           const opBtn = document.createElement("button");
           opBtn.type = "button";
           opBtn.className = "op-btn";
-          opBtn.innerHTML = "<span>▶</span><span>Play an opening from this vibe</span>";
+          opBtn.innerHTML = "<span>▶</span><span>Open an opening on YouTube</span>";
           opBtn.addEventListener("click", () => {
-            playOpSample();
+            // open a YouTube search for that anime's OP in a new tab
+            if (slide.opSearch) {
+              window.open(slide.opSearch, "_blank", "noopener");
+            }
           });
           rightDiv.appendChild(opBtn);
         }
@@ -1824,7 +1770,7 @@
 
       updateSlideIndicator();
       updateControlsDisabled();
-      onSlideChanged(); // NEW: run once on initial render
+      onSlideChanged();
     }
 
     function updateSlideIndicator() {
@@ -1845,20 +1791,6 @@
       nextBtn.disabled = currentSlideIndex === currentSlides.length - 1;
     }
 
-    // NEW: respond when slide changes (for background swap)
-    function onSlideChanged() {
-      const slideEls = Array.from(document.querySelectorAll(".slide"));
-      if (!slideEls.length || !currentSlides.length) return;
-
-      const activeIndex = slideEls.findIndex(el => el.classList.contains("active"));
-      if (activeIndex === -1) return;
-
-      const slideData = currentSlides[activeIndex];
-      if (slideData && slideData.type === "mostWatched" && slideData.backgroundImage) {
-        setGlobalBackgroundAnime(slideData.backgroundImage);
-      }
-    }
-
     function goToSlide(newIndex) {
       if (!currentSlides.length) return;
       const slides = Array.from(document.querySelectorAll(".slide"));
@@ -1870,7 +1802,7 @@
       currentSlideIndex = clamped;
       updateSlideIndicator();
       updateControlsDisabled();
-      onSlideChanged(); // NEW
+      onSlideChanged();
     }
 
     // ------------- File reading & main flow -------------
@@ -1883,7 +1815,6 @@
     const manualInput = document.getElementById("manualList");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
-    // MAL login button – mark THIS browser as freshly authorized (short-lived, one-time)
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
         try {
@@ -1897,7 +1828,6 @@
       });
     }
 
-    // Set default year to current
     const currentYear = new Date().getFullYear();
     if (yearInput) {
       yearInput.value = currentYear;
@@ -1923,7 +1853,6 @@
         currentYear
       );
 
-      // 1) LOCAL FILE BRANCH (XML / XML.GZ / TXT)
       if (file) {
         showPanel("panel-loading");
         tryStartMusic();
@@ -1942,7 +1871,6 @@
 
             const parsed = parseMalXml(xmlText);
 
-            // Filter to chosen year using start or finish date
             const entries = parsed.entries;
             const filtered = entries.filter((entry) => {
               const startY = extractYear(entry.startDate);
@@ -1983,7 +1911,6 @@
         return;
       }
 
-      // 2) MANUAL BRANCH – user typed or pasted a list
       if (manualText) {
         try {
           showPanel("panel-loading");
@@ -2009,7 +1936,6 @@
         return;
       }
 
-      // 3) USERNAME BRANCH (Jikan) – only if username filled
       if (username) {
         try {
           showPanel("panel-loading");
@@ -2032,14 +1958,13 @@
         return;
       }
 
-      // 4) MAL BACKEND BRANCH – ONLY if this browser recently clicked "Sign in with MAL"
       let malAuthorized = false;
       try {
         const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
         const authAtRaw = window.localStorage.getItem("malAuthorizedAt");
         const authAt = authAtRaw ? Number(authAtRaw) : 0;
         const now = Date.now();
-        const MAX_AUTH_AGE_MS = 10 * 60 * 1000; // 10 minutes window
+        const MAX_AUTH_AGE_MS = 10 * 60 * 1000;
 
         malAuthorized =
           !!authPending &&
@@ -2059,7 +1984,6 @@
           const slides = buildSlides(wrappedData);
           renderSlides(slides);
 
-          // One-time use: clear flags so others can't spam generate your data
           try {
             window.localStorage.removeItem("malAuthorizedPending");
             window.localStorage.removeItem("malAuthorizedAt");
@@ -2085,7 +2009,6 @@
         return;
       }
 
-      // 5) If we get here: no file, no manual list, no username, and no fresh MAL login
       if (fileError) {
         fileError.textContent =
           "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
@@ -2094,7 +2017,6 @@
       showPanel("panel-input");
     });
 
-    // Slide controls
     document.getElementById("prevSlideBtn").addEventListener("click", () => {
       goToSlide(currentSlideIndex - 1);
     });
@@ -2106,13 +2028,9 @@
     });
   </script>
 
-  <!-- Background + sample OP audio -->
+  <!-- Background music only -->
   <audio id="bgMusic" loop>
     <source src="bg-music.mp3" type="audio/mpeg" />
-  </audio>
-
-  <audio id="opAudio">
-    <source src="op-sample.mp3" type="audio/mpeg" />
   </audio>
 
 </body>
