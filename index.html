@@ -953,11 +953,15 @@
       updateMusicToggle();
     }
 
-    // ---------- YT OP PLAYER ----------
-    let currentOpTitle = null;
-    let opIsPlaying = false;
+   // --- YT OP PLAYER --------
 
- async function fetchFirstOpVideoId(title) {
+// YT_API_KEY should already be defined above as:
+// const YT_API_KEY = "YOUR_REAL_KEY_HERE";
+
+let currentOpTitle = null;
+let opIsPlaying = false;
+
+async function fetchFirstOpVideoId(title) {
   if (!title || !YT_API_KEY) {
     console.warn("No YT API key or title for OP search");
     return null;
@@ -966,15 +970,15 @@
   const query = encodeURIComponent(title + " opening");
   const url =
     "https://www.googleapis.com/youtube/v3/search" +
-    "?part=snippet&type=video&maxResults=1&q=" + query +
+    "?part=snippet&type=video&maxResults=1&videoEmbeddable=true&q=" +
+    query +
     `&key=${YT_API_KEY}`;
 
-  console.log("YT search URL:", url);   // <--- add this
+  console.log("[OP search] URL:", url);
 
   try {
     const res = await fetch(url);
-    console.log("YT status:", res.status);  // <--- and this
-
+    console.log("[OP search] status:", res.status);
     if (!res.ok) {
       console.warn("YouTube API error:", res.status, res.statusText);
       return null;
@@ -983,20 +987,55 @@
     const data = await res.json();
     const items = (data && data.items) || [];
     if (!items.length || !items[0].id || !items[0].id.videoId) {
-      console.warn("No video results for", title);
+      console.warn("[OP search] No videoId in response:", data);
       return null;
     }
 
     return items[0].id.videoId;
   } catch (err) {
-    console.error("YouTube API fetch failed:", err);
+    console.error("[OP search] fetch failed:", err);
     return null;
   }
 }
 
+async function playOpeningForTitle(title) {
+  if (!title) return;
 
-    async function playOpeningForTitle(title) {
-      if (!title) return;
+  // Stop background music when we try to play an OP
+  stopBgMusic();
+
+  const iframe = document.getElementById("opPlayerIframe");
+  if (!iframe) {
+    console.warn("No OP iframe; using local sample");
+    playOpSample();
+    return;
+  }
+
+  // Toggle off if user clicks the same title again
+  if (opIsPlaying && currentOpTitle === title) {
+    iframe.src = "about:blank";
+    opIsPlaying = false;
+    currentOpTitle = null;
+    return;
+  }
+
+  currentOpTitle = title;
+  opIsPlaying = true;
+
+  const videoId = await fetchFirstOpVideoId(title);
+  if (!videoId) {
+    console.warn("Falling back to local OP sample");
+    playOpSample();
+    return;
+  }
+
+  const src =
+    `https://www.youtube.com/embed/${videoId}` +
+    "?autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1";
+
+  console.log("[OP] Playing videoId:", videoId, "for title:", title);
+  iframe.src = src;
+}
 
       const opAudio = getOpAudio();
       const iframe = document.getElementById("opPlayerIframe");
