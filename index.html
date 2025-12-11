@@ -582,6 +582,12 @@
       line-height: 1.2;
     }
 
+    .slide-title a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
     .slide-highlight {
       font-size: 1.15rem;
       font-weight: 600;
@@ -642,6 +648,12 @@
     .anime-meta {
       font-size: 0.8rem;
       color: var(--text-soft);
+    }
+
+    .anime-meta a {
+      color: #bfdbfe;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
 
     .pill-meta-row {
@@ -1024,6 +1036,20 @@
       if (p && p.then) p.catch(() => {});
     }
 
+    // NEW: set the global blurred background + hide intro video
+    function setGlobalBackgroundAnime(imageUrl) {
+      const bgAnimeDiv = document.querySelector(".bg-anime");
+      if (bgAnimeDiv && imageUrl) {
+        bgAnimeDiv.style.backgroundImage = `url('${imageUrl}')`;
+        bgAnimeDiv.style.opacity = "0.4";
+      }
+
+      const introVideoWrapper = document.querySelector(".intro-video-wrapper");
+      if (introVideoWrapper) {
+        introVideoWrapper.style.display = "none";
+      }
+    }
+
     function showPanel(id) {
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
       const panel = document.getElementById(id);
@@ -1090,7 +1116,8 @@
           startDate,
           finishDate,
           score,
-          status
+          status,
+          coverImage: "" // XML export doesn't include images
         };
       });
 
@@ -1129,7 +1156,13 @@
             startDate: item.started_at || "",
             finishDate: item.completed_at || "",
             score: Number(item.score) || 0,
-            status: item.status || ""
+            status: item.status || "",
+            // NEW: cover image from Jikan v4
+            coverImage:
+              (anime.images &&
+                anime.images.jpg &&
+                (anime.images.jpg.large_image_url || anime.images.jpg.image_url)) ||
+              ""
           };
           entries.push(entry);
         });
@@ -1186,7 +1219,12 @@
           startDate: status.start_date || "",
           finishDate: status.finish_date || "",
           score: Number(status.score) || 0,
-          status: status.status || ""
+          status: status.status || "",
+          // NEW: cover image from official MAL API
+          coverImage:
+            (anime.main_picture &&
+              (anime.main_picture.large || anime.main_picture.medium)) ||
+            ""
         });
       });
 
@@ -1239,7 +1277,8 @@
           startDate,
           finishDate,
           score,
-          status: "completed"
+          status: "completed",
+          coverImage: ""
         });
       });
 
@@ -1285,6 +1324,13 @@
         const t = encodeURIComponent(title + " anime");
         return "https://placehold.co/800x1200/020617/ffffff?text=" + t;
       }
+      // NEW: prefer real cover image if present
+      function coverForEntry(entry) {
+        if (!entry) return "";
+        if (entry.coverImage) return entry.coverImage;
+        return placeholderCover(entry.title);
+      }
+
       const topRated = sortedByScoreDesc.slice(0, 3);
       const bottomRated = sortedByScoreAsc.slice(0, 3);
 
@@ -1364,7 +1410,7 @@
           { label: "Months (approx)", value: formatNumber(months.toFixed(2)) },
           { label: "Years (if it were one long show)", value: years.toFixed(3) }
         ],
-        backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
         opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
@@ -1382,7 +1428,7 @@
             { label: "Your score", value: mostWatched.score || "—" }
           ],
           extraAnime: mostWatched,
-          backgroundImage: placeholderCover(mostWatched.title),
+          backgroundImage: coverForEntry(mostWatched),
           opSearch: buildOpSearchUrl(mostWatched.title)
         });
       }
@@ -1398,9 +1444,10 @@
             title: e.title,
             score: e.score,
             episodes: e.watchedEpisodes,
-            type: e.type
+            type: e.type,
+            coverImage: e.coverImage || ""
           })),
-          backgroundImage: placeholderCover(topRated[0].title),
+          backgroundImage: coverForEntry(topRated[0]),
           opSearch: buildOpSearchUrl(topRated[0].title)
         });
       }
@@ -1416,9 +1463,10 @@
             title: e.title,
             score: e.score,
             episodes: e.watchedEpisodes,
-            type: e.type
+            type: e.type,
+            coverImage: e.coverImage || ""
           })),
-          backgroundImage: placeholderCover(bottomRated[0].title),
+          backgroundImage: coverForEntry(bottomRated[0]),
           opSearch: buildOpSearchUrl(bottomRated[0].title)
         });
       }
@@ -1434,7 +1482,7 @@
           { label: "Total episodes watched", value: formatNumber(totalEpisodes) },
           { label: "Average score", value: avgScore ? avgScore.toFixed(2) : "—" }
         ],
-        backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
         opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
@@ -1452,7 +1500,7 @@
             value: avgScore ? avgScore.toFixed(2) : "mysterious"
           }
         ],
-        backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
         opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
@@ -1479,7 +1527,7 @@
           username,
           year
         },
-        backgroundImage: mostWatched ? placeholderCover(mostWatched.title) : "",
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
         opSearch: mostWatched ? buildOpSearchUrl(mostWatched.title) : null
       });
 
@@ -1525,7 +1573,18 @@
 
         const title = document.createElement("div");
         title.className = "slide-title";
-        title.textContent = slide.title || "";
+
+        // NEW: make the most-watched anime title clickable -> YouTube OP search
+        if (slide.type === "mostWatched" && slide.opSearch) {
+          const link = document.createElement("a");
+          link.href = slide.opSearch;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = slide.title || "";
+          title.appendChild(link);
+        } else {
+          title.textContent = slide.title || "";
+        }
 
         leftDiv.appendChild(kicker);
         leftDiv.appendChild(title);
@@ -1585,7 +1644,18 @@
 
           const t = document.createElement("div");
           t.className = "anime-title";
-          t.textContent = slide.extraAnime.title;
+          // Make card title clickable too
+          if (slide.opSearch) {
+            const link = document.createElement("a");
+            link.href = slide.opSearch;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = slide.extraAnime.title;
+            t.appendChild(link);
+          } else {
+            t.textContent = slide.extraAnime.title;
+          }
+
           const meta = document.createElement("div");
           meta.className = "anime-meta";
           meta.textContent =
@@ -1630,7 +1700,21 @@
           slide.list.forEach(item => {
             const meta = document.createElement("div");
             meta.className = "anime-meta";
-            meta.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
+
+            const titleLink = document.createElement("a");
+            titleLink.href =
+              "https://www.youtube.com/results?search_query=" +
+              encodeURIComponent(item.title + " opening theme");
+            titleLink.target = "_blank";
+            titleLink.rel = "noopener noreferrer";
+            titleLink.textContent = item.title;
+
+            meta.appendChild(titleLink);
+            const rest = document.createTextNode(
+              ` · Score: ${item.score} · ${item.episodes} eps`
+            );
+            meta.appendChild(rest);
+
             card.appendChild(meta);
           });
 
@@ -1648,7 +1732,16 @@
           slide.recs.forEach(titleStr => {
             const meta = document.createElement("div");
             meta.className = "anime-meta";
-            meta.textContent = titleStr;
+
+            const link = document.createElement("a");
+            link.href =
+              "https://www.youtube.com/results?search_query=" +
+              encodeURIComponent(titleStr + " opening theme");
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = titleStr;
+
+            meta.appendChild(link);
             card.appendChild(meta);
           });
 
@@ -1731,6 +1824,7 @@
 
       updateSlideIndicator();
       updateControlsDisabled();
+      onSlideChanged(); // NEW: run once on initial render
     }
 
     function updateSlideIndicator() {
@@ -1751,6 +1845,20 @@
       nextBtn.disabled = currentSlideIndex === currentSlides.length - 1;
     }
 
+    // NEW: respond when slide changes (for background swap)
+    function onSlideChanged() {
+      const slideEls = Array.from(document.querySelectorAll(".slide"));
+      if (!slideEls.length || !currentSlides.length) return;
+
+      const activeIndex = slideEls.findIndex(el => el.classList.contains("active"));
+      if (activeIndex === -1) return;
+
+      const slideData = currentSlides[activeIndex];
+      if (slideData && slideData.type === "mostWatched" && slideData.backgroundImage) {
+        setGlobalBackgroundAnime(slideData.backgroundImage);
+      }
+    }
+
     function goToSlide(newIndex) {
       if (!currentSlides.length) return;
       const slides = Array.from(document.querySelectorAll(".slide"));
@@ -1762,6 +1870,7 @@
       currentSlideIndex = clamped;
       updateSlideIndicator();
       updateControlsDisabled();
+      onSlideChanged(); // NEW
     }
 
     // ------------- File reading & main flow -------------
