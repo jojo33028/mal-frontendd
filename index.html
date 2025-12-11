@@ -1065,46 +1065,61 @@
       updateMusicToggle();
     }
 
-    // Use a tiny, hidden YouTube iframe with a search for "<title> opening"
-    let currentOpQuery = null;
-    let opIsPlaying = false;
+// Tiny hidden YouTube OP player + safe fallback
+let currentOpQuery = null;
+let opIsPlaying = false;
 
-    function playOpeningForTitle(title) {
-      if (!title) return;
+function playOpeningForTitle(title) {
+  if (!title) return;
 
-      // Pause the main background music
-      stopBgMusic();
+  // Stop background music first
+  stopBgMusic();
 
-      const iframe = document.getElementById("opPlayerIframe");
-      if (!iframe) {
-        console.warn("No OP iframe found, playing local sample instead.");
-        playOpSample();
-        return;
-      }
+  const iframe = document.getElementById("opPlayerIframe");
+  if (!iframe) {
+    // If somehow the iframe isn't there, just play the local sample
+    playOpSample();
+    return;
+  }
 
-      const query = encodeURIComponent(title + " opening");
+  // Toggle off if you click the same title while it's already playing
+  if (opIsPlaying && currentOpQuery === title) {
+    iframe.src = "about:blank";
+    opIsPlaying = false;
+    return;
+  }
 
-      const src =
-        "https://www.youtube.com/embed" +
-        "?autoplay=1" +
-        "&controls=0" +
-        "&rel=0" +
-        "&modestbranding=1" +
-        "&playsinline=1" +
-        "&listType=search" +
-        "&list=" + query;
+  currentOpQuery = title;
+  opIsPlaying = true;
 
-      // Toggle behavior: clicking again stops the OP
-      if (currentOpQuery === query && opIsPlaying) {
-        iframe.src = "";
-        opIsPlaying = false;
-        return;
-      }
+  const query = encodeURIComponent(title + " opening");
 
-      currentOpQuery = query;
-      opIsPlaying = true;
-      iframe.src = src;
-    }
+  // Correct YouTube search-embed URL
+  const src =
+    "https://www.youtube.com/embed" +
+    "?autoplay=1" +
+    "&controls=0" +
+    "&rel=0" +
+    "&modestbranding=1" +
+    "&playsinline=1" +
+    "&listType=search" +
+    "&list=" +
+    query;
+
+  iframe.src = src;
+
+  // --- Safety fallback: if YT fails, use local op-sample.mp3 ---
+  const fallbackTimer = setTimeout(() => {
+    if (!opIsPlaying) return; // already toggled off
+    playOpSample();           // play local sample so it's never silent
+  }, 4000);
+
+  iframe.onload = () => {
+    // If the iframe actually loads something, cancel the fallback
+    clearTimeout(fallbackTimer);
+  };
+}
+
 
     function enterSlidesMode() {
       showPanel("panel-slides");
