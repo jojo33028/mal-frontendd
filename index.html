@@ -952,7 +952,7 @@
   ></iframe>
 
   <script>
-    // ------------ YT API KEY (PUT YOUR KEY HERE) ------------
+    // ------------ YT API KEY ------------
     const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8";
 
     // ------------- Utility helpers + audio -------------
@@ -1426,7 +1426,7 @@
       const shuffled = shuffleArray(unseenCandidates.length ? unseenCandidates : recPool);
       const recommendations = shuffled.slice(0, 4);
 
-      // We now store an "opTitle" string for each slide that should have an OP button.
+      // Each slide gets an opTitle for the OP button
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
@@ -1800,31 +1800,17 @@
           rightDiv.appendChild(card);
         }
 
-       if (slide.opSearch) {
-  const opBtn = document.createElement("button");
-  opBtn.type = "button";
-  opBtn.className = "op-btn";
-  opBtn.innerHTML = "<span>▶</span><span>Play opening from this vibe</span>";
-
-  // Decide which anime title this slide should use for its OP
-  const titleForOp =
-    slide.type === "mostWatched" && slide.extraAnime
-      ? slide.extraAnime.title
-      : slide.type === "highestRated" && slide.list && slide.list.length
-      ? slide.list[0].title                      // top-rated #1
-      : slide.type === "lowestRated" && slide.list && slide.list.length
-      ? slide.list[0].title                      // lowest-rated #1
-      : slide.type === "recs" && slide.recs && slide.recs.length
-      ? slide.recs[0]                            // first recommendation
-      : slide.title;                             // fallback
-
-  opBtn.addEventListener("click", () => {
-    playOpeningForTitle(titleForOp);
-  });
-
-  rightDiv.appendChild(opBtn);
-}
-
+        // --- OP BUTTON: uses per-slide opTitle + YouTube hidden player ---
+        if (slide.opTitle) {
+          const opBtn = document.createElement("button");
+          opBtn.type = "button";
+          opBtn.className = "op-btn";
+          opBtn.innerHTML = "<span>▶</span><span>Play opening from this vibe</span>";
+          opBtn.addEventListener("click", () => {
+            playOpeningForTitle(slide.opTitle);
+          });
+          rightDiv.appendChild(opBtn);
+        }
 
         const foot = document.createElement("div");
         foot.className = "slide-footer";
@@ -1888,101 +1874,100 @@
       onSlideChanged();
     }
 
-   // ---------- YT OP PLAYER ----------
-let currentOpTitle = null;
-let opIsPlaying = false;
+    // ---------- YT OP PLAYER ----------
+    let currentOpTitle = null;
+    let opIsPlaying = false;
 
-// Call the YouTube Data API and return the FIRST videoId for "<title> opening"
-async function fetchFirstOpVideoId(title) {
-  if (!title || !YT_API_KEY) {
-    console.warn("Missing title or YT_API_KEY");
-    return null;
-  }
+    // Call the YouTube Data API and return the FIRST videoId for "<title> opening"
+    async function fetchFirstOpVideoId(title) {
+      if (!title || !YT_API_KEY) {
+        console.warn("Missing title or YT_API_KEY");
+        return null;
+      }
 
-  const query = encodeURIComponent(title + " opening");
-  const url =
-    "https://www.googleapis.com/youtube/v3/search" +
-    "?part=snippet&type=video&maxResults=1&q=" +
-    query +
-    `&key=${YT_API_KEY}`;
+      const query = encodeURIComponent(title + " opening");
+      const url =
+        "https://www.googleapis.com/youtube/v3/search" +
+        "?part=snippet&type=video&maxResults=1&q=" +
+        query +
+        `&key=${YT_API_KEY}`;
 
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.warn("YouTube API error:", res.status, res.statusText);
-      return null;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.warn("YouTube API error:", res.status, res.statusText);
+          return null;
+        }
+
+        const data = await res.json();
+        const items = (data && data.items) || [];
+        if (!items.length || !items[0].id || !items[0].id.videoId) {
+          console.warn("No YT results for:", title);
+          return null;
+        }
+
+        return items[0].id.videoId;
+      } catch (err) {
+        console.error("YouTube API fetch failed:", err);
+        return null;
+      }
     }
 
-    const data = await res.json();
-    const items = (data && data.items) || [];
-    if (!items.length || !items[0].id || !items[0].id.videoId) {
-      console.warn("No YT results for:", title);
-      return null;
+    // Play an opening for a GIVEN title, per–slide
+    async function playOpeningForTitle(title) {
+      if (!title) return;
+
+      // stop local OP sample if it was playing
+      const opAudio = getOpAudio();
+      if (opAudio) {
+        try {
+          opAudio.pause();
+          opAudio.currentTime = 0;
+        } catch (e) {}
+      }
+
+      // pause BG music too
+      const bgMusic = getBgMusic();
+      if (bgMusic) {
+        try {
+          bgMusic.pause();
+        } catch (e) {}
+      }
+      musicOn = false;
+      updateMusicToggle();
+
+      const iframe = document.getElementById("opPlayerIframe");
+      if (!iframe) {
+        console.warn("No #opPlayerIframe found");
+        return;
+      }
+
+      // Toggle OFF if user clicks the SAME title again
+      if (opIsPlaying && currentOpTitle === title) {
+        iframe.src = "about:blank";
+        opIsPlaying = false;
+        currentOpTitle = null;
+        return;
+      }
+
+      currentOpTitle = title;
+
+      const videoId = await fetchFirstOpVideoId(title);
+      if (!videoId) {
+        // If YT fails, just tell the user instead of always playing the same sample
+        alert("Couldn't find an opening on YouTube for: " + title);
+        opIsPlaying = false;
+        return;
+      }
+
+      const src =
+        "https://www.youtube.com/embed/" +
+        videoId +
+        "?autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1";
+
+      iframe.src = src;
+      opIsPlaying = true;
     }
-
-    return items[0].id.videoId;
-  } catch (err) {
-    console.error("YouTube API fetch failed:", err);
-    return null;
-  }
-}
-
-// Play an opening for a GIVEN title, per–slide
-async function playOpeningForTitle(title) {
-  if (!title) return;
-
-  // stop local OP sample if it was playing
-  const opAudio = getOpAudio();
-  if (opAudio) {
-    try {
-      opAudio.pause();
-      opAudio.currentTime = 0;
-    } catch (e) {}
-  }
-
-  // pause BG music too
-  const bgMusic = getBgMusic();
-  if (bgMusic) {
-    try {
-      bgMusic.pause();
-    } catch (e) {}
-  }
-  musicOn = false;
-  updateMusicToggle();
-
-  const iframe = document.getElementById("opPlayerIframe");
-  if (!iframe) {
-    console.warn("No #opPlayerIframe found");
-    return;
-  }
-
-  // Toggle OFF if user clicks the SAME title again
-  if (opIsPlaying && currentOpTitle === title) {
-    iframe.src = "about:blank";
-    opIsPlaying = false;
-    currentOpTitle = null;
-    return;
-  }
-
-  currentOpTitle = title;
-
-  const videoId = await fetchFirstOpVideoId(title);
-  if (!videoId) {
-    // If YT fails, just tell the user instead of always playing the same sample
-    alert("Couldn't find an opening on YouTube for: " + title);
-    opIsPlaying = false;
-    return;
-  }
-
-  const src =
-    "https://www.youtube.com/embed/" +
-    videoId +
-    "?autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1";
-
-  iframe.src = src;
-  opIsPlaying = true;
-}
-
 
     // ------------- File reading & main flow -------------
     const malInput = document.getElementById("malFile");
