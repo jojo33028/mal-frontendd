@@ -956,8 +956,7 @@
 
   <script>
     // ------------ YT API KEY ------------
-    const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8";
-
+   
     // ------------- Utility helpers + audio -------------
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
@@ -1850,83 +1849,45 @@
       onSlideChanged();
     }
 
-    // ---------- YT OP PLAYER ----------
-    let currentOpTitle = null;
+   // ---------- OP PLAYER USING YT SEARCH EMBED (no API key) ----------
+let currentOpTitle = null;
 
-    async function fetchFirstOpVideoId(title) {
-      if (!title || !YT_API_KEY) {
-        console.warn("Missing title or YT_API_KEY");
-        return null;
-      }
+function playOpeningForTitle(title) {
+  if (!title) return;
 
-      const query = encodeURIComponent(title + " opening");
-      const url =
-        "https://www.googleapis.com/youtube/v3/search" +
-        "?part=snippet&type=video&maxResults=1&q=" +
-        query +
-        `&key=${YT_API_KEY}`;
+  // Pause background music when an OP plays
+  const bgMusic = getBgMusic();
+  if (bgMusic) {
+    try { bgMusic.pause(); } catch (e) {}
+  }
+  musicOn = false;
+  updateMusicToggle();
 
-      try {
-        const res = await fetch(url);
-        if (!res.ok) {
-          console.warn("YouTube API error:", res.status, res.statusText);
-          return null;
-        }
+  const iframe = document.getElementById("opPlayerIframe");
+  if (!iframe) {
+    console.warn("No #opPlayerIframe found");
+    return;
+  }
 
-        const data = await res.json();
-        const items = (data && data.items) || [];
-        if (!items.length || !items[0].id || !items[0].id.videoId) {
-          console.warn("No YT results for:", title);
-          return null;
-        }
+  // If you click the same slide's button again, stop the OP
+  if (currentOpTitle === title && iframe.src && iframe.src !== "about:blank") {
+    iframe.src = "about:blank";
+    currentOpTitle = null;
+    return;
+  }
 
-        return items[0].id.videoId;
-      } catch (err) {
-        console.error("YouTube API fetch failed:", err);
-        return null;
-      }
-    }
+  currentOpTitle = title;
 
-    async function playOpeningForTitle(title) {
-      if (!title) return;
+  // Use YouTube's search-embed trick: plays the first result for "<title> opening"
+  const query = encodeURIComponent(title + " opening");
+  const src =
+    "https://www.youtube.com/embed?listType=search&list=" +
+    query +
+    "&autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1";
 
-      // pause BG music
-      const bgMusic = getBgMusic();
-      if (bgMusic) {
-        try { bgMusic.pause(); } catch (e) {}
-      }
-      musicOn = false;
-      updateMusicToggle();
+  iframe.src = src;
+}
 
-      const iframe = document.getElementById("opPlayerIframe");
-      if (!iframe) {
-        console.warn("No #opPlayerIframe found");
-        return;
-      }
-
-      // Toggle off if same title clicked again
-      if (currentOpTitle === title && iframe.src && iframe.src !== "about:blank") {
-        iframe.src = "about:blank";
-        currentOpTitle = null;
-        return;
-      }
-
-      currentOpTitle = title;
-
-      const videoId = await fetchFirstOpVideoId(title);
-      if (!videoId) {
-        alert("Couldn't find an opening on YouTube for: " + title);
-        currentOpTitle = null;
-        return;
-      }
-
-      const src =
-        "https://www.youtube.com/embed/" +
-        videoId +
-        "?autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1";
-
-      iframe.src = src;
-    }
 
     // Global click handler for all .op-btn buttons
     document.addEventListener("click", (event) => {
