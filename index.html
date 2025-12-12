@@ -533,6 +533,7 @@
       background-repeat: no-repeat;
       filter: blur(8px);
       transform: scale(1.05);
+      z-index: 0;
     }
 
     .slide-gradient {
@@ -542,7 +543,8 @@
         linear-gradient(135deg, rgba(15,23,42,0.98), rgba(15,23,42,0.9)),
         radial-gradient(circle at top left, rgba(56,189,248,0.2), transparent 50%);
       mix-blend-mode: multiply;
-      pointer-events: none; /* IMPORTANT: never block clicks */
+      z-index: 1;
+      pointer-events: none; /* important so buttons under it are clickable */
     }
 
     .slide-content {
@@ -672,11 +674,9 @@
       gap: 0.4rem;
       color: #f9fafb;
       cursor: pointer;
-      position: relative;
-      z-index: 5;
     }
 
-    .op-btn span:first-child {
+    .op-btn span {
       font-size: 1rem;
     }
 
@@ -741,6 +741,7 @@
       color: var(--text-soft);
     }
 
+    /* Top moving banner */
     .top-banner {
       width: 100%;
       overflow: hidden;
@@ -765,8 +766,12 @@
     }
 
     @keyframes scroll-banner {
-      0% { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
     }
   </style>
 </head>
@@ -835,6 +840,7 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
+                <!-- Optional username for Jikan -->
                 <div class="field">
                   <label for="malUsername">MAL Username (optional)</label>
                   <input
@@ -848,6 +854,7 @@
                   </div>
                 </div>
 
+                <!-- Manual list textarea -->
                 <div class="field">
                   <label for="manualList">Manual Anime List (optional)</label>
                   <textarea
@@ -857,16 +864,20 @@
                     placeholder="One line per anime: Title | episodes watched | score (optional) | type (optional) | start-date (optional) | finish-date (optional)"
                   ></textarea>
                   <div class="field-helper">
-                    Example: <code>Naruto | 220 | 9 | TV | 2022-01-01 | 2022-12-31</code>
+                    Paste from Google Docs/Notes or type manually. Example:
+                    <br />
+                    <code>Naruto | 220 | 9 | TV | 2022-01-01 | 2022-12-31</code>
                   </div>
                 </div>
 
+                <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
                   <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
                     Sign in with MAL
                   </button>
                   <div class="field-helper">
                     Uses your backend at <code>mal-wrapped-1.onrender.com</code> to authenticate and fetch your list.
+                    For privacy, you’ll need to click this shortly before generating.
                   </div>
                 </div>
 
@@ -912,7 +923,9 @@
       <!-- Slides Panel -->
       <section class="panel" id="panel-slides">
         <div class="slides-wrapper">
-          <div class="slides-main" id="slidesMain"></div>
+          <div class="slides-main" id="slidesMain">
+            <!-- Slides injected here -->
+          </div>
           <div class="slides-controls">
             <div class="controls-left">
               <button class="control-btn" id="prevSlideBtn">
@@ -934,7 +947,7 @@
     </main>
   </div>
 
-  <!-- Hidden YouTube iframe for OP playback -->
+  <!-- Tiny hidden YouTube iframe for OP playback -->
   <iframe
     id="opPlayerIframe"
     style="position:fixed; width:1px; height:1px; opacity:0; pointer-events:none; border:0;"
@@ -942,8 +955,10 @@
   ></iframe>
 
   <script>
+    // ------------ YT API KEY ------------
     const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8";
 
+    // ------------- Utility helpers + audio -------------
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
@@ -959,13 +974,16 @@
     function tryStartMusic() {
       const bgMusic = getBgMusic();
       if (!bgMusic) return;
+
       bgMusic.volume = 0.5;
       const playPromise = bgMusic.play();
       if (playPromise && playPromise.then) {
-        playPromise.then(() => {
-          musicOn = true;
-          updateMusicToggle();
-        }).catch(() => {});
+        playPromise
+          .then(() => {
+            musicOn = true;
+            updateMusicToggle();
+          })
+          .catch(() => {});
       }
     }
 
@@ -975,16 +993,20 @@
       try {
         bgMusic.pause();
         bgMusic.currentTime = 0;
-      } catch {}
+      } catch (e) {}
       musicOn = false;
       updateMusicToggle();
     }
 
     window.addEventListener("load", () => {
+      // kill old auth flag if it existed (privacy hardening)
       try {
         window.localStorage.removeItem("malAuthorized");
-      } catch {}
-      setTimeout(tryStartMusic, 150);
+      } catch (e) {}
+
+      setTimeout(() => {
+        tryStartMusic();
+      }, 150);
     });
 
     if (musicToggle) {
@@ -998,10 +1020,12 @@
           bgMusic.volume = 0.5;
           const playPromise = bgMusic.play();
           if (playPromise && playPromise.then) {
-            playPromise.then(() => {
-              musicOn = true;
-              updateMusicToggle();
-            }).catch(() => {});
+            playPromise
+              .then(() => {
+                musicOn = true;
+                updateMusicToggle();
+              })
+              .catch(() => {});
           }
         }
         updateMusicToggle();
@@ -1009,22 +1033,36 @@
       updateMusicToggle();
     }
 
+    // ------------ panel helpers ------------
     function showPanel(id) {
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
       const panel = document.getElementById(id);
       if (panel) panel.classList.add("active");
 
+      // banner only on intro/input/loading
       const banner = document.querySelector(".top-banner");
       if (banner) {
-        banner.style.display = id === "panel-slides" ? "none" : "block";
+        if (id === "panel-slides") {
+          banner.style.display = "none";
+        } else {
+          banner.style.display = "block";
+        }
       }
 
+      // hide intro video when slides are shown
       const introWrapper = document.querySelector(".intro-video-wrapper");
       if (introWrapper) {
-        introWrapper.style.display = id === "panel-slides" ? "none" : "block";
+        if (id === "panel-slides") {
+          introWrapper.style.display = "none";
+        } else {
+          introWrapper.style.display = "block";
+        }
       }
 
-      if (id === "panel-slides") stopBgMusic();
+      // stop bg music when we enter slides
+      if (id === "panel-slides") {
+        stopBgMusic();
+      }
     }
 
     function safeInt(val, fallback = 0) {
@@ -1040,7 +1078,9 @@
       const eps = entry.watchedEpisodes || 0;
       if (!eps) return 0;
       const type = (entry.type || "").toLowerCase();
-      if (type === "movie") return eps * 90;
+      if (type === "movie") {
+        return eps * 90;
+      }
       return eps * 23;
     }
 
@@ -1051,6 +1091,7 @@
       return null;
     }
 
+    // helper to shuffle for recs
     function shuffleArray(arr) {
       const a = arr.slice();
       for (let i = a.length - 1; i > 0; i--) {
@@ -1060,6 +1101,7 @@
       return a;
     }
 
+    // ------------- Parse MAL XML -------------
     function parseMalXml(xmlText) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(xmlText, "text/xml");
@@ -1093,13 +1135,14 @@
           finishDate,
           score,
           status,
-          coverImage: ""
+          coverImage: "" // XML export doesn't have images
         };
       });
 
       return { userName, entries };
     }
 
+    // ------------- Jikan Fetch Helper -------------
     async function fetchFromJikan(username, yearVal) {
       const entries = [];
       let page = 1;
@@ -1109,7 +1152,9 @@
           username
         )}/animelist?status=all&page=${page}&limit=100`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Jikan request failed");
+        if (!res.ok) {
+          throw new Error("Jikan request failed");
+        }
         const json = await res.json();
         const list = (json && json.data) || [];
         list.forEach(item => {
@@ -1140,7 +1185,9 @@
         const pagination = json && json.pagination;
         if (pagination && pagination.has_next_page) {
           page++;
-        } else break;
+        } else {
+          break;
+        }
       }
       const filtered = entries.filter(e => {
         const startY = extractYear(e.startDate);
@@ -1148,12 +1195,21 @@
         return String(yearVal) === startY || String(yearVal) === finishY;
       });
       const active = filtered.length ? filtered : entries;
-      return { userName: username || "Anime Fan", year: yearVal, entries: active };
+      return {
+        userName: username || "Anime Fan",
+        year: yearVal,
+        entries: active
+      };
     }
 
+    // ------------- MAL API Fetch Helper -------------
     async function fetchFromMalApi(yearVal) {
       const res = await fetch("https://mal-wrapped-1.onrender.com/list");
-      if (!res.ok) throw new Error("MAL backend request failed");
+
+      if (!res.ok) {
+        throw new Error("MAL backend request failed");
+      }
+
       const json = await res.json();
       const data = json.data || [];
       const entries = [];
@@ -1161,6 +1217,7 @@
       data.forEach(item => {
         const anime = item.node || item.anime || {};
         const status = item.list_status || {};
+
         entries.push({
           id: String(anime.id || anime.mal_id || ""),
           title:
@@ -1193,9 +1250,14 @@
 
       const activeEntries = filtered.length ? filtered : entries;
 
-      return { userName: "Your MAL", year: yearVal, entries: activeEntries };
+      return {
+        userName: "Your MAL",
+        year: yearVal,
+        entries: activeEntries
+      };
     }
 
+    // ------------- Manual List Parser -------------
     function parseManualList(text, yearVal) {
       const lines = text
         .split(/\r?\n/)
@@ -1206,7 +1268,9 @@
 
       lines.forEach((line, idx) => {
         let parts = line.split("|");
-        if (parts.length === 1) parts = line.split(" - ");
+        if (parts.length === 1) {
+          parts = line.split(" - ");
+        }
         parts = parts.map(p => p.trim());
 
         const title = parts[0] || `Untitled Anime #${idx + 1}`;
@@ -1230,9 +1294,14 @@
         });
       });
 
-      return { userName: "Manual List", year: yearVal, entries };
+      return {
+        userName: "Manual List",
+        year: yearVal,
+        entries
+      };
     }
 
+    // ------------- Slide builder -------------
     function buildSlides(data) {
       const slides = [];
 
@@ -1335,13 +1404,17 @@
       const shuffled = shuffleArray(unseenCandidates.length ? unseenCandidates : recPool);
       const recommendations = shuffled.slice(0, 4);
 
+      // Slides with opTitle for OP button
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
         title: "This is your Anime Wrapped.",
         highlight: null,
         body: `We scanned your MyAnimeList export, tallied every episode, and did the math you were a little scared to see.`,
-        extra: { username, year },
+        extra: {
+          username,
+          year
+        },
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
         opTitle: mostWatched ? mostWatched.title : null
       });
@@ -1458,7 +1531,7 @@
         highlight: recommendations.length
           ? "Based on your watch habits, here are a few popular picks you haven’t logged yet."
           : "You’ve logged a lot already — here are some evergreen suggestions anyway.",
-        body: "Not a perfect algorithm — just strong recs if you haven’t seen them yet.",
+        body: "This isn’t a perfect algorithm — just a starting point of strong series to consider if you haven’t seen them yet.",
         recs: recommendations.length ? recommendations : recPool.slice(0, 4),
         backgroundImage: recommendations[0]
           ? placeholderCover(recommendations[0])
@@ -1472,7 +1545,10 @@
         title: "See you in next year’s recap.",
         highlight: "Here’s to better arcs, cleaner endings, and fewer mid shows in your queue.",
         body: "Screenshot the slides you like, send them to friends, or just use this as proof that your watch list is absolutely stacked.",
-        extra: { username, year },
+        extra: {
+          username,
+          year
+        },
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
         opTitle: mostWatched ? mostWatched.title : null
       });
@@ -1480,6 +1556,7 @@
       return slides;
     }
 
+    // ------------- Render slides -------------
     let currentSlides = [];
     let currentSlideIndex = 0;
 
@@ -1701,14 +1778,13 @@
           rightDiv.appendChild(card);
         }
 
+        // OP BUTTON wired by opTitle -> data-title
         if (slide.opTitle) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
           opBtn.className = "op-btn";
+          opBtn.setAttribute("data-title", slide.opTitle);
           opBtn.innerHTML = "<span>▶</span><span>Play opening from this vibe</span>";
-          opBtn.addEventListener("click", () => {
-            playOpeningForTitle(slide.opTitle);
-          });
           rightDiv.appendChild(opBtn);
         }
 
@@ -1774,11 +1850,14 @@
       onSlideChanged();
     }
 
+    // ---------- YT OP PLAYER ----------
     let currentOpTitle = null;
-    let opIsPlaying = false;
 
     async function fetchFirstOpVideoId(title) {
-      if (!title || !YT_API_KEY) return null;
+      if (!title || !YT_API_KEY) {
+        console.warn("Missing title or YT_API_KEY");
+        return null;
+      }
 
       const query = encodeURIComponent(title + " opening");
       const url =
@@ -1789,12 +1868,21 @@
 
       try {
         const res = await fetch(url);
-        if (!res.ok) return null;
+        if (!res.ok) {
+          console.warn("YouTube API error:", res.status, res.statusText);
+          return null;
+        }
+
         const data = await res.json();
         const items = (data && data.items) || [];
-        if (!items.length || !items[0].id || !items[0].id.videoId) return null;
+        if (!items.length || !items[0].id || !items[0].id.videoId) {
+          console.warn("No YT results for:", title);
+          return null;
+        }
+
         return items[0].id.videoId;
-      } catch {
+      } catch (err) {
+        console.error("YouTube API fetch failed:", err);
         return null;
       }
     }
@@ -1802,19 +1890,23 @@
     async function playOpeningForTitle(title) {
       if (!title) return;
 
+      // pause BG music
       const bgMusic = getBgMusic();
       if (bgMusic) {
-        try { bgMusic.pause(); } catch {}
+        try { bgMusic.pause(); } catch (e) {}
       }
       musicOn = false;
       updateMusicToggle();
 
       const iframe = document.getElementById("opPlayerIframe");
-      if (!iframe) return;
+      if (!iframe) {
+        console.warn("No #opPlayerIframe found");
+        return;
+      }
 
-      if (opIsPlaying && currentOpTitle === title) {
+      // Toggle off if same title clicked again
+      if (currentOpTitle === title && iframe.src && iframe.src !== "about:blank") {
         iframe.src = "about:blank";
-        opIsPlaying = false;
         currentOpTitle = null;
         return;
       }
@@ -1824,7 +1916,7 @@
       const videoId = await fetchFirstOpVideoId(title);
       if (!videoId) {
         alert("Couldn't find an opening on YouTube for: " + title);
-        opIsPlaying = false;
+        currentOpTitle = null;
         return;
       }
 
@@ -1834,9 +1926,21 @@
         "?autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1";
 
       iframe.src = src;
-      opIsPlaying = true;
     }
 
+    // Global click handler for all .op-btn buttons
+    document.addEventListener("click", (event) => {
+      const btn = event.target.closest(".op-btn");
+      if (!btn) return;
+      const title = btn.getAttribute("data-title");
+      if (!title) {
+        console.warn("op-btn clicked but no data-title set");
+        return;
+      }
+      playOpeningForTitle(title);
+    });
+
+    // ------------- File reading & main flow -------------
     const malInput = document.getElementById("malFile");
     const yearInput = document.getElementById("yearInput");
     const fileError = document.getElementById("fileError");
@@ -1845,24 +1949,30 @@
     const manualInput = document.getElementById("manualList");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
+    // MAL login button – mark THIS browser as freshly authorized (short-lived, one-time)
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
         try {
           const now = Date.now();
           window.localStorage.setItem("malAuthorizedAt", String(now));
           window.localStorage.setItem("malAuthorizedPending", "true");
-        } catch {}
+        } catch (e) {
+          console.warn("Failed to store MAL auth flags", e);
+        }
         window.open("https://mal-wrapped-1.onrender.com/login", "_blank");
       });
     }
 
+    // Set default year to current
     const currentYear = new Date().getFullYear();
     if (yearInput) {
       yearInput.value = currentYear;
     }
 
     generateBtn.addEventListener("click", async () => {
-      if (fileError) fileError.style.display = "none";
+      if (fileError) {
+        fileError.style.display = "none";
+      }
 
       const file = malInput && malInput.files ? malInput.files[0] : null;
       const username =
@@ -1879,11 +1989,13 @@
         currentYear
       );
 
+      // 1) LOCAL FILE BRANCH (XML / XML.GZ / TXT)
       if (file) {
         showPanel("panel-loading");
         tryStartMusic();
 
         const reader = new FileReader();
+
         reader.onload = async (e) => {
           try {
             let xmlText;
@@ -1895,6 +2007,7 @@
             }
 
             const parsed = parseMalXml(xmlText);
+
             const entries = parsed.entries;
             const filtered = entries.filter((entry) => {
               const startY = extractYear(entry.startDate);
@@ -1935,6 +2048,7 @@
         return;
       }
 
+      // 2) MANUAL BRANCH – user typed or pasted a list
       if (manualText) {
         try {
           showPanel("panel-loading");
@@ -1945,7 +2059,7 @@
             throw new Error("No valid lines found in manual list.");
           }
           const slides = buildSlides(wrappedData);
-          renderSlides(wrappedData);
+          renderSlides(slides);
 
           setTimeout(() => showPanel("panel-slides"), 600);
         } catch (err) {
@@ -1960,6 +2074,7 @@
         return;
       }
 
+      // 3) USERNAME BRANCH (Jikan) – only if username filled
       if (username) {
         try {
           showPanel("panel-loading");
@@ -1982,6 +2097,7 @@
         return;
       }
 
+      // 4) MAL BACKEND BRANCH – ONLY if this browser recently clicked "Sign in with MAL"
       let malAuthorized = false;
       try {
         const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
@@ -1995,7 +2111,7 @@
           !!authAt &&
           Number.isFinite(authAt) &&
           now - authAt <= MAX_AUTH_AGE_MS;
-      } catch {
+      } catch (e) {
         malAuthorized = false;
       }
 
@@ -2011,7 +2127,7 @@
           try {
             window.localStorage.removeItem("malAuthorizedPending");
             window.localStorage.removeItem("malAuthorizedAt");
-          } catch {}
+          } catch (e) {}
 
           setTimeout(() => {
             showPanel("panel-slides");
@@ -2021,7 +2137,7 @@
           try {
             window.localStorage.removeItem("malAuthorizedPending");
             window.localStorage.removeItem("malAuthorizedAt");
-          } catch {}
+          } catch (e) {}
 
           if (fileError) {
             fileError.textContent =
@@ -2033,6 +2149,7 @@
         return;
       }
 
+      // 5) If we get here: no file, no manual list, no username, and no fresh MAL login
       if (fileError) {
         fileError.textContent =
           "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
@@ -2041,6 +2158,7 @@
       showPanel("panel-input");
     });
 
+    // Slide controls
     document.getElementById("prevSlideBtn").addEventListener("click", () => {
       goToSlide(currentSlideIndex - 1);
     });
