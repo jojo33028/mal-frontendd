@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
-  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-
   <meta charset="UTF-8" />
   <title>Anime Wrapped</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
   <!-- Pako for .gz decompression -->
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
@@ -39,13 +39,6 @@
       --shadow-xl: 0 24px 60px rgba(0,0,0,0.7);
       --slide-transition: 0.5s ease;
       --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .intro-panel,
-    .intro-username,
-    .intro-tagline,
-    .mal-credit {
-      display: none !important;
     }
 
     * {
@@ -143,12 +136,6 @@
       background: none;
     }
 
-    .brand-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
     .brand-text-title {
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -162,16 +149,6 @@
       text-transform: uppercase;
       color: #9ca3af;
       letter-spacing: 0.18em;
-    }
-
-    .mal-credit {
-      margin-top: -5px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #cfd8ff;
-      opacity: 0.9;
-      letter-spacing: 0.03em;
-      margin-left: 65px;
     }
 
     .header-right {
@@ -315,8 +292,7 @@
     }
 
     .field input[type="file"],
-    .field-input,
-    .field-select {
+    .field-input {
       width: 100%;
       border-radius: 999px;
       border: 1px solid rgba(148,163,184,0.6);
@@ -533,7 +509,6 @@
       background-repeat: no-repeat;
       filter: blur(8px);
       transform: scale(1.05);
-      z-index: 0;
     }
 
     .slide-gradient {
@@ -543,13 +518,11 @@
         linear-gradient(135deg, rgba(15,23,42,0.98), rgba(15,23,42,0.9)),
         radial-gradient(circle at top left, rgba(56,189,248,0.2), transparent 50%);
       mix-blend-mode: multiply;
-      z-index: 1;
-      pointer-events: none; /* important so buttons under it are clickable */
     }
 
     .slide-content {
       position: relative;
-      z-index: 2;
+      z-index: 1;
       padding: 1.6rem 1.7rem;
       width: 100%;
       display: grid;
@@ -674,9 +647,10 @@
       gap: 0.4rem;
       color: #f9fafb;
       cursor: pointer;
+      margin-top: 0.4rem;
     }
 
-    .op-btn span {
+    .op-btn span:first-child {
       font-size: 1rem;
     }
 
@@ -766,12 +740,8 @@
     }
 
     @keyframes scroll-banner {
-      0% {
-        transform: translateX(100%);
-      }
-      100% {
-        transform: translateX(-100%);
-      }
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
     }
   </style>
 </head>
@@ -864,8 +834,7 @@
                     placeholder="One line per anime: Title | episodes watched | score (optional) | type (optional) | start-date (optional) | finish-date (optional)"
                   ></textarea>
                   <div class="field-helper">
-                    Paste from Google Docs/Notes or type manually. Example:
-                    <br />
+                    Example:<br />
                     <code>Naruto | 220 | 9 | TV | 2022-01-01 | 2022-12-31</code>
                   </div>
                 </div>
@@ -877,7 +846,6 @@
                   </button>
                   <div class="field-helper">
                     Uses your backend at <code>mal-wrapped-1.onrender.com</code> to authenticate and fetch your list.
-                    For privacy, you’ll need to click this shortly before generating.
                   </div>
                 </div>
 
@@ -947,22 +915,17 @@
     </main>
   </div>
 
-  <!-- Tiny hidden YouTube iframe for OP playback -->
-  <iframe
-    id="opPlayerIframe"
-    style="position:fixed; width:1px; height:1px; opacity:0; pointer-events:none; border:0;"
-    allow="autoplay; encrypted-media"
-  ></iframe>
-
   <script>
-    // ------------ YT API KEY ------------
-   
     // ------------- Utility helpers + audio -------------
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
     function getBgMusic() {
       return document.getElementById("bgMusic");
+    }
+
+    function getOpAudio() {
+      return document.getElementById("opAudio");
     }
 
     function updateMusicToggle() {
@@ -997,9 +960,46 @@
       updateMusicToggle();
     }
 
-    window.addEventListener("load", () => {
-      // kill old auth flag if it existed (privacy hardening)
+    function stopOpSample() {
+      const opAudio = getOpAudio();
+      if (!opAudio) return;
       try {
+        opAudio.pause();
+        opAudio.currentTime = 0;
+      } catch (e) {}
+    }
+
+    function playOpSample() {
+      const opAudio = getOpAudio();
+      if (!opAudio) return;
+
+      // stop background music while OP plays
+      const bgMusic = getBgMusic();
+      if (bgMusic) {
+        try { bgMusic.pause(); } catch (e) {}
+      }
+      musicOn = false;
+      updateMusicToggle();
+
+      try { opAudio.currentTime = 0; } catch (e) {}
+      opAudio.volume = 0.9;
+      const p = opAudio.play();
+      if (p && p.then) p.catch(() => {});
+    }
+
+    // when sample ends, resume bg music if user had it on before
+    const opAudioEl = getOpAudio();
+    if (opAudioEl) {
+      opAudioEl.addEventListener("ended", () => {
+        // only restart if user clicks music toggle later; keep it off here
+        musicOn = false;
+        updateMusicToggle();
+      });
+    }
+
+    window.addEventListener("load", () => {
+      try {
+        // privacy hardening for MAL auth flag (if used)
         window.localStorage.removeItem("malAuthorized");
       } catch (e) {}
 
@@ -1032,38 +1032,26 @@
       updateMusicToggle();
     }
 
-    // ------------ panel helpers ------------
+    // ------------- Panel switching -------------
     function showPanel(id) {
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
       const panel = document.getElementById(id);
       if (panel) panel.classList.add("active");
 
-      // banner only on intro/input/loading
       const banner = document.querySelector(".top-banner");
-      if (banner) {
-        if (id === "panel-slides") {
-          banner.style.display = "none";
-        } else {
-          banner.style.display = "block";
-        }
-      }
-
-      // hide intro video when slides are shown
       const introWrapper = document.querySelector(".intro-video-wrapper");
-      if (introWrapper) {
-        if (id === "panel-slides") {
-          introWrapper.style.display = "none";
-        } else {
-          introWrapper.style.display = "block";
-        }
-      }
 
-      // stop bg music when we enter slides
       if (id === "panel-slides") {
+        if (banner) banner.style.display = "none";
+        if (introWrapper) introWrapper.style.display = "none";
         stopBgMusic();
+      } else {
+        if (banner) banner.style.display = "block";
+        if (introWrapper) introWrapper.style.display = "block";
       }
     }
 
+    // ------------- General helpers -------------
     function safeInt(val, fallback = 0) {
       const n = parseInt(val, 10);
       return Number.isFinite(n) ? n : fallback;
@@ -1077,9 +1065,7 @@
       const eps = entry.watchedEpisodes || 0;
       if (!eps) return 0;
       const type = (entry.type || "").toLowerCase();
-      if (type === "movie") {
-        return eps * 90;
-      }
+      if (type === "movie") return eps * 90;
       return eps * 23;
     }
 
@@ -1090,7 +1076,6 @@
       return null;
     }
 
-    // helper to shuffle for recs
     function shuffleArray(arr) {
       const a = arr.slice();
       for (let i = a.length - 1; i > 0; i--) {
@@ -1134,7 +1119,7 @@
           finishDate,
           score,
           status,
-          coverImage: "" // XML export doesn't have images
+          coverImage: ""
         };
       });
 
@@ -1403,21 +1388,18 @@
       const shuffled = shuffleArray(unseenCandidates.length ? unseenCandidates : recPool);
       const recommendations = shuffled.slice(0, 4);
 
-      // Slides with opTitle for OP button
+      // intro
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
         title: "This is your Anime Wrapped.",
         highlight: null,
         body: `We scanned your MyAnimeList export, tallied every episode, and did the math you were a little scared to see.`,
-        extra: {
-          username,
-          year
-        },
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opTitle: mostWatched ? mostWatched.title : null
+        extra: { username, year },
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
 
+      // minutes
       slides.push({
         type: "minutes",
         kicker: "Time spent in other worlds",
@@ -1431,8 +1413,7 @@
           { label: "Months (approx)", value: formatNumber(months.toFixed(2)) },
           { label: "Years (if it were one long show)", value: years.toFixed(3) }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opTitle: mostWatched ? mostWatched.title : null
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
 
       if (mostWatched) {
@@ -1449,8 +1430,7 @@
             { label: "Your score", value: mostWatched.score || "—" }
           ],
           extraAnime: mostWatched,
-          backgroundImage: coverForEntry(mostWatched),
-          opTitle: mostWatched.title
+          backgroundImage: coverForEntry(mostWatched)
         });
       }
 
@@ -1467,8 +1447,7 @@
             episodes: e.watchedEpisodes,
             type: e.type
           })),
-          backgroundImage: coverForEntry(topRated[0]),
-          opTitle: topRated[0].title
+          backgroundImage: coverForEntry(topRated[0])
         });
       }
 
@@ -1485,8 +1464,7 @@
             episodes: e.watchedEpisodes,
             type: e.type
           })),
-          backgroundImage: coverForEntry(bottomRated[0]),
-          opTitle: bottomRated[0].title
+          backgroundImage: coverForEntry(bottomRated[0])
         });
       }
 
@@ -1501,8 +1479,7 @@
           { label: "Total episodes watched", value: formatNumber(totalEpisodes) },
           { label: "Average score", value: avgScore ? avgScore.toFixed(2) : "—" }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opTitle: mostWatched ? mostWatched.title : null
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
 
       slides.push({
@@ -1519,8 +1496,7 @@
             value: avgScore ? avgScore.toFixed(2) : "mysterious"
           }
         ],
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opTitle: mostWatched ? mostWatched.title : null
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
 
       slides.push({
@@ -1534,8 +1510,7 @@
         recs: recommendations.length ? recommendations : recPool.slice(0, 4),
         backgroundImage: recommendations[0]
           ? placeholderCover(recommendations[0])
-          : placeholderCover(recPool[0]),
-        opTitle: recommendations[0] || null
+          : placeholderCover(recPool[0])
       });
 
       slides.push({
@@ -1544,12 +1519,8 @@
         title: "See you in next year’s recap.",
         highlight: "Here’s to better arcs, cleaner endings, and fewer mid shows in your queue.",
         body: "Screenshot the slides you like, send them to friends, or just use this as proof that your watch list is absolutely stacked.",
-        extra: {
-          username,
-          year
-        },
-        backgroundImage: mostWatched ? coverForEntry(mostWatched) : "",
-        opTitle: mostWatched ? mostWatched.title : null
+        extra: { username, year },
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
 
       return slides;
@@ -1580,6 +1551,8 @@
       currentSlideIndex = 0;
       const container = document.getElementById("slidesMain");
       container.innerHTML = "";
+
+      const slideTypesWithOp = ["minutes","mostWatched","highestRated","lowestRated","count","club","recs"];
 
       slides.forEach((slide, index) => {
         const slideEl = document.createElement("section");
@@ -1777,13 +1750,13 @@
           rightDiv.appendChild(card);
         }
 
-        // OP BUTTON wired by opTitle -> data-title
-        if (slide.opTitle) {
+        // OP button – appears on key slide types and always plays the sample OP
+        if (slideTypesWithOp.includes(slide.type)) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
           opBtn.className = "op-btn";
-          opBtn.setAttribute("data-title", slide.opTitle);
           opBtn.innerHTML = "<span>▶</span><span>Play opening from this vibe</span>";
+          opBtn.addEventListener("click", playOpSample);
           rightDiv.appendChild(opBtn);
         }
 
@@ -1849,58 +1822,6 @@
       onSlideChanged();
     }
 
-   // ---------- OP PLAYER USING YT SEARCH EMBED (no API key) ----------
-let currentOpTitle = null;
-
-function playOpeningForTitle(title) {
-  if (!title) return;
-
-  // Pause background music when an OP plays
-  const bgMusic = getBgMusic();
-  if (bgMusic) {
-    try { bgMusic.pause(); } catch (e) {}
-  }
-  musicOn = false;
-  updateMusicToggle();
-
-  const iframe = document.getElementById("opPlayerIframe");
-  if (!iframe) {
-    console.warn("No #opPlayerIframe found");
-    return;
-  }
-
-  // If you click the same slide's button again, stop the OP
-  if (currentOpTitle === title && iframe.src && iframe.src !== "about:blank") {
-    iframe.src = "about:blank";
-    currentOpTitle = null;
-    return;
-  }
-
-  currentOpTitle = title;
-
-  // Use YouTube's search-embed trick: plays the first result for "<title> opening"
-  const query = encodeURIComponent(title + " opening");
-  const src =
-    "https://www.youtube.com/embed?listType=search&list=" +
-    query +
-    "&autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1";
-
-  iframe.src = src;
-}
-
-
-    // Global click handler for all .op-btn buttons
-    document.addEventListener("click", (event) => {
-      const btn = event.target.closest(".op-btn");
-      if (!btn) return;
-      const title = btn.getAttribute("data-title");
-      if (!title) {
-        console.warn("op-btn clicked but no data-title set");
-        return;
-      }
-      playOpeningForTitle(title);
-    });
-
     // ------------- File reading & main flow -------------
     const malInput = document.getElementById("malFile");
     const yearInput = document.getElementById("yearInput");
@@ -1910,21 +1831,19 @@ function playOpeningForTitle(title) {
     const manualInput = document.getElementById("manualList");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
-    // MAL login button – mark THIS browser as freshly authorized (short-lived, one-time)
+    // MAL login button – mark this browser as freshly authorized (short-lived)
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
         try {
           const now = Date.now();
           window.localStorage.setItem("malAuthorizedAt", String(now));
           window.localStorage.setItem("malAuthorizedPending", "true");
-        } catch (e) {
-          console.warn("Failed to store MAL auth flags", e);
-        }
+        } catch (e) {}
         window.open("https://mal-wrapped-1.onrender.com/login", "_blank");
       });
     }
 
-    // Set default year to current
+    // default year
     const currentYear = new Date().getFullYear();
     if (yearInput) {
       yearInput.value = currentYear;
@@ -1941,16 +1860,16 @@ function playOpeningForTitle(title) {
           ? usernameInput.value.trim()
           : "";
       const manualText =
-        manualInput && manualInput.value
-          ? manualInput.value.trim()
-          : "";
+      manualInput && manualInput.value
+        ? manualInput.value.trim()
+        : "";
 
       const yearVal = safeInt(
         yearInput && yearInput.value ? yearInput.value : currentYear,
         currentYear
       );
 
-      // 1) LOCAL FILE BRANCH (XML / XML.GZ / TXT)
+      // 1) LOCAL FILE
       if (file) {
         showPanel("panel-loading");
         tryStartMusic();
@@ -2009,7 +1928,7 @@ function playOpeningForTitle(title) {
         return;
       }
 
-      // 2) MANUAL BRANCH – user typed or pasted a list
+      // 2) MANUAL LIST
       if (manualText) {
         try {
           showPanel("panel-loading");
@@ -2035,7 +1954,7 @@ function playOpeningForTitle(title) {
         return;
       }
 
-      // 3) USERNAME BRANCH (Jikan) – only if username filled
+      // 3) USERNAME JIKAN
       if (username) {
         try {
           showPanel("panel-loading");
@@ -2058,7 +1977,7 @@ function playOpeningForTitle(title) {
         return;
       }
 
-      // 4) MAL BACKEND BRANCH – ONLY if this browser recently clicked "Sign in with MAL"
+      // 4) MAL BACKEND (if recently authorized)
       let malAuthorized = false;
       try {
         const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
@@ -2110,7 +2029,7 @@ function playOpeningForTitle(title) {
         return;
       }
 
-      // 5) If we get here: no file, no manual list, no username, and no fresh MAL login
+      // 5) nothing provided
       if (fileError) {
         fileError.textContent =
           "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
@@ -2131,9 +2050,13 @@ function playOpeningForTitle(title) {
     });
   </script>
 
-  <!-- Background music only -->
+  <!-- Background + sample OP audio -->
   <audio id="bgMusic" loop>
     <source src="bg-music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <audio id="opAudio">
+    <source src="op-sample.mp3" type="audio/mpeg" />
   </audio>
 
 </body>
