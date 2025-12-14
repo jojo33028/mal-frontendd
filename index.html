@@ -970,9 +970,10 @@
       });
     };
 
-    function hasValidApiKey() {
-      return !!YT_API_KEY && YT_API_KEY !== "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8";
-    }
+   function hasValidApiKey() {
+  return typeof YT_API_KEY === "string" && YT_API_KEY.trim().length > 20;
+}
+
 
     async function searchYouTubeFirstVideoId(query) {
       if (ytCache.has(query)) return ytCache.get(query);
