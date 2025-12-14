@@ -443,9 +443,7 @@
       transform: translateX(20px);
       transition: opacity var(--slide-transition), transform var(--slide-transition);
       display: flex;
-
-      /* ✅ FIX: inactive stacked slides can’t block clicks */
-      pointer-events: none;
+      pointer-events: none; /* inactive stacked slides can’t block clicks */
     }
 
     .slide.active {
@@ -630,6 +628,25 @@
     .intro-username { font-size: 1.4rem; font-weight: 800; margin-top: 0.2rem; }
     .intro-tagline { margin-top: 0.6rem; font-size: 0.9rem; color: var(--text-soft); }
 
+    /* Clickable list rows for highest/lowest */
+    .anime-row-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(148,163,184,0.22);
+      background: rgba(2,6,23,0.35);
+      color: #e5e7eb;
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      transition: transform 0.08s ease, border-color 0.12s ease, background 0.12s ease;
+    }
+    .anime-row-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(249,115,22,0.65);
+      background: rgba(249,115,22,0.10);
+    }
+
     /* Top moving banner */
     .top-banner {
       width: 100%;
@@ -657,6 +674,63 @@
     @keyframes scroll-banner {
       0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
+    }
+
+    /* ✅ YouTube Modal */
+    #ytModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20000;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+    }
+    #ytModalCard {
+      position: absolute;
+      top: 70px;
+      right: 24px;
+      width: min(420px, 92vw);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(2,6,23,0.96);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.65);
+    }
+    #ytModalTop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    #ytNowPlaying {
+      font-size: 13px;
+      color: #e5e7eb;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #ytCloseBtn {
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.08);
+      color: #e5e7eb;
+    }
+    #ytStatusLine {
+      padding: 10px 12px;
+      font-size: 12px;
+      color: rgba(229,231,235,0.85);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: none;
+    }
+    #ytFrameWrap {
+      aspect-ratio: 16/9;
+      width: 100%;
+      background: #000;
     }
   </style>
 </head>
@@ -798,18 +872,14 @@
   </div>
 
   <!-- ✅ YouTube OP Modal -->
-  <div id="ytModal" style="display:none; position:fixed; inset:0; z-index:20000; background:rgba(0,0,0,0.7); backdrop-filter: blur(4px);">
-    <div style="position:absolute; top:70px; right:24px; width:min(420px, 92vw); border:1px solid rgba(255,255,255,0.25); border-radius:16px; overflow:hidden; background:rgba(2,6,23,0.96); box-shadow: 0 24px 60px rgba(0,0,0,0.65);">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.12);">
-        <div id="ytNowPlaying" style="font-size:13px; color:#e5e7eb; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-          Playing opening…
-        </div>
-        <button id="ytCloseBtn" type="button" style="cursor:pointer; border:none; border-radius:10px; padding:6px 10px; background:rgba(255,255,255,0.08); color:#e5e7eb;">
-          ✕
-        </button>
+  <div id="ytModal">
+    <div id="ytModalCard">
+      <div id="ytModalTop">
+        <div id="ytNowPlaying">Playing opening…</div>
+        <button id="ytCloseBtn" type="button">✕</button>
       </div>
-
-      <div style="aspect-ratio:16/9; width:100%; background:#000;">
+      <div id="ytStatusLine">Searching YouTube…</div>
+      <div id="ytFrameWrap">
         <div id="ytPlayer"></div>
       </div>
     </div>
@@ -819,7 +889,9 @@
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <script>
-    // ------------- Utility helpers + audio -------------
+    // ============================
+    // ------------- AUDIO (BG) -------------
+    // ============================
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
@@ -845,7 +917,6 @@
       try { opAudio.pause(); opAudio.currentTime = 0; } catch (e) {}
     }
 
-    // ✅ Click-to-play only (no autoplay)
     if (musicToggle) {
       musicToggle.addEventListener("click", async () => {
         const bgMusic = getBgMusic();
@@ -868,31 +939,37 @@
       updateMusicToggle();
     }
 
-    // =====================
+    // ============================
     // ✅ YouTube OP Player (modal + search)
-    // =====================
-    const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8"; // <-- put your YouTube Data API key here
+    // ============================
+    // IMPORTANT: Put your YouTube Data API key here:
+    const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8";
+
     let ytPlayer = null;
     let ytReady = false;
 
     const ytModal = document.getElementById("ytModal");
     const ytCloseBtn = document.getElementById("ytCloseBtn");
     const ytNowPlaying = document.getElementById("ytNowPlaying");
+    const ytStatusLine = document.getElementById("ytStatusLine");
     const ytCache = new Map(); // query -> videoId
 
     function openYtModal() {
-      if (ytModal) ytModal.style.display = "block";
+      if (!ytModal) return;
+      ytModal.style.display = "block";
     }
+
     function closeYtModal() {
       if (!ytModal) return;
       ytModal.style.display = "none";
+      if (ytStatusLine) ytStatusLine.style.display = "none";
       try { ytPlayer?.stopVideo?.(); } catch (e) {}
     }
 
     if (ytCloseBtn) ytCloseBtn.addEventListener("click", closeYtModal);
-    if (ytModal) ytModal.addEventListener("click", (e) => {
-      if (e.target === ytModal) closeYtModal();
-    });
+    if (ytModal) ytModal.addEventListener("click", (e) => { if (e.target === ytModal) closeYtModal(); });
+
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeYtModal(); });
 
     window.onYouTubeIframeAPIReady = () => {
       ytReady = true;
@@ -900,59 +977,80 @@
         height: "100%",
         width: "100%",
         videoId: "",
-        playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 }
+        playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0, playsinline: 1 }
       });
     };
+
+    function hasValidApiKey() {
+      return !!YT_API_KEY && !YT_API_KEY.includes("AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8");
+    }
 
     async function searchYouTubeFirstVideoId(query) {
       if (ytCache.has(query)) return ytCache.get(query);
 
-      // If no key, return null to use fallback
-      if (!YT_API_KEY || YT_API_KEY === "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8") return null;
+      if (!hasValidApiKey()) return null;
 
       const url =
         "https://www.googleapis.com/youtube/v3/search" +
-        `?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}` +
+        `?part=snippet&type=video&maxResults=1&safeSearch=moderate` +
+        `&q=${encodeURIComponent(query)}` +
         `&key=${encodeURIComponent(YT_API_KEY)}`;
 
       const res = await fetch(url);
-      if (!res.ok) throw new Error("YouTube search failed");
-      const json = await res.json();
+      if (!res.ok) return null;
 
+      const json = await res.json();
       const vid = json?.items?.[0]?.id?.videoId || null;
       ytCache.set(query, vid);
       return vid;
+    }
+
+    function setYtStatus(text, visible = true) {
+      if (!ytStatusLine) return;
+      ytStatusLine.textContent = text || "";
+      ytStatusLine.style.display = visible ? "block" : "none";
     }
 
     async function playOpeningForAnime(animeTitle) {
       const title = (animeTitle || "").trim();
       if (!title) return;
 
-      // stop local audio so it doesn't overlap
+      // stop any local audio so it doesn't overlap
       stopOpSample();
       stopBgMusic();
 
-      const query = `${title} opening theme official`;
-
       openYtModal();
       if (ytNowPlaying) ytNowPlaying.textContent = `Opening: ${title}`;
+      setYtStatus("Searching YouTube…", true);
+
+      const query = `${title} opening 1 official`;
 
       let vid = null;
       try { vid = await searchYouTubeFirstVideoId(query); } catch (e) { console.error(e); }
 
-      // fallback: open YouTube search if API key missing/quota/etc.
       if (!vid) {
-        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, "_blank");
+        // No redirect (per your request). Just show a message.
+        setYtStatus(
+          hasValidApiKey()
+            ? "Couldn’t find a video right now (quota / results issue). Try another anime or refresh."
+            : "No YouTube API key set. Add your key to enable OP playback.",
+          true
+        );
         return;
       }
 
+      setYtStatus("", false);
+
       const tryLoad = () => {
-        try { ytPlayer.loadVideoById(vid); }
-        catch (e) { console.error("YT player not ready yet:", e); }
+        try {
+          ytPlayer.loadVideoById(vid);
+        } catch (e) {
+          console.error("YT player not ready yet:", e);
+        }
       };
 
       if (ytReady && ytPlayer?.loadVideoById) tryLoad();
-      else setTimeout(tryLoad, 400);
+      else setTimeout(tryLoad, 350);
     }
 
     // ------------- Panel switching -------------
@@ -967,7 +1065,6 @@
       if (id === "panel-slides") {
         if (banner) banner.style.display = "none";
         if (introWrapper) introWrapper.style.display = "none";
-        // no forced music stop; you can keep bg off/on as you want
       } else {
         if (banner) banner.style.display = "block";
         if (introWrapper) introWrapper.style.display = "block";
@@ -992,7 +1089,7 @@
 
     function extractYear(dateStr) {
       if (!dateStr || dateStr === "0000-00-00") return null;
-      const year = dateStr.split("-")[0];
+      const year = String(dateStr).split("-")[0];
       if (year && year !== "0000") return year;
       return null;
     }
@@ -1159,6 +1256,7 @@
       const username = data.userName;
       const year = data.year;
       const list = data.entries;
+
       const totalAnime = list.length;
       const totalEpisodes = list.reduce((sum, e) => sum + (e.watchedEpisodes || 0), 0);
       const totalMinutes = list.reduce((sum, e) => sum + estimateMinutes(e), 0);
@@ -1170,6 +1268,7 @@
 
       const nonZeroWatch = list.filter(e => (e.watchedEpisodes || 0) > 0);
       const rated = list.filter(e => e.score && e.score > 0);
+
       const sortedByMinutes = [...nonZeroWatch].sort((a, b) => estimateMinutes(b) - estimateMinutes(a));
       const sortedByScoreDesc = [...rated].sort((a, b) => b.score - a.score || estimateMinutes(b) - estimateMinutes(a));
       const sortedByScoreAsc = [...rated].sort((a, b) => a.score - b.score || estimateMinutes(b) - estimateMinutes(a));
@@ -1180,6 +1279,7 @@
         const t = encodeURIComponent(title + " anime");
         return "https://placehold.co/800x1200/020617/ffffff?text=" + t;
       }
+
       function coverForEntry(entry) {
         if (!entry) return "";
         if (entry.coverImage) return entry.coverImage;
@@ -1360,12 +1460,23 @@
       if (slideData && slideData.backgroundImage) setGlobalBackgroundAnime(slideData.backgroundImage);
     }
 
+    function getAnimeTitleForSlide(slide) {
+      return (
+        (slide?.extraAnime && slide.extraAnime.title) ||
+        (slide?.list && slide.list[0] && slide.list[0].title) ||
+        (slide?.recs && slide.recs[0]) ||
+        ""
+      );
+    }
+
     function renderSlides(slides) {
       currentSlides = slides || [];
       currentSlideIndex = 0;
+
       const container = document.getElementById("slidesMain");
       container.innerHTML = "";
 
+      // which slides should show the main OP button
       const slideTypesWithOp = ["minutes","mostWatched","highestRated","lowestRated","count","club","recs"];
 
       slides.forEach((slide, index) => {
@@ -1431,12 +1542,15 @@
           slide.stats.forEach(row => {
             const rowEl = document.createElement("div");
             rowEl.className = "stats-row";
+
             const labelEl = document.createElement("div");
             labelEl.className = "stats-label";
             labelEl.textContent = row.label;
+
             const valEl = document.createElement("div");
             valEl.className = "stats-value";
             valEl.textContent = row.value;
+
             rowEl.appendChild(labelEl);
             rowEl.appendChild(valEl);
             statsGrid.appendChild(rowEl);
@@ -1484,14 +1598,16 @@
 
           const header = document.createElement("div");
           header.className = "anime-title";
-          header.textContent = slide.type === "highestRated" ? "Your top-rated picks" : "The ones that let you down";
+          header.textContent = slide.type === "highestRated" ? "Your top-rated picks (tap to play OP)" : "Your lowest-rated picks (tap to play OP)";
           card.appendChild(header);
 
           slide.list.forEach(item => {
-            const meta = document.createElement("div");
-            meta.className = "anime-meta";
-            meta.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
-            card.appendChild(meta);
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "anime-row-btn";
+            btn.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
+            btn.addEventListener("click", () => playOpeningForAnime(item.title));
+            card.appendChild(btn);
           });
 
           rightDiv.appendChild(card);
@@ -1506,10 +1622,12 @@
           card.appendChild(header);
 
           slide.recs.forEach(titleStr => {
-            const meta = document.createElement("div");
-            meta.className = "anime-meta";
-            meta.textContent = titleStr;
-            card.appendChild(meta);
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "anime-row-btn";
+            btn.textContent = titleStr;
+            btn.addEventListener("click", () => playOpeningForAnime(titleStr));
+            card.appendChild(btn);
           });
 
           rightDiv.appendChild(card);
@@ -1538,20 +1656,18 @@
           rightDiv.appendChild(card);
         }
 
-        // ✅ OP button – uses YouTube search per slide/anime (not Parasyte-only)
+        // ✅ Per-slide OP button (not Parasyte-only)
         if (slideTypesWithOp.includes(slide.type)) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
           opBtn.className = "op-btn";
           opBtn.innerHTML = "<span>▶</span><span>Play opening from this anime</span>";
 
-          const animeTitleForThisSlide =
-            (slide.extraAnime && slide.extraAnime.title) ||
-            (slide.list && slide.list[0] && slide.list[0].title) ||
-            (slide.recs && slide.recs[0]) ||
-            "";
+          opBtn.addEventListener("click", () => {
+            const animeTitleForThisSlide = getAnimeTitleForSlide(slide);
+            playOpeningForAnime(animeTitleForThisSlide);
+          });
 
-          opBtn.addEventListener("click", () => playOpeningForAnime(animeTitleForThisSlide));
           rightDiv.appendChild(opBtn);
         }
 
