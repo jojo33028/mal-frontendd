@@ -17,7 +17,6 @@
       width: 100%;
       margin: 20px auto;
     }
-
     .intro-video {
       width: 100%;
       height: auto;
@@ -575,22 +574,6 @@
       color: #e5e7eb;
     }
 
-    .op-btn {
-      border-radius: 999px;
-      border: 1px solid rgba(248,250,252,0.12);
-      background: radial-gradient(circle at top left, rgba(249,115,22,0.22), rgba(15,23,42,0.95));
-      padding: 0.5rem 0.85rem;
-      font-size: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      color: #f9fafb;
-      cursor: pointer;
-      margin-top: 0.4rem;
-    }
-
-    .op-btn span:first-child { font-size: 1rem; }
-
     .slide-footer { font-size: 0.8rem; color: var(--text-soft); margin-top: 0.5rem; }
 
     .slides-controls {
@@ -676,26 +659,27 @@
       100% { transform: translateX(-100%); }
     }
 
-    /* ✅ YouTube Modal */
+    /* ✅ "Audio-only" mini player (hidden video) */
     #ytModal {
       display: none;
       position: fixed;
-      inset: 0;
+      top: 18px;
+      right: 18px;
       z-index: 20000;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(4px);
+      background: transparent;
+      backdrop-filter: none;
+      inset: auto;
     }
+
     #ytModalCard {
-      position: absolute;
-      top: 70px;
-      right: 24px;
-      width: min(420px, 92vw);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 16px;
+      width: min(320px, 92vw);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 14px;
       overflow: hidden;
-      background: rgba(2,6,23,0.96);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.65);
+      background: rgba(2,6,23,0.92);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.55);
     }
+
     #ytModalTop {
       display: flex;
       align-items: center;
@@ -704,6 +688,7 @@
       padding: 10px 12px;
       border-bottom: 1px solid rgba(255,255,255,0.12);
     }
+
     #ytNowPlaying {
       font-size: 13px;
       color: #e5e7eb;
@@ -712,6 +697,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
     #ytCloseBtn {
       cursor: pointer;
       border: none;
@@ -720,6 +706,7 @@
       background: rgba(255,255,255,0.08);
       color: #e5e7eb;
     }
+
     #ytStatusLine {
       padding: 10px 12px;
       font-size: 12px;
@@ -727,10 +714,14 @@
       border-bottom: 1px solid rgba(255,255,255,0.08);
       display: none;
     }
+
+    /* hidden player area */
     #ytFrameWrap {
-      aspect-ratio: 16/9;
-      width: 100%;
-      background: #000;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -871,11 +862,11 @@
     </main>
   </div>
 
-  <!-- ✅ YouTube OP Modal -->
+  <!-- ✅ "Audio-only" YouTube OP mini player -->
   <div id="ytModal">
     <div id="ytModalCard">
       <div id="ytModalTop">
-        <div id="ytNowPlaying">Playing opening…</div>
+        <div id="ytNowPlaying">Opening…</div>
         <button id="ytCloseBtn" type="button">✕</button>
       </div>
       <div id="ytStatusLine">Searching YouTube…</div>
@@ -940,9 +931,9 @@
     }
 
     // ============================
-    // ✅ YouTube OP Player (modal + search)
+    // ✅ YouTube OP Player (audio-only vibe)
     // ============================
-    // IMPORTANT: Put your YouTube Data API key here:
+    // IMPORTANT: Replace this with YOUR actual YouTube Data API key:
     const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8";
 
     let ytPlayer = null;
@@ -967,8 +958,6 @@
     }
 
     if (ytCloseBtn) ytCloseBtn.addEventListener("click", closeYtModal);
-    if (ytModal) ytModal.addEventListener("click", (e) => { if (e.target === ytModal) closeYtModal(); });
-
     window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeYtModal(); });
 
     window.onYouTubeIframeAPIReady = () => {
@@ -977,18 +966,16 @@
         height: "100%",
         width: "100%",
         videoId: "",
-        playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0, playsinline: 1 }
+        playerVars: { autoplay: 1, controls: 0, modestbranding: 1, rel: 0, playsinline: 1 }
       });
     };
 
-   function hasValidApiKey() {
-  return typeof YT_API_KEY === "string" && YT_API_KEY.trim().length > 20;
-}
-
+    function hasValidApiKey() {
+      return !!YT_API_KEY && YT_API_KEY !== "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8";
+    }
 
     async function searchYouTubeFirstVideoId(query) {
       if (ytCache.has(query)) return ytCache.get(query);
-
       if (!hasValidApiKey()) return null;
 
       const url =
@@ -1030,10 +1017,9 @@
       try { vid = await searchYouTubeFirstVideoId(query); } catch (e) { console.error(e); }
 
       if (!vid) {
-        // No redirect (per your request). Just show a message.
         setYtStatus(
           hasValidApiKey()
-            ? "Couldn’t find a video right now (quota / results issue). Try another anime or refresh."
+            ? "Couldn’t find a video right now (quota / results issue). Try another slide or refresh."
             : "No YouTube API key set. Add your key to enable OP playback.",
           true
         );
@@ -1176,7 +1162,6 @@
       });
 
       const active = filtered.length ? filtered : entries;
-
       return { userName: username || "Anime Fan", year: yearVal, entries: active };
     }
 
@@ -1214,7 +1199,6 @@
       });
 
       const activeEntries = filtered.length ? filtered : entries;
-
       return { userName: "Your MAL", year: yearVal, entries: activeEntries };
     }
 
@@ -1447,6 +1431,9 @@
     let currentSlides = [];
     let currentSlideIndex = 0;
 
+    // ✅ Autoplay OP only AFTER user clicks Next/Prev/Restart once
+    let opAutoEnabled = false;
+
     function setGlobalBackgroundAnime(imageUrl) {
       const bgAnimeDiv = document.querySelector(".bg-anime");
       if (bgAnimeDiv && imageUrl) {
@@ -1473,12 +1460,10 @@
     function renderSlides(slides) {
       currentSlides = slides || [];
       currentSlideIndex = 0;
+      opAutoEnabled = false; // reset for each new run so autoplay only starts after nav click
 
       const container = document.getElementById("slidesMain");
       container.innerHTML = "";
-
-      // which slides should show the main OP button
-      const slideTypesWithOp = ["minutes","mostWatched","highestRated","lowestRated","count","club","recs"];
 
       slides.forEach((slide, index) => {
         const slideEl = document.createElement("section");
@@ -1599,16 +1584,14 @@
 
           const header = document.createElement("div");
           header.className = "anime-title";
-          header.textContent = slide.type === "highestRated" ? "Your top-rated picks (tap to play OP)" : "Your lowest-rated picks (tap to play OP)";
+          header.textContent = slide.type === "highestRated" ? "Your top-rated picks" : "Your lowest-rated picks";
           card.appendChild(header);
 
           slide.list.forEach(item => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "anime-row-btn";
-            btn.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
-            btn.addEventListener("click", () => playOpeningForAnime(item.title));
-            card.appendChild(btn);
+            const row = document.createElement("div");
+            row.className = "anime-meta";
+            row.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
+            card.appendChild(row);
           });
 
           rightDiv.appendChild(card);
@@ -1623,12 +1606,10 @@
           card.appendChild(header);
 
           slide.recs.forEach(titleStr => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "anime-row-btn";
-            btn.textContent = titleStr;
-            btn.addEventListener("click", () => playOpeningForAnime(titleStr));
-            card.appendChild(btn);
+            const row = document.createElement("div");
+            row.className = "anime-meta";
+            row.textContent = titleStr;
+            card.appendChild(row);
           });
 
           rightDiv.appendChild(card);
@@ -1655,21 +1636,6 @@
           card.appendChild(header);
           card.appendChild(meta);
           rightDiv.appendChild(card);
-        }
-
-        // ✅ Per-slide OP button (not Parasyte-only)
-        if (slideTypesWithOp.includes(slide.type)) {
-          const opBtn = document.createElement("button");
-          opBtn.type = "button";
-          opBtn.className = "op-btn";
-          opBtn.innerHTML = "<span>▶</span><span>Play opening from this anime</span>";
-
-          opBtn.addEventListener("click", () => {
-            const animeTitleForThisSlide = getAnimeTitleForSlide(slide);
-            playOpeningForAnime(animeTitleForThisSlide);
-          });
-
-          rightDiv.appendChild(opBtn);
         }
 
         const foot = document.createElement("div");
@@ -1713,7 +1679,8 @@
       nextBtn.disabled = currentSlideIndex === currentSlides.length - 1;
     }
 
-    function goToSlide(newIndex) {
+    // ✅ goToSlide now supports "userInitiated" for autoplay permission
+    function goToSlide(newIndex, userInitiated = false) {
       if (!currentSlides.length) return;
       const slides = Array.from(document.querySelectorAll(".slide"));
       if (!slides.length) return;
@@ -1725,6 +1692,15 @@
       updateSlideIndicator();
       updateControlsDisabled();
       onSlideChanged();
+
+      if (userInitiated) opAutoEnabled = true;
+
+      // ✅ Autoplay OP once enabled
+      if (opAutoEnabled) {
+        const slideData = currentSlides[currentSlideIndex];
+        const title = getAnimeTitleForSlide(slideData);
+        if (title) playOpeningForAnime(title);
+      }
     }
 
     // ------------- File reading & main flow -------------
@@ -1801,7 +1777,6 @@
 
         if (file.name.endsWith(".gz")) reader.readAsArrayBuffer(file);
         else reader.readAsText(file);
-
         return;
       }
 
@@ -1892,10 +1867,10 @@
       showPanel("panel-input");
     });
 
-    // Slide controls
-    document.getElementById("prevSlideBtn").addEventListener("click", () => goToSlide(currentSlideIndex - 1));
-    document.getElementById("nextSlideBtn").addEventListener("click", () => goToSlide(currentSlideIndex + 1));
-    document.getElementById("restartBtn").addEventListener("click", () => goToSlide(0));
+    // Slide controls (✅ these clicks enable OP autoplay)
+    document.getElementById("prevSlideBtn").addEventListener("click", () => goToSlide(currentSlideIndex - 1, true));
+    document.getElementById("nextSlideBtn").addEventListener("click", () => goToSlide(currentSlideIndex + 1, true));
+    document.getElementById("restartBtn").addEventListener("click", () => goToSlide(0, true));
   </script>
 
   <!-- Background + sample OP audio (OP sample kept for compatibility, not used anymore) -->
