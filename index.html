@@ -41,11 +41,7 @@
       --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: var(--font-main);
@@ -136,21 +132,6 @@
       background: none;
     }
 
-    .brand-text-title {
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      font-size: 0.96rem;
-      text-transform: uppercase;
-      color: #e5e7eb;
-    }
-
-    .brand-text-sub {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      color: #9ca3af;
-      letter-spacing: 0.18em;
-    }
-
     .header-right {
       position: absolute;
       right: 1.5rem;
@@ -197,9 +178,7 @@
       display: none;
     }
 
-    .panel.active {
-      display: block;
-    }
+    .panel.active { display: block; }
 
     .input-layout {
       height: 100%;
@@ -236,10 +215,7 @@
       pointer-events: none;
     }
 
-    .input-main-inner {
-      position: relative;
-      z-index: 1;
-    }
+    .input-main-inner { position: relative; z-index: 1; }
 
     .input-title {
       font-size: 1.75rem;
@@ -273,16 +249,9 @@
       color: #e5e7eb;
     }
 
-    .input-grid {
-      display: grid;
-      gap: 1rem;
-    }
+    .input-grid { display: grid; gap: 1rem; }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
 
     .field label {
       font-size: 0.8rem;
@@ -318,10 +287,7 @@
       padding-bottom: 0.6rem;
     }
 
-    .field-helper {
-      font-size: 0.75rem;
-      color: var(--text-soft);
-    }
+    .field-helper { font-size: 0.75rem; color: var(--text-soft); }
 
     .pill-row {
       display: flex;
@@ -331,9 +297,7 @@
       flex-wrap: wrap;
     }
 
-    .year-input {
-      max-width: 120px;
-    }
+    .year-input { max-width: 120px; }
 
     .primary-btn {
       border: none;
@@ -446,20 +410,9 @@
       100% { transform: scaleX(1); opacity: 0.6; }
     }
 
-    .loader-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-
-    .loader-sub {
-      font-size: 0.84rem;
-      color: var(--text-soft);
-    }
-
-    .loader-hints {
-      font-size: 0.78rem;
-      color: #9ca3af;
-    }
+    .loader-title { font-size: 1.1rem; font-weight: 700; }
+    .loader-sub { font-size: 0.84rem; color: var(--text-soft); }
+    .loader-hints { font-size: 0.78rem; color: #9ca3af; }
 
     .slides-wrapper {
       height: 100%;
@@ -480,9 +433,7 @@
     }
 
     @media (max-height: 720px) {
-      .slides-main {
-        height: 280px;
-      }
+      .slides-main { height: 280px; }
     }
 
     .slide {
@@ -492,6 +443,9 @@
       transform: translateX(20px);
       transition: opacity var(--slide-transition), transform var(--slide-transition);
       display: flex;
+
+      /* ✅ FIX: inactive stacked slides can’t block clicks */
+      pointer-events: none;
     }
 
     .slide.active {
@@ -584,14 +538,8 @@
       gap: 0.6rem;
     }
 
-    .stats-label {
-      color: #9ca3af;
-    }
-
-    .stats-value {
-      color: #e5e7eb;
-      font-weight: 500;
-    }
+    .stats-label { color: #9ca3af; }
+    .stats-value { color: #e5e7eb; font-weight: 500; }
 
     .slide-right {
       display: flex;
@@ -610,15 +558,8 @@
       gap: 0.3rem;
     }
 
-    .anime-title {
-      font-weight: 700;
-      font-size: 1rem;
-    }
-
-    .anime-meta {
-      font-size: 0.8rem;
-      color: var(--text-soft);
-    }
+    .anime-title { font-weight: 700; font-size: 1rem; }
+    .anime-meta { font-size: 0.8rem; color: var(--text-soft); }
 
     .pill-meta-row {
       margin-top: 0.4rem;
@@ -650,15 +591,9 @@
       margin-top: 0.4rem;
     }
 
-    .op-btn span:first-child {
-      font-size: 1rem;
-    }
+    .op-btn span:first-child { font-size: 1rem; }
 
-    .slide-footer {
-      font-size: 0.8rem;
-      color: var(--text-soft);
-      margin-top: 0.5rem;
-    }
+    .slide-footer { font-size: 0.8rem; color: var(--text-soft); margin-top: 0.5rem; }
 
     .slides-controls {
       display: flex;
@@ -688,32 +623,12 @@
       cursor: pointer;
     }
 
-    .control-btn[disabled] {
-      opacity: 0.4;
-      cursor: default;
-    }
+    .control-btn[disabled] { opacity: 0.4; cursor: default; }
+    .restart-btn { border-color: rgba(249,115,22,0.8); color: #fed7aa; }
 
-    .restart-btn {
-      border-color: rgba(249,115,22,0.8);
-      color: #fed7aa;
-    }
-
-    .slide-indicator {
-      font-size: 0.78rem;
-      color: #9ca3af;
-    }
-
-    .intro-username {
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin-top: 0.2rem;
-    }
-
-    .intro-tagline {
-      margin-top: 0.6rem;
-      font-size: 0.9rem;
-      color: var(--text-soft);
-    }
+    .slide-indicator { font-size: 0.78rem; color: #9ca3af; }
+    .intro-username { font-size: 1.4rem; font-weight: 800; margin-top: 0.2rem; }
+    .intro-tagline { margin-top: 0.6rem; font-size: 0.9rem; color: var(--text-soft); }
 
     /* Top moving banner */
     .top-banner {
@@ -754,14 +669,7 @@
   </div>
 
   <div class="intro-video-wrapper">
-    <video
-      class="intro-video"
-      src="anime-collage.mp4"
-      autoplay
-      loop
-      muted
-      playsinline
-    ></video>
+    <video class="intro-video" src="anime-collage.mp4" autoplay loop muted playsinline></video>
   </div>
 
   <div class="bg-grid"></div>
@@ -775,9 +683,7 @@
       </div>
 
       <div class="header-right">
-        <button class="music-toggle" id="musicToggle" title="Toggle background music">
-          🔇
-        </button>
+        <button class="music-toggle" id="musicToggle" title="Toggle background music">🔇</button>
       </div>
     </header>
 
@@ -810,21 +716,12 @@
                   <div class="error-text" id="fileError" style="display:none;"></div>
                 </div>
 
-                <!-- Optional username for Jikan -->
                 <div class="field">
                   <label for="malUsername">MAL Username (optional)</label>
-                  <input
-                    id="malUsername"
-                    class="field-input"
-                    type="text"
-                    placeholder="If no file, enter your MAL username"
-                  />
-                  <div class="field-helper">
-                    We’ll fetch your list via the Jikan API if you don’t upload a file.
-                  </div>
+                  <input id="malUsername" class="field-input" type="text" placeholder="If no file, enter your MAL username" />
+                  <div class="field-helper">We’ll fetch your list via the Jikan API if you don’t upload a file.</div>
                 </div>
 
-                <!-- Manual list textarea -->
                 <div class="field">
                   <label for="manualList">Manual Anime List (optional)</label>
                   <textarea
@@ -839,7 +736,6 @@
                   </div>
                 </div>
 
-                <!-- MAL login button for official API integration -->
                 <div class="field" style="margin-top:1rem;">
                   <button id="malLoginBtn" class="secondary-btn" type="button" style="width:100%;padding:0.5rem 1rem;">
                     Sign in with MAL
@@ -853,17 +749,15 @@
                   <div class="field year-input">
                     <label for="yearInput">Wrapped Year</label>
                     <input id="yearInput" class="field-input" type="number" />
-                    <div class="field-helper">
-                      If dates are missing, we’ll treat your whole list as this year.
-                    </div>
+                    <div class="field-helper">If dates are missing, we’ll treat your whole list as this year.</div>
                   </div>
 
                   <button class="primary-btn" id="generateBtn">
-                    <span>Generate Anime Wrapped</span>
-                    <span>➜</span>
+                    <span>Generate Anime Wrapped</span><span>➜</span>
                   </button>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -878,9 +772,7 @@
               We’re parsing your MAL export, counting episodes, and calculating how many
               days you lived in fictional worlds this year.
             </div>
-            <div class="loader-bar">
-              <div class="loader-bar-fill"></div>
-            </div>
+            <div class="loader-bar"><div class="loader-bar-fill"></div></div>
             <div class="loader-hints" id="loaderHint">
               Tip: Longer shows like shonen epics will spike your “time spent in another universe” stat.
             </div>
@@ -891,71 +783,58 @@
       <!-- Slides Panel -->
       <section class="panel" id="panel-slides">
         <div class="slides-wrapper">
-          <div class="slides-main" id="slidesMain">
-            <!-- Slides injected here -->
-          </div>
+          <div class="slides-main" id="slidesMain"></div>
           <div class="slides-controls">
             <div class="controls-left">
-              <button class="control-btn" id="prevSlideBtn">
-                <span>←</span><span>Prev</span>
-              </button>
-              <button class="control-btn" id="nextSlideBtn">
-                <span>Next</span><span>→</span>
-              </button>
-              <button class="control-btn restart-btn" id="restartBtn">
-                <span>⟳</span><span>Restart</span>
-              </button>
+              <button class="control-btn" id="prevSlideBtn"><span>←</span><span>Prev</span></button>
+              <button class="control-btn" id="nextSlideBtn"><span>Next</span><span>→</span></button>
+              <button class="control-btn restart-btn" id="restartBtn"><span>⟳</span><span>Restart</span></button>
             </div>
-            <div class="slide-indicator" id="slideIndicator">
-              Slide 1 of X
-            </div>
+            <div class="slide-indicator" id="slideIndicator">Slide 1 of X</div>
           </div>
         </div>
       </section>
     </main>
   </div>
 
+  <!-- ✅ YouTube OP Modal -->
+  <div id="ytModal" style="display:none; position:fixed; inset:0; z-index:20000; background:rgba(0,0,0,0.7); backdrop-filter: blur(4px);">
+    <div style="position:absolute; top:70px; right:24px; width:min(420px, 92vw); border:1px solid rgba(255,255,255,0.25); border-radius:16px; overflow:hidden; background:rgba(2,6,23,0.96); box-shadow: 0 24px 60px rgba(0,0,0,0.65);">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.12);">
+        <div id="ytNowPlaying" style="font-size:13px; color:#e5e7eb; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          Playing opening…
+        </div>
+        <button id="ytCloseBtn" type="button" style="cursor:pointer; border:none; border-radius:10px; padding:6px 10px; background:rgba(255,255,255,0.08); color:#e5e7eb;">
+          ✕
+        </button>
+      </div>
+
+      <div style="aspect-ratio:16/9; width:100%; background:#000;">
+        <div id="ytPlayer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
   <script>
     // ------------- Utility helpers + audio -------------
     const musicToggle = document.getElementById("musicToggle");
     let musicOn = false;
 
-    function getBgMusic() {
-      return document.getElementById("bgMusic");
-    }
-
-    function getOpAudio() {
-      return document.getElementById("opAudio");
-    }
+    function getBgMusic() { return document.getElementById("bgMusic"); }
+    function getOpAudio() { return document.getElementById("opAudio"); } // kept for compatibility; not used for OP anymore
 
     function updateMusicToggle() {
       if (!musicToggle) return;
       musicToggle.textContent = musicOn ? "🔊" : "🔇";
     }
 
-    function tryStartMusic() {
-      const bgMusic = getBgMusic();
-      if (!bgMusic) return;
-
-      bgMusic.volume = 0.5;
-      const playPromise = bgMusic.play();
-      if (playPromise && playPromise.then) {
-        playPromise
-          .then(() => {
-            musicOn = true;
-            updateMusicToggle();
-          })
-          .catch(() => {});
-      }
-    }
-
     function stopBgMusic() {
       const bgMusic = getBgMusic();
       if (!bgMusic) return;
-      try {
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-      } catch (e) {}
+      try { bgMusic.pause(); } catch (e) {}
       musicOn = false;
       updateMusicToggle();
     }
@@ -963,73 +842,117 @@
     function stopOpSample() {
       const opAudio = getOpAudio();
       if (!opAudio) return;
-      try {
-        opAudio.pause();
-        opAudio.currentTime = 0;
-      } catch (e) {}
+      try { opAudio.pause(); opAudio.currentTime = 0; } catch (e) {}
     }
 
-    function playOpSample() {
-      const opAudio = getOpAudio();
-      if (!opAudio) return;
-
-      // stop background music while OP plays
-      const bgMusic = getBgMusic();
-      if (bgMusic) {
-        try { bgMusic.pause(); } catch (e) {}
-      }
-      musicOn = false;
-      updateMusicToggle();
-
-      try { opAudio.currentTime = 0; } catch (e) {}
-      opAudio.volume = 0.9;
-      const p = opAudio.play();
-      if (p && p.then) p.catch(() => {});
-    }
-
-    // when sample ends, resume bg music if user had it on before
-    const opAudioEl = getOpAudio();
-    if (opAudioEl) {
-      opAudioEl.addEventListener("ended", () => {
-        // only restart if user clicks music toggle later; keep it off here
-        musicOn = false;
-        updateMusicToggle();
-      });
-    }
-
-    window.addEventListener("load", () => {
-      try {
-        // privacy hardening for MAL auth flag (if used)
-        window.localStorage.removeItem("malAuthorized");
-      } catch (e) {}
-
-      setTimeout(() => {
-        tryStartMusic();
-      }, 150);
-    });
-
+    // ✅ Click-to-play only (no autoplay)
     if (musicToggle) {
-      musicToggle.addEventListener("click", () => {
+      musicToggle.addEventListener("click", async () => {
         const bgMusic = getBgMusic();
         if (!bgMusic) return;
-        if (musicOn) {
-          bgMusic.pause();
-          musicOn = false;
-        } else {
-          bgMusic.volume = 0.5;
-          const playPromise = bgMusic.play();
-          if (playPromise && playPromise.then) {
-            playPromise
-              .then(() => {
-                musicOn = true;
-                updateMusicToggle();
-              })
-              .catch(() => {});
+
+        try {
+          if (bgMusic.paused) {
+            bgMusic.volume = 0.5;
+            await bgMusic.play();
+            musicOn = true;
+          } else {
+            bgMusic.pause();
+            musicOn = false;
           }
+          updateMusicToggle();
+        } catch (e) {
+          console.error("BG music failed to play:", e);
         }
-        updateMusicToggle();
       });
       updateMusicToggle();
+    }
+
+    // =====================
+    // ✅ YouTube OP Player (modal + search)
+    // =====================
+    const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8"; // <-- put your YouTube Data API key here
+    let ytPlayer = null;
+    let ytReady = false;
+
+    const ytModal = document.getElementById("ytModal");
+    const ytCloseBtn = document.getElementById("ytCloseBtn");
+    const ytNowPlaying = document.getElementById("ytNowPlaying");
+    const ytCache = new Map(); // query -> videoId
+
+    function openYtModal() {
+      if (ytModal) ytModal.style.display = "block";
+    }
+    function closeYtModal() {
+      if (!ytModal) return;
+      ytModal.style.display = "none";
+      try { ytPlayer?.stopVideo?.(); } catch (e) {}
+    }
+
+    if (ytCloseBtn) ytCloseBtn.addEventListener("click", closeYtModal);
+    if (ytModal) ytModal.addEventListener("click", (e) => {
+      if (e.target === ytModal) closeYtModal();
+    });
+
+    window.onYouTubeIframeAPIReady = () => {
+      ytReady = true;
+      ytPlayer = new YT.Player("ytPlayer", {
+        height: "100%",
+        width: "100%",
+        videoId: "",
+        playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 }
+      });
+    };
+
+    async function searchYouTubeFirstVideoId(query) {
+      if (ytCache.has(query)) return ytCache.get(query);
+
+      // If no key, return null to use fallback
+      if (!YT_API_KEY || YT_API_KEY === "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8") return null;
+
+      const url =
+        "https://www.googleapis.com/youtube/v3/search" +
+        `?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}` +
+        `&key=${encodeURIComponent(YT_API_KEY)}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("YouTube search failed");
+      const json = await res.json();
+
+      const vid = json?.items?.[0]?.id?.videoId || null;
+      ytCache.set(query, vid);
+      return vid;
+    }
+
+    async function playOpeningForAnime(animeTitle) {
+      const title = (animeTitle || "").trim();
+      if (!title) return;
+
+      // stop local audio so it doesn't overlap
+      stopOpSample();
+      stopBgMusic();
+
+      const query = `${title} opening theme official`;
+
+      openYtModal();
+      if (ytNowPlaying) ytNowPlaying.textContent = `Opening: ${title}`;
+
+      let vid = null;
+      try { vid = await searchYouTubeFirstVideoId(query); } catch (e) { console.error(e); }
+
+      // fallback: open YouTube search if API key missing/quota/etc.
+      if (!vid) {
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, "_blank");
+        return;
+      }
+
+      const tryLoad = () => {
+        try { ytPlayer.loadVideoById(vid); }
+        catch (e) { console.error("YT player not ready yet:", e); }
+      };
+
+      if (ytReady && ytPlayer?.loadVideoById) tryLoad();
+      else setTimeout(tryLoad, 400);
     }
 
     // ------------- Panel switching -------------
@@ -1044,7 +967,7 @@
       if (id === "panel-slides") {
         if (banner) banner.style.display = "none";
         if (introWrapper) introWrapper.style.display = "none";
-        stopBgMusic();
+        // no forced music stop; you can keep bg off/on as you want
       } else {
         if (banner) banner.style.display = "block";
         if (introWrapper) introWrapper.style.display = "block";
@@ -1057,9 +980,7 @@
       return Number.isFinite(n) ? n : fallback;
     }
 
-    function formatNumber(num) {
-      return num.toLocaleString("en-US");
-    }
+    function formatNumber(num) { return num.toLocaleString("en-US"); }
 
     function estimateMinutes(entry) {
       const eps = entry.watchedEpisodes || 0;
@@ -1109,18 +1030,7 @@
         const score = safeInt(get("my_score"), 0);
         const status = get("my_status");
 
-        return {
-          id,
-          title,
-          type,
-          totalEpisodes,
-          watchedEpisodes,
-          startDate,
-          finishDate,
-          score,
-          status,
-          coverImage: ""
-        };
+        return { id, title, type, totalEpisodes, watchedEpisodes, startDate, finishDate, score, status, coverImage: "" };
       });
 
       return { userName, entries };
@@ -1131,16 +1041,14 @@
       const entries = [];
       let page = 1;
       const maxPages = 5;
+
       while (page <= maxPages) {
-        const url = `https://api.jikan.moe/v4/users/${encodeURIComponent(
-          username
-        )}/animelist?status=all&page=${page}&limit=100`;
+        const url = `https://api.jikan.moe/v4/users/${encodeURIComponent(username)}/animelist?status=all&page=${page}&limit=100`;
         const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error("Jikan request failed");
-        }
+        if (!res.ok) throw new Error("Jikan request failed");
         const json = await res.json();
         const list = (json && json.data) || [];
+
         list.forEach(item => {
           const anime = item.anime || {};
           const entry = {
@@ -1148,51 +1056,36 @@
             title: anime.title || anime.title_english || "Untitled Anime",
             type: anime.type || "",
             totalEpisodes: Number(anime.episodes) || 0,
-            watchedEpisodes: Number(
-              item.episodes_watched ||
-              item.num_episodes_watched ||
-              item.episodes ||
-              0
-            ),
+            watchedEpisodes: Number(item.episodes_watched || item.num_episodes_watched || item.episodes || 0),
             startDate: item.started_at || "",
             finishDate: item.completed_at || "",
             score: Number(item.score) || 0,
             status: item.status || "",
-            coverImage:
-              (anime.images &&
-                anime.images.jpg &&
-                (anime.images.jpg.large_image_url || anime.images.jpg.image_url)) ||
-              ""
+            coverImage: (anime.images && anime.images.jpg && (anime.images.jpg.large_image_url || anime.images.jpg.image_url)) || ""
           };
           entries.push(entry);
         });
+
         const pagination = json && json.pagination;
-        if (pagination && pagination.has_next_page) {
-          page++;
-        } else {
-          break;
-        }
+        if (pagination && pagination.has_next_page) page++;
+        else break;
       }
+
       const filtered = entries.filter(e => {
         const startY = extractYear(e.startDate);
         const finishY = extractYear(e.finishDate);
         return String(yearVal) === startY || String(yearVal) === finishY;
       });
+
       const active = filtered.length ? filtered : entries;
-      return {
-        userName: username || "Anime Fan",
-        year: yearVal,
-        entries: active
-      };
+
+      return { userName: username || "Anime Fan", year: yearVal, entries: active };
     }
 
     // ------------- MAL API Fetch Helper -------------
     async function fetchFromMalApi(yearVal) {
       const res = await fetch("https://mal-wrapped-1.onrender.com/list");
-
-      if (!res.ok) {
-        throw new Error("MAL backend request failed");
-      }
+      if (!res.ok) throw new Error("MAL backend request failed");
 
       const json = await res.json();
       const data = json.data || [];
@@ -1204,25 +1097,15 @@
 
         entries.push({
           id: String(anime.id || anime.mal_id || ""),
-          title:
-            anime.title ||
-            anime.title_english ||
-            (Array.isArray(anime.title_synonyms) && anime.title_synonyms[0]) ||
-            "Untitled Anime",
+          title: anime.title || anime.title_english || (Array.isArray(anime.title_synonyms) && anime.title_synonyms[0]) || "Untitled Anime",
           type: anime.media_type || anime.type || "",
           totalEpisodes: Number(anime.num_episodes) || Number(anime.episodes) || 0,
-          watchedEpisodes:
-            Number(status.num_episodes_watched) ||
-            Number(status.watched_episodes) ||
-            0,
+          watchedEpisodes: Number(status.num_episodes_watched) || Number(status.watched_episodes) || 0,
           startDate: status.start_date || "",
           finishDate: status.finish_date || "",
           score: Number(status.score) || 0,
           status: status.status || "",
-          coverImage:
-            (anime.main_picture &&
-              (anime.main_picture.large || anime.main_picture.medium)) ||
-            ""
+          coverImage: (anime.main_picture && (anime.main_picture.large || anime.main_picture.medium)) || ""
         });
       });
 
@@ -1234,27 +1117,17 @@
 
       const activeEntries = filtered.length ? filtered : entries;
 
-      return {
-        userName: "Your MAL",
-        year: yearVal,
-        entries: activeEntries
-      };
+      return { userName: "Your MAL", year: yearVal, entries: activeEntries };
     }
 
     // ------------- Manual List Parser -------------
     function parseManualList(text, yearVal) {
-      const lines = text
-        .split(/\r?\n/)
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
-
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
       const entries = [];
 
       lines.forEach((line, idx) => {
         let parts = line.split("|");
-        if (parts.length === 1) {
-          parts = line.split(" - ");
-        }
+        if (parts.length === 1) parts = line.split(" - ");
         parts = parts.map(p => p.trim());
 
         const title = parts[0] || `Untitled Anime #${idx + 1}`;
@@ -1266,23 +1139,17 @@
 
         entries.push({
           id: title.toLowerCase().replace(/\s+/g, "-") + "-" + idx,
-          title,
-          type,
+          title, type,
           totalEpisodes: episodes,
           watchedEpisodes: episodes,
-          startDate,
-          finishDate,
+          startDate, finishDate,
           score,
           status: "completed",
           coverImage: ""
         });
       });
 
-      return {
-        userName: "Manual List",
-        year: yearVal,
-        entries
-      };
+      return { userName: "Manual List", year: yearVal, entries };
     }
 
     // ------------- Slide builder -------------
@@ -1303,16 +1170,9 @@
 
       const nonZeroWatch = list.filter(e => (e.watchedEpisodes || 0) > 0);
       const rated = list.filter(e => e.score && e.score > 0);
-      const sortedByMinutes = [...nonZeroWatch].sort(
-        (a, b) => estimateMinutes(b) - estimateMinutes(a)
-      );
-      const sortedByScoreDesc = [...rated].sort(
-        (a, b) => b.score - a.score || estimateMinutes(b) - estimateMinutes(a)
-      );
-      const sortedByScoreAsc = [...rated].sort(
-        (a, b) => a.score - b.score || estimateMinutes(b) - estimateMinutes(a)
-      );
-
+      const sortedByMinutes = [...nonZeroWatch].sort((a, b) => estimateMinutes(b) - estimateMinutes(a));
+      const sortedByScoreDesc = [...rated].sort((a, b) => b.score - a.score || estimateMinutes(b) - estimateMinutes(a));
+      const sortedByScoreAsc = [...rated].sort((a, b) => a.score - b.score || estimateMinutes(b) - estimateMinutes(a));
       const mostWatched = sortedByMinutes[0] || null;
 
       function placeholderCover(title) {
@@ -1320,7 +1180,6 @@
         const t = encodeURIComponent(title + " anime");
         return "https://placehold.co/800x1200/020617/ffffff?text=" + t;
       }
-
       function coverForEntry(entry) {
         if (!entry) return "";
         if (entry.coverImage) return entry.coverImage;
@@ -1330,9 +1189,7 @@
       const topRated = sortedByScoreDesc.slice(0, 3);
       const bottomRated = sortedByScoreAsc.slice(0, 3);
 
-      const avgScore = rated.length
-        ? rated.reduce((sum, e) => sum + e.score, 0) / rated.length
-        : null;
+      const avgScore = rated.length ? rated.reduce((sum, e) => sum + e.score, 0) / rated.length : null;
 
       let percentileLabel = "top 50%";
       if (totalEpisodes >= 500) percentileLabel = "top 10%";
@@ -1341,54 +1198,29 @@
       else if (totalEpisodes <= 20) percentileLabel = "top 70%";
 
       let clubName = "Casual Viewer Club";
-      let clubDesc =
-        "You watch at your own pace — enough to keep up, not enough to lose sleep... usually.";
+      let clubDesc = "You watch at your own pace — enough to keep up, not enough to lose sleep... usually.";
       if (totalEpisodes >= 300) {
         clubName = "Shonen Grind Club";
-        clubDesc =
-          "You commit. Long runs, stacked arcs, and hundreds of episodes don’t scare you.";
+        clubDesc = "You commit. Long runs, stacked arcs, and hundreds of episodes don’t scare you.";
       } else if (avgScore && avgScore >= 8.5) {
         clubName = "Quality Hunter Club";
-        clubDesc =
-          "You don’t waste time — you laser in on high-rated shows and skip mid anime.";
+        clubDesc = "You don’t waste time — you laser in on high-rated shows and skip mid anime.";
       } else if (avgScore && avgScore <= 6.5) {
         clubName = "Villain Arc Club";
-        clubDesc =
-          "You keep watching mid or bad shows just to see how wild it gets. Respect.";
+        clubDesc = "You keep watching mid or bad shows just to see how wild it gets. Respect.";
       }
 
       const allTitlesLower = new Set(list.map(e => e.title.toLowerCase()));
-
       const recPool = [
-        "Monster",
-        "Made in Abyss",
-        "Mob Psycho 100",
-        "Kaguya-sama: Love is War",
-        "Vinland Saga",
-        "Jujutsu Kaisen",
-        "Re:Zero kara Hajimeru Isekai Seikatsu",
-        "Fruits Basket (2019)",
-        "Steins;Gate",
-        "Ping Pong the Animation",
-        "Demon Slayer: Kimetsu no Yaiba",
-        "Chainsaw Man",
-        "Oshi no Ko",
-        "Bocchi the Rock!",
-        "Banana Fish",
-        "86",
-        "Fullmetal Alchemist: Brotherhood",
-        "Gintama",
-        "Haikyuu!!",
-        "Code Geass"
+        "Monster","Made in Abyss","Mob Psycho 100","Kaguya-sama: Love is War","Vinland Saga","Jujutsu Kaisen",
+        "Re:Zero kara Hajimeru Isekai Seikatsu","Fruits Basket (2019)","Steins;Gate","Ping Pong the Animation",
+        "Demon Slayer: Kimetsu no Yaiba","Chainsaw Man","Oshi no Ko","Bocchi the Rock!","Banana Fish","86",
+        "Fullmetal Alchemist: Brotherhood","Gintama","Haikyuu!!","Code Geass"
       ];
-
-      const unseenCandidates = recPool.filter(
-        title => !allTitlesLower.has(title.toLowerCase())
-      );
+      const unseenCandidates = recPool.filter(title => !allTitlesLower.has(title.toLowerCase()));
       const shuffled = shuffleArray(unseenCandidates.length ? unseenCandidates : recPool);
       const recommendations = shuffled.slice(0, 4);
 
-      // intro
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
@@ -1399,7 +1231,6 @@
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
 
-      // minutes
       slides.push({
         type: "minutes",
         kicker: "Time spent in other worlds",
@@ -1441,12 +1272,7 @@
           title: "Anime you rated the highest.",
           highlight: "These are the shows that stuck the landing for you.",
           body: "Whether it was story, characters, or pure vibes, these shows cleared your personal bar.",
-          list: topRated.map(e => ({
-            title: e.title,
-            score: e.score,
-            episodes: e.watchedEpisodes,
-            type: e.type
-          })),
+          list: topRated.map(e => ({ title: e.title, score: e.score, episodes: e.watchedEpisodes, type: e.type })),
           backgroundImage: coverForEntry(topRated[0])
         });
       }
@@ -1458,12 +1284,7 @@
           title: "Your lowest-rated watches.",
           highlight: "Not every show can be a W. These ones tested your patience.",
           body: "Maybe you finished them out of stubbornness. Maybe you dropped them mid-arc. Either way, they made the list.",
-          list: bottomRated.map(e => ({
-            title: e.title,
-            score: e.score,
-            episodes: e.watchedEpisodes,
-            type: e.type
-          })),
+          list: bottomRated.map(e => ({ title: e.title, score: e.score, episodes: e.watchedEpisodes, type: e.type })),
           backgroundImage: coverForEntry(bottomRated[0])
         });
       }
@@ -1491,10 +1312,7 @@
         stats: [
           { label: "Episodes logged", value: formatNumber(totalEpisodes) },
           { label: "Rated titles", value: rated.length },
-          {
-            label: "Average score vibe",
-            value: avgScore ? avgScore.toFixed(2) : "mysterious"
-          }
+          { label: "Average score vibe", value: avgScore ? avgScore.toFixed(2) : "mysterious" }
         ],
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
@@ -1508,9 +1326,7 @@
           : "You’ve logged a lot already — here are some evergreen suggestions anyway.",
         body: "This isn’t a perfect algorithm — just a starting point of strong series to consider if you haven’t seen them yet.",
         recs: recommendations.length ? recommendations : recPool.slice(0, 4),
-        backgroundImage: recommendations[0]
-          ? placeholderCover(recommendations[0])
-          : placeholderCover(recPool[0])
+        backgroundImage: recommendations[0] ? placeholderCover(recommendations[0]) : placeholderCover(recPool[0])
       });
 
       slides.push({
@@ -1541,9 +1357,7 @@
     function onSlideChanged() {
       if (!currentSlides.length) return;
       const slideData = currentSlides[currentSlideIndex];
-      if (slideData && slideData.backgroundImage) {
-        setGlobalBackgroundAnime(slideData.backgroundImage);
-      }
+      if (slideData && slideData.backgroundImage) setGlobalBackgroundAnime(slideData.backgroundImage);
     }
 
     function renderSlides(slides) {
@@ -1560,12 +1374,9 @@
 
         const bgDiv = document.createElement("div");
         bgDiv.className = "slide-bg";
-        if (slide.backgroundImage) {
-          bgDiv.style.backgroundImage = `url('${slide.backgroundImage}')`;
-        } else {
-          bgDiv.style.backgroundImage =
-            "radial-gradient(circle at top left, rgba(249,115,22,0.3), rgba(15,23,42,1))";
-        }
+        bgDiv.style.backgroundImage = slide.backgroundImage
+          ? `url('${slide.backgroundImage}')`
+          : "radial-gradient(circle at top left, rgba(249,115,22,0.3), rgba(15,23,42,1))";
 
         const gradDiv = document.createElement("div");
         gradDiv.className = "slide-gradient";
@@ -1643,13 +1454,10 @@
           const t = document.createElement("div");
           t.className = "anime-title";
           t.textContent = slide.extraAnime.title;
+
           const meta = document.createElement("div");
           meta.className = "anime-meta";
-          meta.textContent =
-            (slide.extraAnime.type || "Unknown type") +
-            " · " +
-            slide.extraAnime.watchedEpisodes +
-            " eps logged";
+          meta.textContent = (slide.extraAnime.type || "Unknown type") + " · " + slide.extraAnime.watchedEpisodes + " eps logged";
 
           const pillRow = document.createElement("div");
           pillRow.className = "pill-meta-row";
@@ -1660,8 +1468,7 @@
 
           const pill2 = document.createElement("div");
           pill2.className = "pill-meta";
-          pill2.textContent =
-            "Est. minutes: " + formatNumber(estimateMinutes(slide.extraAnime));
+          pill2.textContent = "Est. minutes: " + formatNumber(estimateMinutes(slide.extraAnime));
 
           pillRow.appendChild(pill1);
           pillRow.appendChild(pill2);
@@ -1669,19 +1476,15 @@
           card.appendChild(t);
           card.appendChild(meta);
           card.appendChild(pillRow);
-
           rightDiv.appendChild(card);
+
         } else if (slide.type === "highestRated" || slide.type === "lowestRated") {
           const card = document.createElement("div");
           card.className = "anime-card";
 
           const header = document.createElement("div");
           header.className = "anime-title";
-          header.textContent =
-            slide.type === "highestRated"
-              ? "Your top-rated picks"
-              : "The ones that let you down";
-
+          header.textContent = slide.type === "highestRated" ? "Your top-rated picks" : "The ones that let you down";
           card.appendChild(header);
 
           slide.list.forEach(item => {
@@ -1692,6 +1495,7 @@
           });
 
           rightDiv.appendChild(card);
+
         } else if (slide.type === "recs") {
           const card = document.createElement("div");
           card.className = "anime-card";
@@ -1699,7 +1503,6 @@
           const header = document.createElement("div");
           header.className = "anime-title";
           header.textContent = "Try these next year";
-
           card.appendChild(header);
 
           slide.recs.forEach(titleStr => {
@@ -1710,69 +1513,54 @@
           });
 
           rightDiv.appendChild(card);
-        } else if (
-          slide.type === "intro" ||
-          slide.type === "outro" ||
-          slide.type === "club" ||
-          slide.type === "count"
-        ) {
+
+        } else if (slide.type === "intro" || slide.type === "outro" || slide.type === "club" || slide.type === "count") {
           const card = document.createElement("div");
           card.className = "anime-card";
 
           const header = document.createElement("div");
           header.className = "anime-title";
           header.textContent =
-            slide.type === "club"
-              ? "Your watching profile"
-              : slide.type === "count"
-              ? "Quick stats"
-              : slide.type === "intro"
-              ? "What you’re about to see"
-              : "Your next arc";
+            slide.type === "club" ? "Your watching profile" :
+            slide.type === "count" ? "Quick stats" :
+            slide.type === "intro" ? "What you’re about to see" : "Your next arc";
 
           const meta = document.createElement("div");
           meta.className = "anime-meta";
-          if (slide.type === "intro") {
-            meta.textContent =
-              "Total episodes, minutes, highs, lows, and a few gentle roasts about your watch habits.";
-          } else if (slide.type === "outro") {
-            meta.textContent =
-              "Set some goals: finish that one show, clear a backlog, or finally watch that recommendation.";
-          } else if (slide.type === "club") {
-            meta.textContent = "This is our read on how you approach anime as a whole.";
-          } else {
-            meta.textContent =
-              "Big-picture numbers that show how committed you were this year.";
-          }
+          meta.textContent =
+            slide.type === "intro" ? "Total episodes, minutes, highs, lows, and a few gentle roasts about your watch habits." :
+            slide.type === "outro" ? "Set some goals: finish that one show, clear a backlog, or finally watch that recommendation." :
+            slide.type === "club" ? "This is our read on how you approach anime as a whole." :
+            "Big-picture numbers that show how committed you were this year.";
 
           card.appendChild(header);
           card.appendChild(meta);
           rightDiv.appendChild(card);
         }
 
-        // OP button – appears on key slide types and always plays the sample OP
+        // ✅ OP button – uses YouTube search per slide/anime (not Parasyte-only)
         if (slideTypesWithOp.includes(slide.type)) {
           const opBtn = document.createElement("button");
           opBtn.type = "button";
           opBtn.className = "op-btn";
-          opBtn.innerHTML = "<span>▶</span><span>Play opening from this vibe</span>";
-          opBtn.addEventListener("click", playOpSample);
+          opBtn.innerHTML = "<span>▶</span><span>Play opening from this anime</span>";
+
+          const animeTitleForThisSlide =
+            (slide.extraAnime && slide.extraAnime.title) ||
+            (slide.list && slide.list[0] && slide.list[0].title) ||
+            (slide.recs && slide.recs[0]) ||
+            "";
+
+          opBtn.addEventListener("click", () => playOpeningForAnime(animeTitleForThisSlide));
           rightDiv.appendChild(opBtn);
         }
 
         const foot = document.createElement("div");
         foot.className = "slide-footer";
-        if (slide.type === "minutes") {
-          foot.textContent =
-            "Minutes estimated at ~23 minutes per episode (movies as ~90m each).";
-        } else if (slide.type === "count") {
-          foot.textContent = "Percentile is a fun estimate — not an official MAL metric.";
-        } else if (slide.type === "recs") {
-          foot.textContent =
-            "We only recommend shows that don’t appear in your list export.";
-        } else {
-          foot.textContent = "";
-        }
+        if (slide.type === "minutes") foot.textContent = "Minutes estimated at ~23 minutes per episode (movies as ~90m each).";
+        else if (slide.type === "count") foot.textContent = "Percentile is a fun estimate — not an official MAL metric.";
+        else if (slide.type === "recs") foot.textContent = "We only recommend shows that don’t appear in your list export.";
+        else foot.textContent = "";
         rightDiv.appendChild(foot);
 
         contentDiv.appendChild(leftDiv);
@@ -1812,10 +1600,10 @@
       if (!currentSlides.length) return;
       const slides = Array.from(document.querySelectorAll(".slide"));
       if (!slides.length) return;
+
       const clamped = Math.max(0, Math.min(newIndex, slides.length - 1));
-      slides.forEach((s, idx) => {
-        s.classList.toggle("active", idx === clamped);
-      });
+      slides.forEach((s, idx) => s.classList.toggle("active", idx === clamped));
+
       currentSlideIndex = clamped;
       updateSlideIndicator();
       updateControlsDisabled();
@@ -1831,7 +1619,6 @@
     const manualInput = document.getElementById("manualList");
     const malLoginBtn = document.getElementById("malLoginBtn");
 
-    // MAL login button – mark this browser as freshly authorized (short-lived)
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
         try {
@@ -1843,37 +1630,20 @@
       });
     }
 
-    // default year
     const currentYear = new Date().getFullYear();
-    if (yearInput) {
-      yearInput.value = currentYear;
-    }
+    if (yearInput) yearInput.value = currentYear;
 
     generateBtn.addEventListener("click", async () => {
-      if (fileError) {
-        fileError.style.display = "none";
-      }
+      if (fileError) fileError.style.display = "none";
 
       const file = malInput && malInput.files ? malInput.files[0] : null;
-      const username =
-        usernameInput && usernameInput.value
-          ? usernameInput.value.trim()
-          : "";
-      const manualText =
-      manualInput && manualInput.value
-        ? manualInput.value.trim()
-        : "";
+      const username = usernameInput && usernameInput.value ? usernameInput.value.trim() : "";
+      const manualText = manualInput && manualInput.value ? manualInput.value.trim() : "";
 
-      const yearVal = safeInt(
-        yearInput && yearInput.value ? yearInput.value : currentYear,
-        currentYear
-      );
+      const yearVal = safeInt(yearInput && yearInput.value ? yearInput.value : currentYear, currentYear);
 
-      // 1) LOCAL FILE
       if (file) {
         showPanel("panel-loading");
-        tryStartMusic();
-
         const reader = new FileReader();
 
         reader.onload = async (e) => {
@@ -1887,66 +1657,51 @@
             }
 
             const parsed = parseMalXml(xmlText);
-
             const entries = parsed.entries;
+
             const filtered = entries.filter((entry) => {
               const startY = extractYear(entry.startDate);
               const finishY = extractYear(entry.finishDate);
               return String(yearVal) === startY || String(yearVal) === finishY;
             });
-            const activeEntries = filtered.length ? filtered : entries;
 
-            const wrappedData = {
-              userName: parsed.userName,
-              year: yearVal,
-              entries: activeEntries,
-            };
+            const activeEntries = filtered.length ? filtered : entries;
+            const wrappedData = { userName: parsed.userName, year: yearVal, entries: activeEntries };
 
             const slides = buildSlides(wrappedData);
             renderSlides(slides);
 
-            setTimeout(() => {
-              showPanel("panel-slides");
-            }, 600);
+            setTimeout(() => showPanel("panel-slides"), 300);
           } catch (err) {
             console.error(err);
             if (fileError) {
-              fileError.textContent =
-                "Something went wrong reading that file. Make sure it’s a MAL XML export.";
+              fileError.textContent = "Something went wrong reading that file. Make sure it’s a MAL XML export.";
               fileError.style.display = "block";
             }
             showPanel("panel-input");
           }
         };
 
-        if (file.name.endsWith(".gz")) {
-          reader.readAsArrayBuffer(file);
-        } else {
-          reader.readAsText(file);
-        }
+        if (file.name.endsWith(".gz")) reader.readAsArrayBuffer(file);
+        else reader.readAsText(file);
 
         return;
       }
 
-      // 2) MANUAL LIST
       if (manualText) {
         try {
           showPanel("panel-loading");
-          tryStartMusic();
-
           const wrappedData = parseManualList(manualText, yearVal);
-          if (!wrappedData.entries.length) {
-            throw new Error("No valid lines found in manual list.");
-          }
+          if (!wrappedData.entries.length) throw new Error("No valid lines found in manual list.");
+
           const slides = buildSlides(wrappedData);
           renderSlides(slides);
 
-          setTimeout(() => showPanel("panel-slides"), 600);
+          setTimeout(() => showPanel("panel-slides"), 300);
         } catch (err) {
           console.error(err);
           if (fileError) {
-            fileError.textContent =
-              "Couldn’t understand that manual list. Use: Title | episodes | score (optional) | type (optional) | start-date | finish-date.";
+            fileError.textContent = "Couldn’t understand that manual list. Use: Title | episodes | score (optional) | type (optional) | start-date | finish-date.";
             fileError.style.display = "block";
           }
           showPanel("panel-input");
@@ -1954,22 +1709,18 @@
         return;
       }
 
-      // 3) USERNAME JIKAN
       if (username) {
         try {
           showPanel("panel-loading");
-          tryStartMusic();
-
           const wrappedData = await fetchFromJikan(username, yearVal);
           const slides = buildSlides(wrappedData);
           renderSlides(slides);
 
-          setTimeout(() => showPanel("panel-slides"), 600);
+          setTimeout(() => showPanel("panel-slides"), 300);
         } catch (err) {
           console.error(err);
           if (fileError) {
-            fileError.textContent =
-              "Failed to fetch from Jikan. Check username or try again later.";
+            fileError.textContent = "Failed to fetch from Jikan. Check username or try again later.";
             fileError.style.display = "block";
           }
           showPanel("panel-input");
@@ -1977,7 +1728,6 @@
         return;
       }
 
-      // 4) MAL BACKEND (if recently authorized)
       let malAuthorized = false;
       try {
         const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
@@ -1986,20 +1736,12 @@
         const now = Date.now();
         const MAX_AUTH_AGE_MS = 10 * 60 * 1000;
 
-        malAuthorized =
-          !!authPending &&
-          !!authAt &&
-          Number.isFinite(authAt) &&
-          now - authAt <= MAX_AUTH_AGE_MS;
-      } catch (e) {
-        malAuthorized = false;
-      }
+        malAuthorized = !!authPending && !!authAt && Number.isFinite(authAt) && now - authAt <= MAX_AUTH_AGE_MS;
+      } catch (e) { malAuthorized = false; }
 
       if (malAuthorized) {
         try {
           showPanel("panel-loading");
-          tryStartMusic();
-
           const wrappedData = await fetchFromMalApi(yearVal);
           const slides = buildSlides(wrappedData);
           renderSlides(slides);
@@ -2009,9 +1751,7 @@
             window.localStorage.removeItem("malAuthorizedAt");
           } catch (e) {}
 
-          setTimeout(() => {
-            showPanel("panel-slides");
-          }, 600);
+          setTimeout(() => showPanel("panel-slides"), 300);
         } catch (err) {
           console.error(err);
           try {
@@ -2020,8 +1760,7 @@
           } catch (e) {}
 
           if (fileError) {
-            fileError.textContent =
-              "Failed to fetch from MAL. Click 'Sign in with MAL' again and make sure the login succeeds.";
+            fileError.textContent = "Failed to fetch from MAL. Click 'Sign in with MAL' again and make sure the login succeeds.";
             fileError.style.display = "block";
           }
           showPanel("panel-input");
@@ -2029,28 +1768,20 @@
         return;
       }
 
-      // 5) nothing provided
       if (fileError) {
-        fileError.textContent =
-          "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
+        fileError.textContent = "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
         fileError.style.display = "block";
       }
       showPanel("panel-input");
     });
 
     // Slide controls
-    document.getElementById("prevSlideBtn").addEventListener("click", () => {
-      goToSlide(currentSlideIndex - 1);
-    });
-    document.getElementById("nextSlideBtn").addEventListener("click", () => {
-      goToSlide(currentSlideIndex + 1);
-    });
-    document.getElementById("restartBtn").addEventListener("click", () => {
-      goToSlide(0);
-    });
+    document.getElementById("prevSlideBtn").addEventListener("click", () => goToSlide(currentSlideIndex - 1));
+    document.getElementById("nextSlideBtn").addEventListener("click", () => goToSlide(currentSlideIndex + 1));
+    document.getElementById("restartBtn").addEventListener("click", () => goToSlide(0));
   </script>
 
-  <!-- Background + sample OP audio -->
+  <!-- Background + sample OP audio (OP sample kept for compatibility, not used anymore) -->
   <audio id="bgMusic" loop>
     <source src="bg-music.mp3" type="audio/mpeg" />
   </audio>
@@ -2058,6 +1789,5 @@
   <audio id="opAudio">
     <source src="op-sample.mp3" type="audio/mpeg" />
   </audio>
-
 </body>
 </html>
