@@ -2022,13 +2022,12 @@
     }
 
     function updateSlideIndicator() {
-      const indicator = document.getElementById("slideIndicator");
-      if (!indicator || !currentSlides.length) return;
-      indicator.textContent = `Slide ${currentSlideIndex + 1} of ${currentSlides.length}`;
-    }
+  const indicator = document.getElementById("slideIndicator");
+  if (!indicator || !currentSlides.length) return;
+  indicator.textContent = `Slide ${currentSlideIndex + 1} of ${currentSlides.length}`;
+}
 
-   
-          function updateControlsDisabled() {
+function updateControlsDisabled() {
   const prevBtn = document.getElementById("prevSlideBtn");
   const nextBtn = document.getElementById("nextSlideBtn");
   if (!prevBtn || !nextBtn) return;
@@ -2043,20 +2042,28 @@
   nextBtn.disabled = currentSlideIndex === currentSlides.length - 1;
 }
 
+function showSlide(index) {
+  if (!currentSlides.length) return;
 
-      slidesEls.forEach((el, i) => {
-        el.classList.toggle("active", i === currentSlideIndex);
-      });
+  const slidesEls = Array.from(document.querySelectorAll("#slidesMain .slide"));
+  currentSlideIndex = clamp(index, 0, currentSlides.length - 1);
 
-      updateSlideIndicator();
-      updateControlsDisabled();
-      onSlideChanged();
+  slidesEls.forEach((el, i) => {
+    el.classList.toggle("active", i === currentSlideIndex);
+  });
 
-      // ✅ only autoplay OP after user has interacted with nav at least once
-      if (opAutoEnabled) {
-        const s = currentSlides[currentSlideIndex];
-        const t = getAnimeTitleForSlide(s);
-        if (t) playOpeningForAnime(t);
+  updateSlideIndicator();
+  updateControlsDisabled();
+  onSlideChanged();
+
+  // ✅ only autoplay OP after user has interacted with nav at least once
+  if (opAutoEnabled) {
+    const s = currentSlides[currentSlideIndex];
+    const t = getAnimeTitleForSlide(s);
+    if (t) playOpeningForAnime(t);
+  }
+}
+
       }
     
 
