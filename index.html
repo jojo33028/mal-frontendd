@@ -442,7 +442,7 @@
       transform: translateX(20px);
       transition: opacity var(--slide-transition), transform var(--slide-transition);
       display: flex;
-      pointer-events: none; /* inactive stacked slides can’t block clicks */
+      pointer-events: none;
     }
 
     .slide.active {
@@ -611,25 +611,6 @@
     .intro-username { font-size: 1.4rem; font-weight: 800; margin-top: 0.2rem; }
     .intro-tagline { margin-top: 0.6rem; font-size: 0.9rem; color: var(--text-soft); }
 
-    /* Clickable list rows for highest/lowest */
-    .anime-row-btn {
-      width: 100%;
-      text-align: left;
-      border: 1px solid rgba(148,163,184,0.22);
-      background: rgba(2,6,23,0.35);
-      color: #e5e7eb;
-      border-radius: 12px;
-      padding: 8px 10px;
-      cursor: pointer;
-      font-size: 0.82rem;
-      transition: transform 0.08s ease, border-color 0.12s ease, background 0.12s ease;
-    }
-    .anime-row-btn:hover {
-      transform: translateY(-1px);
-      border-color: rgba(249,115,22,0.65);
-      background: rgba(249,115,22,0.10);
-    }
-
     /* Top moving banner */
     .top-banner {
       width: 100%;
@@ -659,7 +640,23 @@
       100% { transform: translateX(-100%); }
     }
 
-    /* ✅ "Audio-only" mini player (hidden video) */
+    /* ✅ REMOVE “THING IN THE MIDDLE OF THE SCREEN”
+       - hard-hide common overlays / toast-like elements that end up centered
+       - AND force YouTube iframe overlays to stay hidden
+    */
+    .center-toast, .status-toast, .toast, .snackbar, .popup-status,
+    #statusText, #status, #middleStatus, #centerStatus, #centerToast, #toast, #snackbar, #popup {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
+    }
+    /* If any element is absolutely centered by transform(-50%,-50%), kill it */
+    [style*="translate(-50%"], [style*="translate3d(-50%"], [style*="top: 50%"][style*="left: 50%"] {
+      /* we don’t want to nuke your slides, so limit to likely overlays */
+    }
+
+    /* ✅ YouTube “audio-only” mini player (TOP RIGHT ONLY) */
     #ytModal {
       display: none;
       position: fixed;
@@ -667,8 +664,8 @@
       right: 18px;
       z-index: 20000;
       background: transparent;
-      backdrop-filter: none;
       inset: auto;
+      pointer-events: auto;
     }
 
     #ytModalCard {
@@ -707,13 +704,8 @@
       color: #e5e7eb;
     }
 
-    #ytStatusLine {
-      padding: 10px 12px;
-      font-size: 12px;
-      color: rgba(229,231,235,0.85);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: none;
-    }
+    /* ✅ We will NOT show status text anywhere (this was the “middle thing” for a lot of people) */
+    #ytStatusLine { display: none !important; }
 
     /* hidden player area */
     #ytFrameWrap {
@@ -862,19 +854,30 @@
     </main>
   </div>
 
-  <!-- ✅ "Audio-only" YouTube OP mini player -->
+  <!-- ✅ YouTube OP mini player (top-right only, no status text) -->
   <div id="ytModal">
     <div id="ytModalCard">
       <div id="ytModalTop">
         <div id="ytNowPlaying">Opening…</div>
         <button id="ytCloseBtn" type="button">✕</button>
       </div>
-      <div id="ytStatusLine">Searching YouTube…</div>
+   
       <div id="ytFrameWrap">
         <div id="ytPlayer"></div>
       </div>
     </div>
   </div>
+  <!-- ✅ Background music (local file) -->
+  <audio id="bgMusic" loop>
+    <source src="bg-music.mp3" type="audio/mpeg" />
+    <source src="bg-music.wav" type="audio/wav" />
+  </audio>
+
+  <!-- (Optional legacy) -->
+  <audio id="opAudio">
+    <source src="op-sample.mp3" type="audio/mpeg" />
+    <source src="op-sample.wav" type="audio/wav" />
+  </audio>
 
   <!-- ✅ YouTube IFrame API -->
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -933,8 +936,7 @@
     // ============================
     // ✅ YouTube OP Player (audio-only vibe)
     // ============================
-    // IMPORTANT: Replace this with YOUR actual YouTube Data API key:
-    const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8";
+    const YT_API_KEY = "AIzaSyBIJmG0xuyThIR6BOXURNgzTzhEdStoC-8"; // replace if needed
 
     let ytPlayer = null;
     let ytReady = false;
@@ -942,7 +944,6 @@
     const ytModal = document.getElementById("ytModal");
     const ytCloseBtn = document.getElementById("ytCloseBtn");
     const ytNowPlaying = document.getElementById("ytNowPlaying");
-    const ytStatusLine = document.getElementById("ytStatusLine");
     const ytCache = new Map(); // query -> videoId
 
     function openYtModal() {
@@ -953,7 +954,6 @@
     function closeYtModal() {
       if (!ytModal) return;
       ytModal.style.display = "none";
-      if (ytStatusLine) ytStatusLine.style.display = "none";
       try { ytPlayer?.stopVideo?.(); } catch (e) {}
     }
 
@@ -966,14 +966,21 @@
         height: "100%",
         width: "100%",
         videoId: "",
-        playerVars: { autoplay: 1, controls: 0, modestbranding: 1, rel: 0, playsinline: 1 }
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          playsinline: 1,
+          fs: 0,
+          iv_load_policy: 3
+        }
       });
     };
 
-   function hasValidApiKey() {
-  return typeof YT_API_KEY === "string" && YT_API_KEY.trim().length > 20;
-}
-
+    function hasValidApiKey() {
+      return typeof YT_API_KEY === "string" && YT_API_KEY.trim().length > 20;
+    }
 
     async function searchYouTubeFirstVideoId(query) {
       if (ytCache.has(query)) return ytCache.get(query);
@@ -994,54 +1001,34 @@
       return vid;
     }
 
-    function setYtStatus(text, visible = true) {
-      if (!ytStatusLine) return;
-      ytStatusLine.textContent = text || "";
-      ytStatusLine.style.display = visible ? "block" : "none";
-    }
-
     async function playOpeningForAnime(animeTitle) {
       const title = (animeTitle || "").trim();
       if (!title) return;
 
-      // stop any local audio so it doesn't overlap
       stopOpSample();
       stopBgMusic();
 
       openYtModal();
       if (ytNowPlaying) ytNowPlaying.textContent = `Opening: ${title}`;
-      setYtStatus("Searching YouTube…", true);
 
       const query = `${title} opening 1 official`;
 
       let vid = null;
       try { vid = await searchYouTubeFirstVideoId(query); } catch (e) { console.error(e); }
 
-      if (!vid) {
-        setYtStatus(
-          hasValidApiKey()
-            ? "Couldn’t find a video right now (quota / results issue). Try another slide or refresh."
-            : "No YouTube API key set. Add your key to enable OP playback.",
-          true
-        );
-        return;
-      }
-
-      setYtStatus("", false);
+      if (!vid) return; // no status text shown (removes the “middle thing”)
 
       const tryLoad = () => {
-        try {
-          ytPlayer.loadVideoById(vid);
-        } catch (e) {
-          console.error("YT player not ready yet:", e);
-        }
+        try { ytPlayer.loadVideoById(vid); } catch (e) {}
       };
 
       if (ytReady && ytPlayer?.loadVideoById) tryLoad();
       else setTimeout(tryLoad, 350);
     }
 
+    // ============================
     // ------------- Panel switching -------------
+    // ============================
     function showPanel(id) {
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
       const panel = document.getElementById(id);
@@ -1059,12 +1046,13 @@
       }
     }
 
-    // ------------- General helpers -------------
+    // ============================
+    // ------------- Helpers -------------
+    // ============================
     function safeInt(val, fallback = 0) {
       const n = parseInt(val, 10);
       return Number.isFinite(n) ? n : fallback;
     }
-
     function formatNumber(num) { return num.toLocaleString("en-US"); }
 
     function estimateMinutes(entry) {
@@ -1082,6 +1070,17 @@
       return null;
     }
 
+    function parseISODate(dateStr) {
+      if (!dateStr || dateStr === "0000-00-00") return null;
+      const d = new Date(dateStr);
+      return Number.isFinite(d.getTime()) ? d : null;
+    }
+
+    function monthName(m) {
+      const names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return names[m] || "—";
+    }
+
     function shuffleArray(arr) {
       const a = arr.slice();
       for (let i = a.length - 1; i > 0; i--) {
@@ -1091,7 +1090,11 @@
       return a;
     }
 
+    function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+    // ============================
     // ------------- Parse MAL XML -------------
+    // ============================
     function parseMalXml(xmlText) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(xmlText, "text/xml");
@@ -1113,15 +1116,34 @@
         const startDate = get("my_start_date");
         const finishDate = get("my_finish_date");
         const score = safeInt(get("my_score"), 0);
-        const status = get("my_status");
+        const statusRaw = get("my_status"); // MAL numeric
+        const statusNum = safeInt(statusRaw, 0);
 
-        return { id, title, type, totalEpisodes, watchedEpisodes, startDate, finishDate, score, status, coverImage: "" };
+        return {
+          id,
+          title,
+          type,
+          totalEpisodes,
+          watchedEpisodes,
+          startDate,
+          finishDate,
+          score,
+          status: statusNum, // keep numeric for XML
+          coverImage: "",
+          // meta to enrich:
+          genres: [],
+          studios: [],
+          airedYear: null,
+          premiered: ""
+        };
       });
 
       return { userName, entries };
     }
 
-    // ------------- Jikan Fetch Helper -------------
+    // ============================
+    // ------------- Jikan list fetch -------------
+    // ============================
     async function fetchFromJikan(username, yearVal) {
       const entries = [];
       let page = 1;
@@ -1146,7 +1168,11 @@
             finishDate: item.completed_at || "",
             score: Number(item.score) || 0,
             status: item.status || "",
-            coverImage: (anime.images && anime.images.jpg && (anime.images.jpg.large_image_url || anime.images.jpg.image_url)) || ""
+            coverImage: (anime.images && anime.images.jpg && (anime.images.jpg.large_image_url || anime.images.jpg.image_url)) || "",
+            genres: [],
+            studios: [],
+            airedYear: null,
+            premiered: ""
           };
           entries.push(entry);
         });
@@ -1166,7 +1192,9 @@
       return { userName: username || "Anime Fan", year: yearVal, entries: active };
     }
 
-    // ------------- MAL API Fetch Helper -------------
+    // ============================
+    // ------------- MAL backend fetch -------------
+    // ============================
     async function fetchFromMalApi(yearVal) {
       const res = await fetch("https://mal-wrapped-1.onrender.com/list");
       if (!res.ok) throw new Error("MAL backend request failed");
@@ -1189,7 +1217,11 @@
           finishDate: status.finish_date || "",
           score: Number(status.score) || 0,
           status: status.status || "",
-          coverImage: (anime.main_picture && (anime.main_picture.large || anime.main_picture.medium)) || ""
+          coverImage: (anime.main_picture && (anime.main_picture.large || anime.main_picture.medium)) || "",
+          genres: [],
+          studios: [],
+          airedYear: null,
+          premiered: ""
         });
       });
 
@@ -1203,7 +1235,9 @@
       return { userName: "Your MAL", year: yearVal, entries: activeEntries };
     }
 
-    // ------------- Manual List Parser -------------
+    // ============================
+    // ------------- Manual list parser -------------
+    // ============================
     function parseManualList(text, yearVal) {
       const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
       const entries = [];
@@ -1228,20 +1262,95 @@
           startDate, finishDate,
           score,
           status: "completed",
-          coverImage: ""
+          coverImage: "",
+          genres: [],
+          studios: [],
+          airedYear: null,
+          premiered: ""
         });
       });
 
       return { userName: "Manual List", year: yearVal, entries };
     }
 
-    // ------------- Slide builder -------------
+    // ============================
+    // ✅ Enrich meta (genres / studios / year) using Jikan anime/{id}
+    // ============================
+    const jikanAnimeCache = new Map(); // id -> meta
+    async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function fetchJikanAnimeMeta(id) {
+      if (!id) return null;
+      if (jikanAnimeCache.has(id)) return jikanAnimeCache.get(id);
+
+      const url = `https://api.jikan.moe/v4/anime/${encodeURIComponent(id)}/full`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        jikanAnimeCache.set(id, null);
+        return null;
+      }
+      const json = await res.json();
+      const a = json?.data || null;
+      if (!a) {
+        jikanAnimeCache.set(id, null);
+        return null;
+      }
+
+      const meta = {
+        genres: (a.genres || []).map(g => g.name).filter(Boolean),
+        studios: (a.studios || []).map(s => s.name).filter(Boolean),
+        airedYear: (a.year || (a.aired && a.aired.from ? new Date(a.aired.from).getFullYear() : null)) || null,
+        premiered: (a.season && a.year ? `${a.season} ${a.year}` : ""),
+        image: (a.images && a.images.jpg && (a.images.jpg.large_image_url || a.images.jpg.image_url)) || ""
+      };
+
+      jikanAnimeCache.set(id, meta);
+      return meta;
+    }
+
+    async function enrichEntriesWithMeta(entries) {
+      // only enrich entries that have numeric MAL ids (manual lines won't)
+      const candidates = entries
+        .filter(e => e && e.id && /^\d+$/.test(String(e.id)))
+        .sort((a,b) => estimateMinutes(b) - estimateMinutes(a)); // enrich biggest-impact first
+
+      const MAX_ENRICH = 25;      // keep it fast + avoid rate limits
+      const CONCURRENCY = 3;      // gentle
+      const ids = candidates.slice(0, MAX_ENRICH).map(e => String(e.id));
+
+      let idx = 0;
+      const workers = new Array(CONCURRENCY).fill(0).map(async () => {
+        while (idx < ids.length) {
+          const my = ids[idx++];
+          try {
+            const meta = await fetchJikanAnimeMeta(my);
+            // attach back to entry
+            const target = entries.find(x => String(x.id) === my);
+            if (meta && target) {
+              target.genres = meta.genres || [];
+              target.studios = meta.studios || [];
+              target.airedYear = meta.airedYear || null;
+              target.premiered = meta.premiered || "";
+              if (!target.coverImage && meta.image) target.coverImage = meta.image;
+            }
+          } catch (e) {}
+          await sleep(350); // Jikan rate-limit friendly
+        }
+      });
+
+      await Promise.all(workers);
+      return entries;
+    }
+
+    // ============================
+    // ------------- Slide builder (UPDATED: NEW SLIDES) -------------
+    // ============================
     function buildSlides(data) {
       const slides = [];
 
       const username = data.userName;
       const year = data.year;
-      const list = data.entries;
+      const list = data.entries || [];
 
       const totalAnime = list.length;
       const totalEpisodes = list.reduce((sum, e) => sum + (e.watchedEpisodes || 0), 0);
@@ -1274,9 +1383,124 @@
 
       const topRated = sortedByScoreDesc.slice(0, 3);
       const bottomRated = sortedByScoreAsc.slice(0, 3);
-
       const avgScore = rated.length ? rated.reduce((sum, e) => sum + e.score, 0) / rated.length : null;
 
+      // -------------------------
+      // ✅ NEW SLIDE METRICS
+      // -------------------------
+
+      // Completed vs Dropped (works for XML numeric or Jikan string)
+      function isCompleted(e) {
+        if (typeof e.status === "number") return e.status === 2;
+        const s = String(e.status || "").toLowerCase();
+        return s.includes("complete");
+      }
+      function isDropped(e) {
+        if (typeof e.status === "number") return e.status === 4;
+        const s = String(e.status || "").toLowerCase();
+        return s.includes("drop");
+      }
+      const completedCount = list.filter(isCompleted).length;
+      const droppedCount = list.filter(isDropped).length;
+
+      // Most active month (by finish date if possible, else start date)
+      const monthCounts = new Array(12).fill(0);
+      list.forEach(e => {
+        const f = parseISODate(e.finishDate);
+        const s = parseISODate(e.startDate);
+        const d = f || s;
+        if (!d) return;
+        if (String(d.getFullYear()) !== String(year)) return;
+        monthCounts[d.getMonth()]++;
+      });
+      let bestMonthIdx = 0;
+      for (let i = 1; i < 12; i++) if (monthCounts[i] > monthCounts[bestMonthIdx]) bestMonthIdx = i;
+      const mostActiveMonth = monthCounts[bestMonthIdx] ? `${monthName(bestMonthIdx)} ${year}` : null;
+
+      // Fastest finish (needs both dates)
+      const finishedWithDates = list
+        .map(e => {
+          const s = parseISODate(e.startDate);
+          const f = parseISODate(e.finishDate);
+          if (!s || !f) return null;
+          const diffDays = Math.max(0, Math.round((f - s) / (1000 * 60 * 60 * 24)));
+          return { e, diffDays };
+        })
+        .filter(Boolean)
+        .sort((a,b) => a.diffDays - b.diffDays);
+      const fastest = finishedWithDates[0] || null;
+
+      // Genre personality (from enriched meta)
+      const genreCounts = new Map();
+      list.forEach(e => (e.genres || []).forEach(g => genreCounts.set(g, (genreCounts.get(g) || 0) + 1)));
+      const topGenre = [...genreCounts.entries()].sort((a,b) => b[1]-a[1])[0] || null;
+
+      function genrePersonalityText(genre) {
+        const g = String(genre || "").toLowerCase();
+        if (g.includes("action")) return "Adrenaline brain. If nobody is sprinting, you’re bored.";
+        if (g.includes("comedy")) return "Vibes > plot. You’re here to laugh and chill.";
+        if (g.includes("drama")) return "Emotional damage enjoyer. You like stories that *hit*.";
+        if (g.includes("romance")) return "Hopeless romantic arc. You root for the ship every time.";
+        if (g.includes("thriller") || g.includes("mystery")) return "Conspiracy mode: ON. You love plotting theories.";
+        if (g.includes("horror")) return "You like fear as seasoning. Respect (and concern).";
+        if (g.includes("slice of life")) return "Comfort watcher. Warm tea, soft pacing, good vibes.";
+        if (g.includes("fantasy")) return "Worldbuilder energy. You want lore, magic, and maps.";
+        if (g.includes("sci-fi")) return "Big-brain settings. You like tech, concepts, and mind-bends.";
+        return "You follow vibes more than labels — and it works.";
+      }
+
+      // Studio loyalty (from enriched meta)
+      const studioCounts = new Map();
+      list.forEach(e => (e.studios || []).forEach(s => studioCounts.set(s, (studioCounts.get(s) || 0) + 1)));
+      const topStudio = [...studioCounts.entries()].sort((a,b) => b[1]-a[1])[0] || null;
+
+      // Comfort anime (best guess): highest score among “older start date”, OR fallback to mostWatched
+      const comfortCandidate = [...list]
+        .filter(e => e.score && e.score >= 8)
+        .sort((a,b) => {
+          const as = parseISODate(a.startDate);
+          const bs = parseISODate(b.startDate);
+          const ay = as ? as.getFullYear() : 9999;
+          const by = bs ? bs.getFullYear() : 9999;
+          return ay - by || estimateMinutes(b) - estimateMinutes(a);
+        })[0] || mostWatched;
+
+      // Era vibe (decade) from airedYear meta (best effort)
+      const decadeCounts = new Map();
+      list.forEach(e => {
+        const y = e.airedYear || null;
+        if (!y || !Number.isFinite(Number(y))) return;
+        const dec = Math.floor(Number(y)/10)*10;
+        decadeCounts.set(dec, (decadeCounts.get(dec) || 0) + 1);
+      });
+      const topDecade = [...decadeCounts.entries()].sort((a,b)=>b[1]-a[1])[0] || null;
+
+      function decadeVibe(dec) {
+        if (!dec) return { title: "Modern Mixed Bag", body: "Your list spans eras — you’re not locked to one time period." };
+        const d = Number(dec);
+        if (d <= 1990) return { title: `${d}s Classic Aura`, body: "Old-school taste. You respect the roots and the vibes are timeless." };
+        if (d === 2000) return { title: "2000s Nostalgia Engine", body: "You like that gritty glow-up era: iconic openings, iconic fits, iconic arcs." };
+        if (d === 2010) return { title: "2010s Peak Modern Era", body: "You’re in the era of big hits and stacked seasonal lineups." };
+        if (d >= 2020) return { title: "2020s New-Gen Energy", body: "You’re tapped into the current wave. New season, new obsession." };
+        return { title: `${d}s Vibe`, body: "You’ve got a distinct era preference — and it shows." };
+      }
+
+      // Binge personality
+      const bingeScore = totalEpisodes / Math.max(1, totalAnime); // eps per title
+      let bingeName = "Casual Drip";
+      let bingeDesc = "You watch when you feel like it. No pressure. Pure vibes.";
+      if (totalEpisodes >= 350 || bingeScore >= 20) {
+        bingeName = "Arc Speedrunner";
+        bingeDesc = "If there’s a story, you’re finishing it. Sleep is optional.";
+      } else if (totalEpisodes >= 180 || bingeScore >= 12) {
+        bingeName = "Weekend Grinder";
+        bingeDesc = "You binge in bursts. One good weekend and your list jumps.";
+      } else if (avgScore && avgScore >= 8.2) {
+        bingeName = "Quality Sniper";
+        bingeDesc = "You don’t binge everything — you lock in only when it’s worth it.";
+      }
+
+      // Percentile-ish / club (existing)
       let percentileLabel = "top 50%";
       if (totalEpisodes >= 500) percentileLabel = "top 10%";
       else if (totalEpisodes >= 250) percentileLabel = "top 20%";
@@ -1296,6 +1520,7 @@
         clubDesc = "You keep watching mid or bad shows just to see how wild it gets. Respect.";
       }
 
+      // Recs (upgrade: prefer top genre)
       const allTitlesLower = new Set(list.map(e => e.title.toLowerCase()));
       const recPool = [
         "Monster","Made in Abyss","Mob Psycho 100","Kaguya-sama: Love is War","Vinland Saga","Jujutsu Kaisen",
@@ -1307,6 +1532,9 @@
       const shuffled = shuffleArray(unseenCandidates.length ? unseenCandidates : recPool);
       const recommendations = shuffled.slice(0, 4);
 
+      // -------------------------
+      // SLIDES (including the NEW ones you listed)
+      // -------------------------
       slides.push({
         type: "intro",
         kicker: "Welcome back to your year in anime",
@@ -1333,6 +1561,21 @@
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
 
+      // ✅ NEW: Binge personality
+      slides.push({
+        type: "binge",
+        kicker: "Your binge personality",
+        title: bingeName,
+        highlight: null,
+        body: bingeDesc,
+        stats: [
+          { label: "Episodes logged", value: formatNumber(totalEpisodes) },
+          { label: "Anime tracked", value: formatNumber(totalAnime) },
+          { label: "Avg eps per title", value: (totalAnime ? (totalEpisodes / totalAnime).toFixed(1) : "—") }
+        ],
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
+      });
+
       if (mostWatched) {
         const mwMinutes = estimateMinutes(mostWatched);
         slides.push({
@@ -1351,6 +1594,49 @@
         });
       }
 
+      // ✅ NEW: Completed vs Dropped
+      slides.push({
+        type: "cd",
+        kicker: "Completion energy",
+        title: "Completed vs dropped",
+        highlight: null,
+        body: "Whether you finish every arc… or bail when it gets mid.",
+        stats: [
+          { label: "Completed", value: formatNumber(completedCount) },
+          { label: "Dropped", value: formatNumber(droppedCount) },
+          { label: "Other / in-progress", value: formatNumber(Math.max(0, totalAnime - completedCount - droppedCount)) }
+        ],
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
+      });
+
+      // ✅ NEW: Most active month
+      slides.push({
+        type: "month",
+        kicker: "When you were locked in",
+        title: mostActiveMonth ? `Most active month: ${mostActiveMonth}` : "Most active month: Unknown",
+        highlight: mostActiveMonth ? `You were on a run in ${mostActiveMonth}.` : "Add start/finish dates to your MAL list for this one to be exact.",
+        body: "We count titles with a start/finish date in that month (best-effort).",
+        stats: mostActiveMonth ? [
+          { label: "Titles tagged in that month", value: formatNumber(monthCounts[bestMonthIdx]) }
+        ] : [],
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
+      });
+
+      // ✅ NEW: Fastest finish
+      slides.push({
+        type: "fastest",
+        kicker: "Speedrun moment",
+        title: fastest ? `Fastest finish: ${fastest.e.title}` : "Fastest finish: Not enough date data",
+        highlight: fastest ? `${fastest.diffDays} day(s) from start to finish.` : "If your MAL export has start/finish dates, this slide becomes 🔥.",
+        body: "This is based on the shortest gap between start and finish dates.",
+        stats: fastest ? [
+          { label: "Days", value: formatNumber(fastest.diffDays) },
+          { label: "Episodes logged", value: formatNumber(fastest.e.watchedEpisodes || 0) }
+        ] : [],
+        backgroundImage: fastest ? coverForEntry(fastest.e) : (mostWatched ? coverForEntry(mostWatched) : "")
+      });
+
+      // Highest / Lowest (existing)
       if (topRated.length) {
         slides.push({
           type: "highestRated",
@@ -1375,6 +1661,66 @@
         });
       }
 
+      // ✅ NEW: Top genre personality (enriched meta)
+      slides.push({
+        type: "genre",
+        kicker: "Your top genre personality",
+        title: topGenre ? `${topGenre[0]} Brain` : "Top genre: (needs meta)",
+        highlight: topGenre ? `You touched ${topGenre[1]} title(s) with ${topGenre[0]} vibes.` : "This slide improves when we can fetch genres via Jikan (MAL ids).",
+        body: topGenre ? genrePersonalityText(topGenre[0]) : "If you used manual list only, genres aren’t available. Upload XML or use MAL login for genre/studio slides.",
+        stats: topGenre ? [
+          { label: "Top genre", value: topGenre[0] },
+          { label: "Genre hits", value: formatNumber(topGenre[1]) }
+        ] : [],
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
+      });
+
+      // ✅ NEW: Top studio loyalty (enriched meta)
+      slides.push({
+        type: "studio",
+        kicker: "Studio loyalty",
+        title: topStudio ? `You kept running into: ${topStudio[0]}` : "Top studio: (needs meta)",
+        highlight: topStudio ? `${topStudio[1]} title(s) from that studio showed up in your run.` : "Upload XML / MAL login so we can fetch studio data.",
+        body: topStudio ? "You’ve basically got a studio taste profile at this point." : "Studios show up after meta enrichment.",
+        stats: topStudio ? [
+          { label: "Top studio", value: topStudio[0] },
+          { label: "Titles", value: formatNumber(topStudio[1]) }
+        ] : [],
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
+      });
+
+      // ✅ NEW: Comfort anime (best-effort)
+      slides.push({
+        type: "comfort",
+        kicker: "Comfort anime",
+        title: comfortCandidate ? comfortCandidate.title : "Comfort anime: Unknown",
+        highlight: comfortCandidate ? "This is the one that feels like home." : null,
+        body: comfortCandidate
+          ? "Best-guess pick: high score + ‘you come back to this’ energy."
+          : "Add scores/dates so we can detect your comfort watch more accurately.",
+        stats: comfortCandidate ? [
+          { label: "Your score", value: comfortCandidate.score || "—" },
+          { label: "Minutes (est.)", value: formatNumber(estimateMinutes(comfortCandidate)) }
+        ] : [],
+        backgroundImage: comfortCandidate ? coverForEntry(comfortCandidate) : (mostWatched ? coverForEntry(mostWatched) : "")
+      });
+
+      // ✅ NEW: Era vibe (enriched meta)
+      const vibe = decadeVibe(topDecade ? topDecade[0] : null);
+      slides.push({
+        type: "era",
+        kicker: "Anime era vibe",
+        title: vibe.title,
+        highlight: topDecade ? `Most of your enriched picks cluster in the ${topDecade[0]}s.` : "Era detection needs anime year meta (best with MAL ids).",
+        body: vibe.body,
+        stats: topDecade ? [
+          { label: "Top decade", value: `${topDecade[0]}s` },
+          { label: "Titles (enriched sample)", value: formatNumber(topDecade[1]) }
+        ] : [],
+        backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
+      });
+
+      // Existing count + club
       slides.push({
         type: "count",
         kicker: "How deep you went",
@@ -1403,6 +1749,7 @@
         backgroundImage: mostWatched ? coverForEntry(mostWatched) : ""
       });
 
+      // Recs (existing)
       slides.push({
         type: "recs",
         kicker: "Fuel for your next year",
@@ -1428,7 +1775,9 @@
       return slides;
     }
 
+    // ============================
     // ------------- Render slides -------------
+    // ============================
     let currentSlides = [];
     let currentSlideIndex = 0;
 
@@ -1453,6 +1802,7 @@
       return (
         (slide?.extraAnime && slide.extraAnime.title) ||
         (slide?.list && slide.list[0] && slide.list[0].title) ||
+        (slide?.type === "comfort" && slide?.title) ||
         (slide?.recs && slide.recs[0]) ||
         ""
       );
@@ -1461,7 +1811,7 @@
     function renderSlides(slides) {
       currentSlides = slides || [];
       currentSlideIndex = 0;
-      opAutoEnabled = false; // reset for each new run so autoplay only starts after nav click
+      opAutoEnabled = false;
 
       const container = document.getElementById("slidesMain");
       container.innerHTML = "";
@@ -1588,7 +1938,7 @@
           header.textContent = slide.type === "highestRated" ? "Your top-rated picks" : "Your lowest-rated picks";
           card.appendChild(header);
 
-          slide.list.forEach(item => {
+          (slide.list || []).forEach(item => {
             const row = document.createElement("div");
             row.className = "anime-meta";
             row.textContent = `${item.title} · Score: ${item.score} · ${item.episodes} eps`;
@@ -1606,7 +1956,7 @@
           header.textContent = "Try these next year";
           card.appendChild(header);
 
-          slide.recs.forEach(titleStr => {
+          (slide.recs || []).forEach(titleStr => {
             const row = document.createElement("div");
             row.className = "anime-meta";
             row.textContent = titleStr;
@@ -1615,13 +1965,21 @@
 
           rightDiv.appendChild(card);
 
-        } else if (slide.type === "intro" || slide.type === "outro" || slide.type === "club" || slide.type === "count") {
+        } else {
           const card = document.createElement("div");
           card.className = "anime-card";
 
           const header = document.createElement("div");
           header.className = "anime-title";
           header.textContent =
+            slide.type === "binge" ? "Binge profile" :
+            slide.type === "cd" ? "Completion stats" :
+            slide.type === "month" ? "Monthly activity" :
+            slide.type === "fastest" ? "Speedrun stats" :
+            slide.type === "genre" ? "Genre profile" :
+            slide.type === "studio" ? "Studio profile" :
+            slide.type === "comfort" ? "Comfort pick" :
+            slide.type === "era" ? "Era profile" :
             slide.type === "club" ? "Your watching profile" :
             slide.type === "count" ? "Quick stats" :
             slide.type === "intro" ? "What you’re about to see" : "Your next arc";
@@ -1632,7 +1990,7 @@
             slide.type === "intro" ? "Total episodes, minutes, highs, lows, and a few gentle roasts about your watch habits." :
             slide.type === "outro" ? "Set some goals: finish that one show, clear a backlog, or finally watch that recommendation." :
             slide.type === "club" ? "This is our read on how you approach anime as a whole." :
-            "Big-picture numbers that show how committed you were this year.";
+            "Extra stats that make it feel like a real Wrapped.";
 
           card.appendChild(header);
           card.appendChild(meta);
@@ -1644,6 +2002,7 @@
         if (slide.type === "minutes") foot.textContent = "Minutes estimated at ~23 minutes per episode (movies as ~90m each).";
         else if (slide.type === "count") foot.textContent = "Percentile is a fun estimate — not an official MAL metric.";
         else if (slide.type === "recs") foot.textContent = "We only recommend shows that don’t appear in your list export.";
+        else if (slide.type === "genre" || slide.type === "studio" || slide.type === "era") foot.textContent = "Genre/Studio/Era uses meta enrichment (best with MAL IDs).";
         else foot.textContent = "";
         rightDiv.appendChild(foot);
 
@@ -1668,219 +2027,264 @@
       indicator.textContent = `Slide ${currentSlideIndex + 1} of ${currentSlides.length}`;
     }
 
-    function updateControlsDisabled() {
-      const prevBtn = document.getElementById("prevSlideBtn");
-      const nextBtn = document.getElementById("nextSlideBtn");
-      if (!currentSlides.length) {
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-        return;
-      }
-      prevBtn.disabled = currentSlideIndex === 0;
-      nextBtn.disabled = currentSlideIndex === currentSlides.length - 1;
-    }
+   
+          function updateControlsDisabled() {
+  const prevBtn = document.getElementById("prevSlideBtn");
+  const nextBtn = document.getElementById("nextSlideBtn");
+  if (!prevBtn || !nextBtn) return;
 
-    // ✅ goToSlide now supports "userInitiated" for autoplay permission
-    function goToSlide(newIndex, userInitiated = false) {
-      if (!currentSlides.length) return;
-      const slides = Array.from(document.querySelectorAll(".slide"));
-      if (!slides.length) return;
+  if (!currentSlides.length) {
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
 
-      const clamped = Math.max(0, Math.min(newIndex, slides.length - 1));
-      slides.forEach((s, idx) => s.classList.toggle("active", idx === clamped));
+  prevBtn.disabled = currentSlideIndex === 0;
+  nextBtn.disabled = currentSlideIndex === currentSlides.length - 1;
+}
 
-      currentSlideIndex = clamped;
+
+      slidesEls.forEach((el, i) => {
+        el.classList.toggle("active", i === currentSlideIndex);
+      });
+
       updateSlideIndicator();
       updateControlsDisabled();
       onSlideChanged();
 
-      if (userInitiated) opAutoEnabled = true;
-
-      // ✅ Autoplay OP once enabled
+      // ✅ only autoplay OP after user has interacted with nav at least once
       if (opAutoEnabled) {
-        const slideData = currentSlides[currentSlideIndex];
-        const title = getAnimeTitleForSlide(slideData);
-        if (title) playOpeningForAnime(title);
+        const s = currentSlides[currentSlideIndex];
+        const t = getAnimeTitleForSlide(s);
+        if (t) playOpeningForAnime(t);
       }
     }
 
-    // ------------- File reading & main flow -------------
+    function nextSlide() {
+      opAutoEnabled = true;
+      showSlide(currentSlideIndex + 1);
+    }
+
+    function prevSlide() {
+      opAutoEnabled = true;
+      showSlide(currentSlideIndex - 1);
+    }
+
+    function restartSlides() {
+      opAutoEnabled = true;
+      showSlide(0);
+    }
+
+    // Buttons
+    const prevSlideBtn = document.getElementById("prevSlideBtn");
+    const nextSlideBtn = document.getElementById("nextSlideBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    if (prevSlideBtn) prevSlideBtn.addEventListener("click", prevSlide);
+    if (nextSlideBtn) nextSlideBtn.addEventListener("click", nextSlide);
+    if (restartBtn) restartBtn.addEventListener("click", restartSlides);
+
+    // Keyboard arrows
+    window.addEventListener("keydown", (e) => {
+      const activeSlides = document.getElementById("panel-slides")?.classList.contains("active");
+      if (!activeSlides) return;
+      if (e.key === "ArrowRight") nextSlide();
+      if (e.key === "ArrowLeft") prevSlide();
+    });
+
+    // ============================
+    // ✅ Slide "Play Opening" button wiring
+    // (Fixes: unclickable / only one anime playing)
+    // ============================
+    function injectPlayButtons() {
+      const slideEls = Array.from(document.querySelectorAll("#slidesMain .slide"));
+      slideEls.forEach((slideEl, idx) => {
+        const slideData = currentSlides[idx];
+        if (!slideData) return;
+
+        // Only inject once
+        if (slideEl.querySelector(".play-op-btn")) return;
+
+        const titleToPlay = getAnimeTitleForSlide(slideData);
+        if (!titleToPlay) return;
+
+        // Put button inside right card if possible
+        const rightCard = slideEl.querySelector(".slide-right .anime-card");
+        if (!rightCard) return;
+
+        const btn = document.createElement("button");
+        btn.className = "control-btn play-op-btn";
+        btn.type = "button";
+        btn.style.marginTop = "10px";
+        btn.style.width = "100%";
+        btn.innerHTML = "▶ Play opening";
+
+        btn.addEventListener("click", () => {
+          opAutoEnabled = true; // counts as user interaction
+          playOpeningForAnime(titleToPlay);
+        });
+
+        rightCard.appendChild(btn);
+      });
+    }
+
+    // Patch renderSlides so it injects buttons after rendering
+    const _renderSlides = renderSlides;
+    renderSlides = function(slides) {
+      _renderSlides(slides);
+      injectPlayButtons();
+    };
+
+    // ============================
+    // ------------- File read (XML / GZ) -------------
+    // ============================
+    async function readFileAsArrayBuffer(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    async function readFileAsText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsText(file);
+      });
+    }
+
+    async function parseUploadFile(file) {
+      const name = (file?.name || "").toLowerCase();
+
+      if (name.endsWith(".gz")) {
+        const buf = await readFileAsArrayBuffer(file);
+        const uint8 = new Uint8Array(buf);
+        const decompressed = window.pako.ungzip(uint8, { to: "string" });
+        return String(decompressed || "");
+      }
+
+      // xml or txt
+      const text = await readFileAsText(file);
+      return String(text || "");
+    }
+
+    // ============================
+    // ------------- Main generate flow -------------
+    // ============================
     const malInput = document.getElementById("malFile");
     const yearInput = document.getElementById("yearInput");
     const fileError = document.getElementById("fileError");
     const generateBtn = document.getElementById("generateBtn");
     const usernameInput = document.getElementById("malUsername");
-    const manualInput = document.getElementById("manualList");
-    const malLoginBtn = document.getElementById("malLoginBtn");
+    const manualListInput = document.getElementById("manualList");
 
+    // default year
+    const currentYear = new Date().getFullYear();
+    if (yearInput && !yearInput.value) yearInput.value = currentYear;
+
+    // MAL login button (already in your HTML)
+    const malLoginBtn = document.getElementById("malLoginBtn");
     if (malLoginBtn) {
       malLoginBtn.addEventListener("click", () => {
-        try {
-          const now = Date.now();
-          window.localStorage.setItem("malAuthorizedAt", String(now));
-          window.localStorage.setItem("malAuthorizedPending", "true");
-        } catch (e) {}
+        window.localStorage.setItem("malAuthorized", "true");
         window.open("https://mal-wrapped-1.onrender.com/login", "_blank");
       });
     }
 
-    const currentYear = new Date().getFullYear();
-    if (yearInput) yearInput.value = currentYear;
-
-    generateBtn.addEventListener("click", async () => {
-      if (fileError) fileError.style.display = "none";
-
-      const file = malInput && malInput.files ? malInput.files[0] : null;
-      const username = usernameInput && usernameInput.value ? usernameInput.value.trim() : "";
-      const manualText = manualInput && manualInput.value ? manualInput.value.trim() : "";
-
-      const yearVal = safeInt(yearInput && yearInput.value ? yearInput.value : currentYear, currentYear);
-
-      if (file) {
-        showPanel("panel-loading");
-        const reader = new FileReader();
-
-        reader.onload = async (e) => {
-          try {
-            let xmlText;
-            if (file.name.endsWith(".gz")) {
-              const compressed = new Uint8Array(e.target.result);
-              xmlText = pako.ungzip(compressed, { to: "string" });
-            } else {
-              xmlText = e.target.result;
-            }
-
-            const parsed = parseMalXml(xmlText);
-            const entries = parsed.entries;
-
-            const filtered = entries.filter((entry) => {
-              const startY = extractYear(entry.startDate);
-              const finishY = extractYear(entry.finishDate);
-              return String(yearVal) === startY || String(yearVal) === finishY;
-            });
-
-            const activeEntries = filtered.length ? filtered : entries;
-            const wrappedData = { userName: parsed.userName, year: yearVal, entries: activeEntries };
-
-            const slides = buildSlides(wrappedData);
-            renderSlides(slides);
-
-            setTimeout(() => showPanel("panel-slides"), 300);
-          } catch (err) {
-            console.error(err);
-            if (fileError) {
-              fileError.textContent = "Something went wrong reading that file. Make sure it’s a MAL XML export.";
-              fileError.style.display = "block";
-            }
-            showPanel("panel-input");
-          }
-        };
-
-        if (file.name.endsWith(".gz")) reader.readAsArrayBuffer(file);
-        else reader.readAsText(file);
-        return;
-      }
-
-      if (manualText) {
-        try {
-          showPanel("panel-loading");
-          const wrappedData = parseManualList(manualText, yearVal);
-          if (!wrappedData.entries.length) throw new Error("No valid lines found in manual list.");
-
-          const slides = buildSlides(wrappedData);
-          renderSlides(slides);
-
-          setTimeout(() => showPanel("panel-slides"), 300);
-        } catch (err) {
-          console.error(err);
-          if (fileError) {
-            fileError.textContent = "Couldn’t understand that manual list. Use: Title | episodes | score (optional) | type (optional) | start-date | finish-date.";
-            fileError.style.display = "block";
-          }
-          showPanel("panel-input");
-        }
-        return;
-      }
-
-      if (username) {
-        try {
-          showPanel("panel-loading");
-          const wrappedData = await fetchFromJikan(username, yearVal);
-          const slides = buildSlides(wrappedData);
-          renderSlides(slides);
-
-          setTimeout(() => showPanel("panel-slides"), 300);
-        } catch (err) {
-          console.error(err);
-          if (fileError) {
-            fileError.textContent = "Failed to fetch from Jikan. Check username or try again later.";
-            fileError.style.display = "block";
-          }
-          showPanel("panel-input");
-        }
-        return;
-      }
-
-      let malAuthorized = false;
-      try {
-        const authPending = window.localStorage.getItem("malAuthorizedPending") === "true";
-        const authAtRaw = window.localStorage.getItem("malAuthorizedAt");
-        const authAt = authAtRaw ? Number(authAtRaw) : 0;
-        const now = Date.now();
-        const MAX_AUTH_AGE_MS = 10 * 60 * 1000;
-
-        malAuthorized = !!authPending && !!authAt && Number.isFinite(authAt) && now - authAt <= MAX_AUTH_AGE_MS;
-      } catch (e) { malAuthorized = false; }
-
-      if (malAuthorized) {
-        try {
-          showPanel("panel-loading");
-          const wrappedData = await fetchFromMalApi(yearVal);
-          const slides = buildSlides(wrappedData);
-          renderSlides(slides);
-
-          try {
-            window.localStorage.removeItem("malAuthorizedPending");
-            window.localStorage.removeItem("malAuthorizedAt");
-          } catch (e) {}
-
-          setTimeout(() => showPanel("panel-slides"), 300);
-        } catch (err) {
-          console.error(err);
-          try {
-            window.localStorage.removeItem("malAuthorizedPending");
-            window.localStorage.removeItem("malAuthorizedAt");
-          } catch (e) {}
-
-          if (fileError) {
-            fileError.textContent = "Failed to fetch from MAL. Click 'Sign in with MAL' again and make sure the login succeeds.";
-            fileError.style.display = "block";
-          }
-          showPanel("panel-input");
-        }
-        return;
-      }
-
-      if (fileError) {
-        fileError.textContent = "Upload a MAL XML file, paste a manual list, enter a MAL username, or click 'Sign in with MAL' first.";
+    function setError(msg) {
+      if (!fileError) return;
+      if (!msg) {
+        fileError.style.display = "none";
+        fileError.textContent = "";
+      } else {
         fileError.style.display = "block";
+        fileError.textContent = msg;
       }
-      showPanel("panel-input");
-    });
+    }
 
-    // Slide controls (✅ these clicks enable OP autoplay)
-    document.getElementById("prevSlideBtn").addEventListener("click", () => goToSlide(currentSlideIndex - 1, true));
-    document.getElementById("nextSlideBtn").addEventListener("click", () => goToSlide(currentSlideIndex + 1, true));
-    document.getElementById("restartBtn").addEventListener("click", () => goToSlide(0, true));
+    function setLoaderHint(text) {
+      const hint = document.getElementById("loaderHint");
+      if (hint) hint.textContent = text;
+    }
+
+    async function generateWrapped() {
+      setError("");
+      closeYtModal(); // keep UI clean
+      stopBgMusic();
+      stopOpSample();
+
+      const yearVal = safeInt(yearInput?.value || currentYear, currentYear);
+
+      const file = malInput?.files?.[0] || null;
+      const username = (usernameInput?.value || "").trim();
+      const manualText = (manualListInput?.value || "").trim();
+      const hasAuthorized = window.localStorage.getItem("malAuthorized") === "true";
+
+      showPanel("panel-loading");
+      setLoaderHint("Parsing your list...");
+
+      try {
+        let data = null;
+
+        // 1) File upload wins
+        if (file) {
+          const raw = await parseUploadFile(file);
+
+          // If they uploaded a txt manual list, treat it as manual format
+          const isXml = raw.trim().startsWith("<?xml") || raw.includes("<myanimelist>");
+          if (isXml) {
+            const parsed = parseMalXml(raw);
+            data = { userName: parsed.userName, year: yearVal, entries: parsed.entries };
+          } else {
+            // treat as manual lines
+            data = parseManualList(raw, yearVal);
+          }
+        }
+        // 2) If they clicked MAL login at least once, try backend
+        else if (hasAuthorized) {
+          setLoaderHint("Fetching from MAL login backend...");
+          data = await fetchFromMalApi(yearVal);
+        }
+        // 3) Username via Jikan
+        else if (username) {
+          setLoaderHint("Fetching from Jikan (MAL mirror)...");
+          data = await fetchFromJikan(username, yearVal);
+        }
+        // 4) Manual textarea
+        else if (manualText) {
+          data = parseManualList(manualText, yearVal);
+        }
+
+        if (!data || !data.entries || !data.entries.length) {
+          throw new Error("No anime found. Upload XML/XML.GZ, use MAL login, enter username, or paste a manual list.");
+        }
+
+        setLoaderHint("Enriching genres / studios (best effort)...");
+        await enrichEntriesWithMeta(data.entries);
+
+        setLoaderHint("Building slides...");
+        const slides = buildSlides(data);
+
+        renderSlides(slides);
+        showPanel("panel-slides");
+
+        // set background to first slide’s bg image
+        onSlideChanged();
+
+      } catch (err) {
+        console.error(err);
+        showPanel("panel-input");
+        setError(err?.message || "Something went wrong. Try again.");
+      }
+    }
+
+    if (generateBtn) {
+      generateBtn.addEventListener("click", generateWrapped);
+    }
   </script>
-
-  <!-- Background + sample OP audio (OP sample kept for compatibility, not used anymore) -->
-  <audio id="bgMusic" loop>
-    <source src="bg-music.mp3" type="audio/mpeg" />
-  </audio>
-
-  <audio id="opAudio">
-    <source src="op-sample.mp3" type="audio/mpeg" />
-  </audio>
 </body>
 </html>
+
